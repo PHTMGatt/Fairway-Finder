@@ -4,6 +4,7 @@ import ProfileList from '../components/ProfileList';
 
 import { QUERY_PROFILES } from '../utils/queries';
 
+// note Think of using this PATTERN for QUERYING SAVED DATA(Trips)
 const Home = () => {
   const { loading, data } = useQuery(QUERY_PROFILES);
   const profiles = data?.profiles || [];
