@@ -1,0 +1,15 @@
+.dashboard {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.dashboard__title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.dashboard__form {
+  margin-top: 2rem;
+  border-top: 1px solid #ddd;
+  padding-top: 1.5rem;
+}

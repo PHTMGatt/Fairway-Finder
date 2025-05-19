@@ -1,0 +1,13 @@
+.trip-detail {
+  padding: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.trip-detail__title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+.trip-detail__courses {
+  margin-top: 1.5rem;
+}

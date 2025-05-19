@@ -1,98 +1,73 @@
-import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
-
+import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { Link, Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-import { ADD_PROFILE } from '../utils/mutations';
 
 import Auth from '../utils/auth';
+import { ADD_PROFILE } from '../utils/mutations';
+import './Signup.css';
 
 const Signup = () => {
-  const [formState, setFormState] = useState({
-    name: '',
-    email: '',
-    password: '',
-  });
+  const [formState, setFormState] = useState({ name: '', email: '', password: '' });
   const [addProfile, { error, data }] = useMutation(ADD_PROFILE);
 
-  // update state based on form input changes
-  const handleChange = (event: ChangeEvent) => {
-    const { name, value } = event.target as HTMLInputElement;
-
-    setFormState({
-      ...formState,
-      [name]: value,
-    });
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormState({ ...formState, [name]: value });
   };
 
-  // submit form
-  const handleFormSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    console.log(formState);
-
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     try {
-      const { data } = await addProfile({
-        variables: { input: { ...formState } },
-      });
-
+      const { data } = await addProfile({ variables: { input: { ...formState } } });
       Auth.login(data.addProfile.token);
-    } catch (e) {
-      console.error(e);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  return (
-    <main className="flex-row justify-center mb-4">
-      <div className="col-12 col-lg-10">
-        <div className="card">
-          <h4 className="card-header bg-dark text-light p-2">Sign Up</h4>
-          <div className="card-body">
-            {data ? (
-              <p>
-                Success! You may now head{' '}
-                <Link to="/">back to the homepage.</Link>
-              </p>
-            ) : (
-              <form onSubmit={handleFormSubmit}>
-                <input
-                  className="form-input"
-                  placeholder="Your username"
-                  name="name"
-                  type="text"
-                  value={formState.name}
-                  onChange={handleChange}
-                />
-                <input
-                  className="form-input"
-                  placeholder="Your email"
-                  name="email"
-                  type="email"
-                  value={formState.email}
-                  onChange={handleChange}
-                />
-                <input
-                  className="form-input"
-                  placeholder="******"
-                  name="password"
-                  type="password"
-                  value={formState.password}
-                  onChange={handleChange}
-                />
-                <button
-                  className="btn btn-block btn-info"
-                  style={{ cursor: 'pointer' }}
-                  type="submit"
-                >
-                  Submit
-                </button>
-              </form>
-            )}
+  if (Auth.loggedIn()) return <Navigate to="/dashboard" replace />;
 
-            {error && (
-              <div className="my-3 p-3 bg-danger text-white">
-                {error.message}
-              </div>
-            )}
-          </div>
+  return (
+    <main className="signup container">
+      <div className="signup__card">
+        <h4 className="signup__header">Sign Up</h4>
+        <div className="signup__body">
+          {data ? (
+            <p>
+              Welcome aboard! Go <Link to="/dashboard">to your trips.</Link>
+            </p>
+          ) : (
+            <form onSubmit={handleSubmit} className="signup__form">
+              <input
+                className="signup__input"
+                placeholder="Username"
+                name="name"
+                type="text"
+                value={formState.name}
+                onChange={handleChange}
+              />
+              <input
+                className="signup__input"
+                placeholder="Email"
+                name="email"
+                type="email"
+                value={formState.email}
+                onChange={handleChange}
+              />
+              <input
+                className="signup__input"
+                placeholder="Password"
+                name="password"
+                type="password"
+                value={formState.password}
+                onChange={handleChange}
+              />
+              <button className="btn signup__btn" type="submit">
+                Submit
+              </button>
+            </form>
+          )}
+          {error && <div className="signup__error">{error.message}</div>}
         </div>
       </div>
     </main>

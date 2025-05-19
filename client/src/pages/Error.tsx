@@ -1,4 +1,6 @@
+import React from 'react';
 import { useRouteError } from 'react-router-dom';
+import './Error.css';
 
 interface RouteError {
   statusText?: string;
@@ -10,10 +12,12 @@ export default function ErrorPage() {
   console.error(error);
 
   return (
-    <div id="error-page">
-      <h1>Oops!</h1>
-      <p>Sorry, an unexpected error has occurred.</p>
-      <p>
+    <div className="error-page">
+      <h1 className="error-page__title">Whoops! You’ve hit a sand trap!</h1>
+      <p className="error-page__desc">
+        Sorry, something went off course.
+      </p>
+      <p className="error-page__info">
         <i>{error.statusText || error.message}</i>
       </p>
     </div>
