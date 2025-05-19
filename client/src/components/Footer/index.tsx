@@ -27,3 +27,5 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
+
+// This component is a functional React component that displays a footer with a "Go Back" button and a copyright notice.
