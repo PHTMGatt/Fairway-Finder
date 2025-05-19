@@ -45,3 +45,5 @@ const TripList: React.FC<TripListProps> = ({
 };
 
 export default TripList;
+
+// This component is a functional React component that displays a list of trips.
