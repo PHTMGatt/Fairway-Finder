@@ -1,39 +1,37 @@
 import { Link } from 'react-router-dom';
-import { type MouseEvent} from 'react';
+import { MouseEvent } from 'react';
 import Auth from '../../utils/auth';
+import './style.css';
 
 const Header = () => {
   const logout = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
     Auth.logout();
   };
+
   return (
-    <header className="bg-info text-dark mb-4 py-3 display-flex align-center">
-      <div className="container flex-column justify-space-between-lg justify-center align-center text-center">
-        <Link className="text-dark" to="/">
-          <h1 className="m-0" style={{ fontSize: '3rem' }}>
-            Tech Friends
-          </h1>
+    <header className="header">
+      <div className="header__inner container">
+        <Link className="header__logo" to="/">
+          <h1>🏌️ Fairway Finder</h1>
         </Link>
-        <p className="m-0" style={{ fontSize: '1.75rem', fontWeight: '700' }}>
-          Meet your new programming pals.
-        </p>
-        <div>
+        <p className="header__tagline">Plan your ultimate golf road trip.</p>
+        <div className="header__actions">
           {Auth.loggedIn() ? (
             <>
-              <Link className="btn btn-lg btn-primary m-2" to="/me">
-                View My Profile
+              <Link className="btn btn-primary header__btn" to="/dashboard">
+                View My Trips
               </Link>
-              <button className="btn btn-lg btn-light m-2" onClick={logout}>
+              <button className="btn btn-light header__btn" onClick={logout}>
                 Logout
               </button>
             </>
           ) : (
             <>
-              <Link className="btn btn-lg btn-primary m-2" to="/login">
+              <Link className="btn btn-primary header__btn" to="/login">
                 Login
               </Link>
-              <Link className="btn btn-lg btn-light m-2" to="/signup">
+              <Link className="btn btn-light header__btn" to="/signup">
                 Signup
               </Link>
             </>

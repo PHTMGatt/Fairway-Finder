@@ -1,0 +1,31 @@
+.trip-form {
+  margin: 1rem 0;
+}
+.trip-form__title {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+}
+.trip-form__form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.trip-form__input {
+  flex: 1 1 auto;
+  padding: 0.5rem;
+  font-size: 1rem;
+}
+.trip-form__btn {
+  flex: 0 0 auto;
+}
+.trip-form__error {
+  color: #b00020;
+  margin-top: 0.5rem;
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .trip-form__form {
+    flex-direction: column;
+  }
+}

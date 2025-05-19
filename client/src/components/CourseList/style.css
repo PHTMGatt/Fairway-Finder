@@ -1,0 +1,30 @@
+.course-list {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.course-card {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.course-card__name {
+  background: #00796b;
+  color: white;
+  margin: 0;
+  padding: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.course-card__remove {
+  margin-left: 0.5rem;
+}
+.course-list__empty {
+  font-size: 1rem;
+}
+.course-list__error {
+  color: #b00020;
+  margin-top: 0.5rem;
+}
