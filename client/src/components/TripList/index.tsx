@@ -1,29 +1,21 @@
-// components/TripList/index.tsx
 import { Link } from 'react-router-dom';
 import './style.css';
 
-interface Trip {
-  _id: string;
-  name: string;
-  courses?: string[];
-}
-
 interface TripListProps {
-  trips?: Trip[];      // make it optional
+  trips: any[];
   title: string;
 }
 
-const TripList: React.FC<TripListProps> = ({
-  trips = [],          // default to empty array
-  title,
-}) => {
-  if (trips.length === 0) {
+const TripList: React.FC<TripListProps> = ({ trips = [], title }) => {
+  if (!trips.length) {
     return <h3 className="trip-list__empty">No Trips Planned Yet</h3>;
   }
 
   return (
     <div className="trip-list">
-      <h3 className="trip-list__title">{title}</h3>
+      <h3 className="trip-list__title">
+        {typeof title === 'string' ? title : 'Saved Trips'}
+      </h3>
       <div className="trip-list__grid">
         {trips.map((trip) => (
           <div key={trip._id} className="trip-card">
@@ -34,7 +26,7 @@ const TripList: React.FC<TripListProps> = ({
                 {trip.courses && trip.courses.length !== 1 ? 's' : ''}
               </span>
             </h4>
-            <Link className="btn trip-card__btn" to={`/trips/${trip._id}`}>
+            <Link className="btn trip-card__btn" to={`/trip/${trip._id}`}>
               View Trip Details
             </Link>
           </div>
@@ -45,5 +37,3 @@ const TripList: React.FC<TripListProps> = ({
 };
 
 export default TripList;
-
-// This component is a functional React component that displays a list of trips.

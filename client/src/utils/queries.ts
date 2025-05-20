@@ -1,4 +1,3 @@
-// client/src/utils/queries.ts
 import { gql } from '@apollo/client';
 
 /** ——— EXISTING PROFILE QUERIES ——— */
@@ -33,7 +32,7 @@ export const QUERY_ME = gql`
   }
 `;
 
-/** ——— NEW FAIRWAY FINDER TRIP QUERIES ——— */
+/** ——— FAIRWAY FINDER TRIP QUERIES ——— */
 
 // Fetch all trips for listing
 export const QUERY_TRIPS = gql`
@@ -62,6 +61,22 @@ export const QUERY_MY_TRIPS = gql`
           _id
           name
         }
+      }
+    }
+  }
+`;
+
+/** ——— OPTIONAL: SINGLE-TRIP QUERY ——— */
+
+// Fetch a single trip by ID
+export const QUERY_TRIP = gql`
+  query getTrip($id: ID!) {
+    trip(id: $id) {
+      _id
+      name
+      courses {
+        _id
+        name
       }
     }
   }
