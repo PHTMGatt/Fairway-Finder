@@ -1,3 +1,4 @@
+// client/src/pages/Signup.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
@@ -6,26 +7,37 @@ import Auth from '../utils/auth';
 import { ADD_PROFILE } from '../utils/mutations';
 import './Signup.css';
 
-const Signup = () => {
-  const [formState, setFormState] = useState({ name: '', email: '', password: '' });
-  const [addProfile, { error, data }] = useMutation(ADD_PROFILE);
+const Signup: React.FC = () => {
+  const [formState, setFormState] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
+
+  const [addProfile, { data, error }] = useMutation(ADD_PROFILE);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormState({ ...formState, [name]: value });
+    setFormState(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await addProfile({ variables: { input: { ...formState } } });
-      Auth.login(data.addProfile.token);
+      const response = await addProfile({
+        variables: { input: { ...formState } }
+      });
+      const token = response.data.addProfile.token;
+      Auth.login(token);
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (Auth.loggedIn()) return <Navigate to="/dashboard" replace />;
+  // If already logged in, send them to their dashboard
+  if (Auth.loggedIn()) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <main className="signup container">
@@ -34,7 +46,7 @@ const Signup = () => {
         <div className="signup__body">
           {data ? (
             <p>
-              Welcome aboard! Go <Link to="/dashboard">to your trips.</Link>
+              Success! Go <Link to="/dashboard">to your trips.</Link>
             </p>
           ) : (
             <form onSubmit={handleSubmit} className="signup__form">

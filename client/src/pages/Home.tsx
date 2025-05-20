@@ -1,8 +1,8 @@
-// client/src/pages/Home.jsx
+// src/pages/Home.jsx
 
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { FaMapMarkedAlt, FaFlag, FaCloudSun } from 'react-icons/fa';
 
 import TripList from '../components/TripList';
@@ -12,6 +12,7 @@ import './Home.css';
 const Home = () => {
   const { loading, data, error } = useQuery(QUERY_TRIPS);
   const trips = data?.trips || [];
+  const navigate = useNavigate();
 
   return (
     <main className="home">
@@ -19,8 +20,18 @@ const Home = () => {
       <section className="home__hero">
         <h2 className="home__title">Plan your next golf adventure.</h2>
         <div className="home__buttons">
-          <button className="btn home__btn">Plan a Trip</button>
-          <button className="btn home__btn">View Saved Trips</button>
+          <button
+            className="btn home__btn"
+            onClick={() => navigate('/routing')}
+          >
+            Plan a Trip
+          </button>
+          <button
+            className="btn home__btn"
+            onClick={() => navigate('/me')}
+          >
+            View Saved Trips
+          </button>
         </div>
       </section>
 
@@ -50,18 +61,27 @@ const Home = () => {
 
       {/* ——— Bottom Icon Nav ——— */}
       <nav className="home__bottom-nav">
-        <Link to="/routing" className="home__nav-item">
+        <button
+          className="home__nav-item"
+          onClick={() => navigate('/routing')}
+        >
           <FaMapMarkedAlt size={24} />
           <span>Map Routing</span>
-        </Link>
-        <Link to="/courses" className="home__nav-item">
+        </button>
+        <button
+          className="home__nav-item"
+          onClick={() => navigate('/courses')}
+        >
           <FaFlag size={24} />
           <span>Course Finder</span>
-        </Link>
-        <Link to="/weather" className="home__nav-item">
+        </button>
+        <button
+          className="home__nav-item"
+          onClick={() => navigate('/weather')}
+        >
           <FaCloudSun size={24} />
           <span>Weather</span>
-        </Link>
+        </button>
       </nav>
     </main>
   );

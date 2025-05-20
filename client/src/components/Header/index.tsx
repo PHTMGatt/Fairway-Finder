@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom';
 import { MouseEvent } from 'react';
 import Auth from '../../utils/auth';
-import { FaFlag, FaMapMarkerAlt, FaCloudSun } from 'react-icons/fa';
 import './style.css';
 
-const Header = () => {
+const Header: React.FC = () => {
   const logout = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     Auth.logout();
@@ -12,22 +11,38 @@ const Header = () => {
 
   return (
     <header className="header">
-      <Link to="/" className="header__logo">🏌️ Fairway Finder</Link>
-      <div className="header__slots">
-        <div className="header__slot"></div>
-        <div className="header__slot"></div>
-        <div className="header__slot"></div>
+      <div className="header__logo-cell">
+        <Link to="/" className="header__logo">
+          FAIRWAY FINDER
+        </Link>
       </div>
+
+      <div className="header__holes">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="header__hole" />
+        ))}
+      </div>
+
+      <div className="header__spacer" />
+
       <div className="header__actions">
         {Auth.loggedIn() ? (
           <>
-            <Link to="/dashboard" className="btn header__btn">My Trips</Link>
-            <button onClick={logout} className="btn header__btn">Logout</button>
+            <Link to="/dashboard" className="header__btn">
+              My Trips
+            </Link>
+            <button onClick={logout} className="header__btn">
+              Log Out
+            </button>
           </>
         ) : (
           <>
-            <Link to="/login"  className="btn header__btn">Login</Link>
-            <Link to="/signup" className="btn header__btn">Signup</Link>
+            <Link to="/login" className="header__btn">
+              Log In
+            </Link>
+            <Link to="/signup" className="header__btn">
+              Sign Up
+            </Link>
           </>
         )}
       </div>
