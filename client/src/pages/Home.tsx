@@ -1,5 +1,9 @@
+// client/src/pages/Home.jsx
+
 import React from 'react';
 import { useQuery } from '@apollo/client';
+import { Link } from 'react-router-dom';
+import { FaMapMarkedAlt, FaFlag, FaCloudSun } from 'react-icons/fa';
 
 import TripList from '../components/TripList';
 import { QUERY_TRIPS } from '../utils/queries';
@@ -24,7 +28,7 @@ const Home = () => {
       <section className="home__search">
         <input className="home__input" type="text" placeholder="Start Location" />
         <input className="home__input" type="text" placeholder="End Location" />
-        <input className="home__input" type="text" placeholder="Max Distance from Route" />
+        <input className="home__input" type="text" placeholder="Max Distance" />
         <button className="btn home__find-btn">Find Courses</button>
       </section>
 
@@ -46,18 +50,21 @@ const Home = () => {
 
       {/* ——— Bottom Icon Nav ——— */}
       <nav className="home__bottom-nav">
-        <div className="home__nav-item">
-          📖<span>Map-Powered Routing</span>
-        </div>
-        <div className="home__nav-item">
-          ⛳<span>Course Finder</span>
-        </div>
-        <div className="home__nav-item">
-          ☀️<span>Weather</span>
-        </div>
+        <Link to="/routing" className="home__nav-item">
+          <FaMapMarkedAlt size={24} />
+          <span>Map Routing</span>
+        </Link>
+        <Link to="/courses" className="home__nav-item">
+          <FaFlag size={24} />
+          <span>Course Finder</span>
+        </Link>
+        <Link to="/weather" className="home__nav-item">
+          <FaCloudSun size={24} />
+          <span>Weather</span>
+        </Link>
       </nav>
     </main>
   );
-}; // ← Make sure this closing brace is present
+};
 
 export default Home;

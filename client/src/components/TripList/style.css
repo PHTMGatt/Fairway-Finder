@@ -35,8 +35,6 @@
   text-align: center;
   background: #fafafa;
 }
-
-/* Mobile */
 @media (max-width: 500px) {
   .trip-list__grid {
     grid-template-columns: 1fr;

@@ -1,42 +1,35 @@
 import { Link } from 'react-router-dom';
 import { MouseEvent } from 'react';
 import Auth from '../../utils/auth';
+import { FaFlag, FaMapMarkerAlt, FaCloudSun } from 'react-icons/fa';
 import './style.css';
 
 const Header = () => {
-  const logout = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
+  const logout = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     Auth.logout();
   };
 
   return (
     <header className="header">
-      <div className="header__inner container">
-        <Link className="header__logo" to="/">
-          <h1>🏌️ Fairway Finder</h1>
-        </Link>
-        <p className="header__tagline">Plan your ultimate golf road trip.</p>
-        <div className="header__actions">
-          {Auth.loggedIn() ? (
-            <>
-              <Link className="btn btn-primary header__btn" to="/dashboard">
-                View My Trips
-              </Link>
-              <button className="btn btn-light header__btn" onClick={logout}>
-                Logout
-              </button>
-            </>
-          ) : (
-            <>
-              <Link className="btn btn-primary header__btn" to="/login">
-                Login
-              </Link>
-              <Link className="btn btn-light header__btn" to="/signup">
-                Signup
-              </Link>
-            </>
-          )}
-        </div>
+      <Link to="/" className="header__logo">🏌️ Fairway Finder</Link>
+      <div className="header__slots">
+        <div className="header__slot"></div>
+        <div className="header__slot"></div>
+        <div className="header__slot"></div>
+      </div>
+      <div className="header__actions">
+        {Auth.loggedIn() ? (
+          <>
+            <Link to="/dashboard" className="btn header__btn">My Trips</Link>
+            <button onClick={logout} className="btn header__btn">Logout</button>
+          </>
+        ) : (
+          <>
+            <Link to="/login"  className="btn header__btn">Login</Link>
+            <Link to="/signup" className="btn header__btn">Signup</Link>
+          </>
+        )}
       </div>
     </header>
   );

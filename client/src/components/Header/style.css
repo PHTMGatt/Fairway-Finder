@@ -1,43 +1,41 @@
 .header {
-  background-color: #e0f7fa;
-  padding: 1rem 0;
-}
-.header__inner {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto repeat(3, 40px) 1fr auto auto;
   align-items: center;
-  justify-content: space-between;
+  background: #f2e8cf;       /* sand */
+  border-bottom: 2px solid #555;
+  padding: 0.5rem 1rem;
 }
-.header__logo h1 {
-  margin: 0;
-  font-size: 1.75rem;
+.header__logo {
+  font-size: 1.5rem;
+  color: #2a3d45;
+  text-decoration: none;
+  font-weight: bold;
 }
-.header__tagline {
-  flex: 1 1 100%;
-  text-align: center;
-  margin: 0.5rem 0;
-  font-size: 1rem;
+.header__slots {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0 1rem;
+}
+.header__slot {
+  width: 40px;
+  height: 30px;
+  background: #e0d8b0;
+  border: 1px solid #aaa;
+  border-radius: 2px;
 }
 .header__actions {
   display: flex;
   gap: 0.5rem;
 }
 .header__btn {
-  padding: 0.5rem 1rem;
+  background: #2a3d45;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  text-decoration: none;
   font-size: 0.9rem;
 }
-
-/* Mobile */
-@media (max-width: 600px) {
-  .header__inner {
-    flex-direction: column;
-  }
-  .header__tagline {
-    order: 3;
-  }
-  .header__actions {
-    order: 2;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+.header__btn:hover {
+  background: #1f2a30;
 }

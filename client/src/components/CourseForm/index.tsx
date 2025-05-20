@@ -1,5 +1,6 @@
 import { useState, FormEvent } from 'react';
 import { useMutation } from '@apollo/client';
+import { Link } from 'react-router-dom';           // ← added
 import { ADD_COURSE_TO_TRIP } from '../../utils/mutations';
 import Auth from '../../utils/auth';
 import './style.css';

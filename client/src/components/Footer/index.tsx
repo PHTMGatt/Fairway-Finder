@@ -27,6 +27,3 @@ const Footer: React.FC = () => {
 };
 
 export default Footer;
-
-// This component is a functional React component that displays a footer with a "Go Back" button and a copyright notice.
-// The "Go Back" button navigates to the previous page if there is a history, otherwise it navigates to the home page.

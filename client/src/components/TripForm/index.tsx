@@ -7,7 +7,7 @@ import './style.css';
 const TripForm = () => {
   const [tripName, setTripName] = useState('');
   const [addTrip, { error }] = useMutation(ADD_TRIP, {
-    refetchQueries: [QUERY_TRIPS, 'allTrips'],
+    refetchQueries: [QUERY_TRIPS, 'getAllTrips'],
   });
 
   const handleSubmit = async (e: FormEvent) => {
@@ -30,7 +30,7 @@ const TripForm = () => {
           value={tripName}
           onChange={(e) => setTripName(e.target.value)}
         />
-        <button className="btn btn-info trip-form__btn" type="submit">
+        <button className="btn trip-form__btn" type="submit">
           Add Trip
         </button>
       </form>

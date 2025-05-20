@@ -17,13 +17,12 @@
 }
 .trip-form__btn {
   flex: 0 0 auto;
+  padding: 0.5rem 1rem;
 }
 .trip-form__error {
   color: #b00020;
   margin-top: 0.5rem;
 }
-
-/* Mobile */
 @media (max-width: 500px) {
   .trip-form__form {
     flex-direction: column;
