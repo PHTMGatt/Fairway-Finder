@@ -1,41 +1,84 @@
 .header {
   display: grid;
-  grid-template-columns: auto repeat(3, 40px) 1fr auto auto;
   align-items: center;
-  background: #f2e8cf;       /* sand */
-  border-bottom: 2px solid #555;
-  padding: 0.5rem 1rem;
+  height: 100px;
+  padding: 0 1rem;
+
+  /* Softer, flatter striping */
+  background: repeating-linear-gradient(
+    to bottom,
+    #2f5d34 0,
+    #2f5d34 33.33%,
+    #3e7a49 33.33%,
+    #3e7a49 66.66%,
+    #2f5d34 66.66%,
+    #2f5d34 100%
+  );
+  border-bottom: 2px solid #1f3b24;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  grid-template-columns:
+    minmax(200px, auto)
+    repeat(6, 36px)
+    1fr
+    auto auto;
+  column-gap: 0.75rem;
+}
+
+/* Logo styling */
+.header__logo-cell {
+  border-right: 2px solid #1f3b24;
+  padding-right: 1rem;
 }
 .header__logo {
-  font-size: 1.5rem;
-  color: #2a3d45;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #f0f0f0;
   text-decoration: none;
-  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
-.header__slots {
-  display: flex;
-  gap: 0.5rem;
-  margin: 0 1rem;
+
+/* Subtle embossed holes */
+.header__holes {
+  display: contents;
 }
-.header__slot {
-  width: 40px;
-  height: 30px;
-  background: #e0d8b0;
-  border: 1px solid #aaa;
-  border-radius: 2px;
+.header__hole {
+  width: 36px;
+  height: 36px;
+  background: #e6f4ea;        /* very light */
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
 }
+
+/* Spacer flexes */
+.header__spacer {}
+
+/* Button group */
 .header__actions {
   display: flex;
   gap: 0.5rem;
+  border-left: 2px solid #1f3b24;
+  padding-left: 1rem;
 }
 .header__btn {
-  background: #2a3d45;
-  color: white;
-  padding: 0.4rem 0.8rem;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #1f3b24;
   border-radius: 4px;
+  color: #1f3b24;
   text-decoration: none;
-  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.1s;
 }
 .header__btn:hover {
-  background: #1f2a30;
+  background: #fff;
+  transform: translateY(-1px);
+}
+.header__btn:active {
+  transform: translateY(0);
 }

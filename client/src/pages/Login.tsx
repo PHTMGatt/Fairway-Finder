@@ -1,3 +1,4 @@
+// client/src/pages/Login.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
@@ -6,27 +7,35 @@ import Auth from '../utils/auth';
 import { LOGIN_USER } from '../utils/mutations';
 import './Login.css';
 
-const Login = () => {
-  const [formState, setFormState] = useState({ email: '', password: '' });
-  const [login, { error, data }] = useMutation(LOGIN_USER);
+const Login: React.FC = () => {
+  const [formState, setFormState] = useState({
+    email: '',
+    password: ''
+  });
+
+  const [login, { data, error }] = useMutation(LOGIN_USER);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormState({ ...formState, [name]: value });
+    setFormState(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await login({ variables: { ...formState } });
-      Auth.login(data.login.token);
+      const response = await login({
+        variables: { ...formState }
+      });
+      const token = response.data.login.token;
+      Auth.login(token);
     } catch (err) {
       console.error(err);
     }
-    setFormState({ email: '', password: '' });
   };
 
-  if (Auth.loggedIn()) return <Navigate to="/dashboard" replace />;
+  if (Auth.loggedIn()) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <main className="login container">
