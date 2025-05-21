@@ -23,13 +23,13 @@ export const authenticateToken = ({ req }: { req: any }) => {
     return req; // No token, allow unauthenticated access if route permits
   }
 
-  try {
-    const secret = process.env.JWT_SECRET_KEY || '';
-    const { data } = jwt.verify(token, secret, { maxAge: '2h' }) as { data: UserPayload };
-    req.user = data;
-  } catch (err) {
-    console.warn('❌ Invalid token:', err);
-  }
+try {
+  const secret = process.env.JWT_SECRET_KEY || '';
+  const { data }: any = jwt.verify(token, secret, { maxAge: '2h' }) as { data: UserPayload };
+  req.user = data;
+} catch (err) {
+  console.warn('Token verification failed:', err);
+}
 
   return req;
 };

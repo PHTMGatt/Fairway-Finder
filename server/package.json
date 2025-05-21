@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "start": "node dist/server.js",
     "watch": "nodemon dist/server.js",
     "seed": "node dist/seeds/seed.js",
