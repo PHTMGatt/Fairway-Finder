@@ -1,12 +1,12 @@
 # Name of workflow
-name: Lint and Test workflow
+name: Lint, Build and Test
 
 # Trigger workflow on all pull requests
 on:
+  push:
+    branches: ["**"]
   pull_request:
-    branches:
-      - develop
-      - staging
+    branches: ["**"]
 
 # Jobs to carry out
 jobs:
@@ -26,17 +26,40 @@ jobs:
           node-version: 21.x
 
       # Install dependencies
-      - name: 🧰 Install Deps
+      - name: Install root dependencies
         run: npm install
 
+      - name: Install client dependencies
+        run: npm install
+        working-directory: ./client
+
+      - name: Install server dependencies
+        run: npm install
+        working-directory: ./server
+
       # Run lint
-      - name: Run Lint
+      - name: Lint client
         run: npm run lint
+        working-directory: ./client
+
+      - name: Lint server
+        run: npm run lint
+        working-directory: ./server
 
       # Run build
-      - name: Run Build
+      - name: Build client
         run: npm run build
+        working-directory: ./client
+
+      - name: Build server
+        run: npm run build
+        working-directory: ./server
 
       # Run tests
-      - name: Run Tests
+      - name: Test client
         run: npm run test
+        working-directory: ./client
+
+      - name: Test server
+        run: npm run test
+        working-directory: ./server
