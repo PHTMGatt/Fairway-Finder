@@ -1,0 +1,16 @@
+.map-routing {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.map-routing__title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.map-routing__desc {
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}

@@ -1,6 +1,6 @@
 import { gql } from '@apollo/client';
 
-/** ——— EXISTING PROFILE QUERIES ——— */
+/** ——— PROFILE (Legacy or Optional) ——— */
 
 export const QUERY_PROFILES = gql`
   query allProfiles {
@@ -32,9 +32,8 @@ export const QUERY_ME = gql`
   }
 `;
 
-/** ——— FAIRWAY FINDER TRIP QUERIES ——— */
+/** ——— FAIRWAY FINDER: TRIP QUERIES ——— */
 
-// Fetch all trips for listing
 export const QUERY_TRIPS = gql`
   query getAllTrips {
     trips {
@@ -48,7 +47,6 @@ export const QUERY_TRIPS = gql`
   }
 `;
 
-// Fetch the logged-in user and their trips
 export const QUERY_MY_TRIPS = gql`
   query getMyTrips {
     me {
@@ -66,9 +64,6 @@ export const QUERY_MY_TRIPS = gql`
   }
 `;
 
-/** ——— OPTIONAL: SINGLE-TRIP QUERY ——— */
-
-// Fetch a single trip by ID
 export const QUERY_TRIP = gql`
   query getTrip($id: ID!) {
     trip(id: $id) {

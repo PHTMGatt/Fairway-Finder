@@ -1,7 +1,6 @@
-// client/src/utils/mutations.ts
 import { gql } from '@apollo/client';
 
-/** ——— EXISTING PROFILE & AUTH MUTATIONS ——— */
+/** ——— AUTH + PROFILE MUTATIONS ——— */
 
 export const ADD_PROFILE = gql`
   mutation addProfile($input: ProfileInput!) {
@@ -11,16 +10,6 @@ export const ADD_PROFILE = gql`
         _id
         name
       }
-    }
-  }
-`;
-
-export const ADD_SKILL = gql`
-  mutation addSkill($profileId: ID!, $skill: String!) {
-    addSkill(profileId: $profileId, skill: $skill) {
-      _id
-      name
-      skills
     }
   }
 `;
@@ -37,19 +26,8 @@ export const LOGIN_USER = gql`
   }
 `;
 
-export const REMOVE_SKILL = gql`
-  mutation removeSkill($skill: String!) {
-    removeSkill(skill: $skill) {
-      _id
-      name
-      skills
-    }
-  }
-`;
+/** ——— TRIP MANAGEMENT MUTATIONS ——— */
 
-/** ——— NEW FAIRWAY FINDER TRIP MUTATIONS ——— */
-
-// Create a new Trip
 export const ADD_TRIP = gql`
   mutation addTrip($name: String!) {
     addTrip(name: $name) {
@@ -59,7 +37,6 @@ export const ADD_TRIP = gql`
   }
 `;
 
-// Add a course to an existing Trip
 export const ADD_COURSE_TO_TRIP = gql`
   mutation addCourseToTrip($tripId: ID!, $courseName: String!) {
     addCourseToTrip(tripId: $tripId, courseName: $courseName) {
@@ -73,7 +50,6 @@ export const ADD_COURSE_TO_TRIP = gql`
   }
 `;
 
-// Remove a course from a Trip
 export const REMOVE_COURSE_FROM_TRIP = gql`
   mutation removeCourseFromTrip($courseName: String!) {
     removeCourseFromTrip(courseName: $courseName) {

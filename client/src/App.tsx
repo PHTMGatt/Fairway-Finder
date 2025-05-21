@@ -1,4 +1,3 @@
-// src/App.tsx
 import './App.css';
 import {
   ApolloClient,
@@ -8,12 +7,12 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
+import { APIProvider } from '@vis.gl/react-google-maps';
 
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 
 const httpLink = createHttpLink({
-  // in dev, point directly at your Express/GraphQL server
   uri:
     process.env.NODE_ENV === 'development'
       ? 'http://localhost:3001/graphql'
@@ -21,7 +20,6 @@ const httpLink = createHttpLink({
   credentials: 'include',
 });
 
-// attach JWT token to every request
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {
@@ -40,13 +38,15 @@ const client = new ApolloClient({
 function App() {
   return (
     <ApolloProvider client={client}>
-      <div className="app-layout">
-        <Header />
-        <main className="app-content">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+        <div className="app-layout">
+          <Header />
+          <main className="app-content">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </APIProvider>
     </ApolloProvider>
   );
 }

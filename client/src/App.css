@@ -6,6 +6,8 @@ body {
   font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, Helvetica, Arial, sans-serif;
   color: #1a1a1a;
+  margin: 0;
+  padding: 0;
 }
 
 a {
@@ -18,10 +20,10 @@ a:hover {
 
 /* — Header “Score-Card” Styling — */
 .header {
-  background-color: #d9f1fa;       /* very light sky blue */
+  background-color: #d9f1fa; /* very light sky blue */
   border-bottom: 2px solid #b3e1f4;
   padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 .header__inner {
   display: flex;
@@ -42,16 +44,23 @@ a:hover {
 }
 .header__actions .header__btn {
   margin-left: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+.header__actions .header__btn:hover {
+  background-color: rgba(27, 137, 188, 0.1);
 }
 
 /* — Main Content Container — */
 .container {
-  padding: 2rem 0;
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 /* — Footer Styling — */
 .footer {
-  background-color: #d9f1fa;       /* same light sky blue */
+  background-color: #d9f1fa; /* same light sky blue */
   border-top: 2px solid #b3e1f4;
   padding: 1rem 0;
   margin-top: auto;
@@ -68,6 +77,11 @@ a:hover {
   margin: 0;
   font-size: 0.85rem;
   color: #555;
+}
+@media (max-width: 500px) {
+  .footer__copy {
+    font-size: 0.75rem;
+  }
 }
 
 /* — Utility Helpers (if needed) — */
