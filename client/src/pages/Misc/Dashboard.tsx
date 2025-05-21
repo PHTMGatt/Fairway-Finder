@@ -8,9 +8,11 @@ import { QUERY_MY_TRIPS } from '../../utils/queries';
 import './Dashboard.css';
 
 const Dashboard = () => {
+  const { loading, error, data } = useQuery(QUERY_MY_TRIPS);
   if (!Auth.loggedIn()) {
     return <Navigate to="/login" replace />;
   }
+
 
   const myTrips = data?.me?.trips || [];
 

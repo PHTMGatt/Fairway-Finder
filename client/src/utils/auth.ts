@@ -6,7 +6,7 @@ interface ExtendedJwt extends JwtPayload {
     email:string,
     _id:string
   }
-};
+}
 
 class AuthService {
   getProfile(): ExtendedJwt | null {
