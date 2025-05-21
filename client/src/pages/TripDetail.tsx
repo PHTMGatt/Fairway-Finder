@@ -8,6 +8,7 @@ import { QUERY_TRIPS } from '../utils/queries';     // ← corrected
 import './TripDetails.css';
 
 const TripDetail: React.FC = () => {
+  const { loading, error, data } = useQuery(QUERY_TRIPS);
   const { tripId } = useParams<{ tripId: string }>();
 
   if (!Auth.loggedIn()) {
@@ -17,7 +18,6 @@ const TripDetail: React.FC = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  const { loading, error, data } = useQuery(QUERY_TRIPS);
   const trip = data?.trips?.find((t: any) => t._id === tripId) || {};
 
   return (
