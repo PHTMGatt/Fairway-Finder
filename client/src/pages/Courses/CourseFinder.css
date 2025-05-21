@@ -1,0 +1,16 @@
+.course-finder {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.course-finder__title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.course-finder__note {
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}

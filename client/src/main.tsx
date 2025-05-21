@@ -2,14 +2,15 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import App from './App';
-import Home from './pages/Home';
-import Profile from './pages/Dashboard';
-import Signup from './pages/Signup';
-import Login from './pages/Login';
-import Error from './pages/Error';
-import CourseFinder from './pages/CourseFinder';
-import MapRouting from './pages/MapRouting';
-import Weather from './pages/Weather';
+import Home from './pages/Home/Home';
+import Dashboard from './pages/Misc/Dashboard';
+import Signup from './pages/Auth/Signup';
+import Login from './pages/Auth/Login';
+import Error from './pages/Misc/Error';
+import CourseFinder from './pages/Courses/CourseFinder';
+import MapRouting from './pages/Routing/MapRouting';
+import Weather from './pages/Weather/Weather';
+import TripDetails from './pages/Trips/TripDetails';
 
 const router = createBrowserRouter([
   {
@@ -18,13 +19,14 @@ const router = createBrowserRouter([
     errorElement: <Error />,
     children: [
       { index: true, element: <Home /> },
-      { path: '/login', element: <Login /> },
-      { path: '/signup', element: <Signup /> },
-      { path: '/profiles/:profileId', element: <Profile /> },
-      { path: '/me', element: <Profile /> },
-      { path: '/courses', element: <CourseFinder /> },   // ← added
-      { path: '/routing', element: <MapRouting /> },    // ← added
-      { path: '/weather', element: <Weather /> },       // ← added
+      { path: 'login', element: <Login /> },
+      { path: 'signup', element: <Signup /> },
+      { path: 'me', element: <Dashboard /> },
+      { path: 'profiles/:profileId', element: <Dashboard /> },
+      { path: 'courses', element: <CourseFinder /> },
+      { path: 'routing', element: <MapRouting /> },
+      { path: 'weather', element: <Weather /> },
+      { path: 'trip/:tripId', element: <TripDetails /> },  // ✅ important
     ],
   },
 ]);

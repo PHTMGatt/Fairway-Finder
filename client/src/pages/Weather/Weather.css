@@ -1,0 +1,16 @@
+.weather-page {
+  padding: 2rem 1rem;
+  text-align: center;
+}
+
+.weather-page__title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.weather-page__desc {
+  font-size: 1rem;
+  color: #666;
+  font-style: italic;
+}

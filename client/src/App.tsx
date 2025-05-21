@@ -1,4 +1,3 @@
-// src/App.tsx
 import './App.css';
 import {
   ApolloClient,
@@ -9,11 +8,10 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
 
-import Header from './components/Header';
-import Footer from './components/Footer';
+import Header from './components/Header/Header';
+import Footer from './components/Footer/Footer';
 
 const httpLink = createHttpLink({
-  // in dev, point directly at your Express/GraphQL server
   uri:
     process.env.NODE_ENV === 'development'
       ? 'http://localhost:3001/graphql'
@@ -21,7 +19,6 @@ const httpLink = createHttpLink({
   credentials: 'include',
 });
 
-// attach JWT token to every request
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {

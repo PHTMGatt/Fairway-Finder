@@ -1,46 +1,47 @@
 import { type JwtPayload, jwtDecode } from 'jwt-decode';
 
 interface ExtendedJwt extends JwtPayload {
-  data:{
-    username:string,
-    email:string,
-    _id:string
-  }
-};
+  data: {
+    username: string;
+    email: string;
+    _id: string;
+  };
+}
 
 class AuthService {
-  getProfile() {
-    return jwtDecode<ExtendedJwt>(this.getToken());
+  getProfile(): ExtendedJwt | null {
+    const token = this.getToken();
+    try {
+      return jwtDecode<ExtendedJwt>(token);
+    } catch {
+      return null;
+    }
   }
 
-  loggedIn() {
+  loggedIn(): boolean {
     const token = this.getToken();
     return !!token && !this.isTokenExpired(token);
   }
 
-  isTokenExpired(token: string) {
+  isTokenExpired(token: string): boolean {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
-
-      if (decoded?.exp && decoded?.exp < Date.now() / 1000) {
-        return true;
-      }
-    } catch (err) {
+      return !!decoded.exp && decoded.exp < Date.now() / 1000;
+    } catch {
       return false;
     }
   }
 
   getToken(): string {
-    const loggedUser = localStorage.getItem('id_token') || '';
-    return loggedUser;
+    return localStorage.getItem('id_token') || '';
   }
 
-  login(idToken: string) {
+  login(idToken: string): void {
     localStorage.setItem('id_token', idToken);
     window.location.assign('/');
   }
 
-  logout() {
+  logout(): void {
     localStorage.removeItem('id_token');
     window.location.assign('/');
   }

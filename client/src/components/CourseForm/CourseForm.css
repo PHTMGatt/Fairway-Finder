@@ -1,0 +1,64 @@
+.course-form {
+  margin: 1rem 0;
+  background: #f0f8f5;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.course-form__title {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.course-form__form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.course-form__input {
+  flex: 1 1 auto;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.course-form__input:focus {
+  border-color: #6dc2ff;
+  box-shadow: 0 0 4px #6dc2ff;
+  outline: none;
+}
+
+.course-form__btn {
+  flex: 0 0 auto;
+  transition: transform 0.2s;
+}
+
+.course-form__btn:hover {
+  transform: scale(1.05);
+}
+
+.course-form__prompt {
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
+
+.course-form__prompt a {
+  color: #0077cc;
+  text-decoration: underline;
+}
+
+.course-form__error {
+  color: #b00020;
+  margin-top: 0.5rem;
+}
+
+/* Mobile */
+@media (max-width: 500px) {
+  .course-form__form {
+    flex-direction: column;
+  }
+}

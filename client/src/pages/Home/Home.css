@@ -1,0 +1,133 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+.home__hero {
+  text-align: center;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.home__title {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.home__buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.home__btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  transition: transform 0.2s;
+}
+
+.home__btn:hover {
+  transform: scale(1.05);
+}
+
+.home__search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 600px;
+}
+
+.home__input {
+  flex: 1 1 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.home__find-btn {
+  flex: 1 1 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background: #cceeff;
+  border: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.home__find-btn:hover {
+  background-color: #99ddff;
+}
+
+.home__map {
+  width: 100%;
+  max-width: 800px;
+  height: 200px;
+  margin-bottom: 2rem;
+}
+
+.home__map-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  border-radius: 6px;
+}
+
+.home__saved-trips {
+  width: 100%;
+  max-width: 800px;
+  margin: 2rem auto;
+}
+
+.home__bottom-nav {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  max-width: 700px;
+  border-top: 1px solid #ddd;
+  padding: 1rem 0 2rem;
+}
+
+.home__nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #555;
+  background: #e0f7fa;
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  padding: 0.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.home__nav-item:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.home__nav-item span {
+  font-size: 0.7rem;
+  margin-top: 0.2rem;
+}
+
+@media (min-width: 600px) {
+  .home__input {
+    flex: 1 1 auto;
+  }
+  .home__find-btn {
+    flex: 0 0 auto;
+    width: auto;
+  }
+}
