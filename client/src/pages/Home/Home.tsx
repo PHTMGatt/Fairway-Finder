@@ -1,9 +1,10 @@
-// src/pages/Home.jsx
+// src/pages/Home.tsx
 import { useQuery } from '@apollo/client';
 import { useNavigate } from 'react-router-dom';
 import { FaMapMarkedAlt, FaFlag, FaCloudSun } from 'react-icons/fa';
 
 import TripList from '../../components/TripList/TripList';
+import GoogleMapView from '../../components/GoogleMap/GoogleMapView';
 import { QUERY_TRIPS } from '../../utils/queries';
 import './Home.css';
 
@@ -35,9 +36,9 @@ const Home = () => {
         <button className="btn home__find-btn">Find Courses</button>
       </section>
 
-      {/* ——— Map Placeholder ——— */}
+      {/* ——— Embedded Google Map ——— */}
       <section className="home__map">
-        <div className="home__map-placeholder">Map goes here</div>
+        <GoogleMapView />
       </section>
 
       {/* ——— Saved Trips ——— */}

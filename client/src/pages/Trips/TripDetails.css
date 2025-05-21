@@ -1,13 +1,33 @@
 .trip-detail {
-  padding: 1rem;
-  max-width: 800px;
+  padding: 2rem 1rem;
+  max-width: 900px;
   margin: 0 auto;
+  background-color: #f9fcfe;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 .trip-detail__title {
-  font-size: 1.5rem;
+  font-size: 2rem;
   margin-bottom: 1rem;
   text-align: center;
+  color: #2d3e50;
+  font-weight: 600;
 }
+
 .trip-detail__courses {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (max-width: 600px) {
+  .trip-detail {
+    padding: 1.5rem 1rem;
+  }
+
+  .trip-detail__title {
+    font-size: 1.5rem;
+  }
 }

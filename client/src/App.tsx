@@ -1,3 +1,5 @@
+// src/App.tsx
+
 import './App.css';
 import {
   ApolloClient,
@@ -12,6 +14,7 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 
+// ——— Apollo HTTP Link ———
 const httpLink = createHttpLink({
   uri:
     process.env.NODE_ENV === 'development'
@@ -20,6 +23,7 @@ const httpLink = createHttpLink({
   credentials: 'include',
 });
 
+// ——— Auth Middleware ———
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {
@@ -30,11 +34,13 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
+// ——— Apollo Client ———
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
+// ——— Main App Layout ———
 function App() {
   return (
     <ApolloProvider client={client}>
