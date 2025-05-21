@@ -1,12 +1,14 @@
-import { Profile } from '../models/index.js';
+import { Profile, Trip, Course } from '../models/index.js';
 
 const cleanDB = async (): Promise<void> => {
   try {
     await Profile.deleteMany({});
-    console.log('Profile collection cleaned.');
+    await Trip.deleteMany({});
+    await Course.deleteMany({});
 
+    console.log('🧹 Collections cleaned: Profile, Trip, Course');
   } catch (err) {
-    console.error('Error cleaning collections:', err);
+    console.error('❌ Error cleaning collections:', err);
     process.exit(1);
   }
 };

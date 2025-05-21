@@ -25,6 +25,7 @@
     "wait-on": "^7.2.0"
   },
   "dependencies": {
+    "@vis.gl/react-google-maps": "^1.5.2",
     "cors": "^2.8.5",
     "main": "file:",
     "normalize.css": "^8.0.1",

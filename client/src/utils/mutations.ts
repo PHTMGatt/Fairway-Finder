@@ -1,6 +1,7 @@
+// src/utils/mutations.ts
 import { gql } from '@apollo/client';
 
-/** ——— AUTH + PROFILE MUTATIONS ——— */
+/** ——— AUTHENTICATION & PROFILE ——— **/
 
 export const ADD_PROFILE = gql`
   mutation addProfile($input: ProfileInput!) {
@@ -26,7 +27,7 @@ export const LOGIN_USER = gql`
   }
 `;
 
-/** ——— TRIP MANAGEMENT MUTATIONS ——— */
+/** ——— TRIP MANAGEMENT ——— **/
 
 export const ADD_TRIP = gql`
   mutation addTrip($name: String!) {

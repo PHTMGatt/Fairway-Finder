@@ -1,6 +1,7 @@
+// src/utils/queries.ts
 import { gql } from '@apollo/client';
 
-/** ——— PROFILE (Legacy or Optional) ——— */
+/** ——— PROFILE QUERIES ——— **/
 
 export const QUERY_PROFILES = gql`
   query allProfiles {
@@ -28,11 +29,19 @@ export const QUERY_ME = gql`
       _id
       name
       skills
+      trips {
+        _id
+        name
+        courses {
+          _id
+          name
+        }
+      }
     }
   }
 `;
 
-/** ——— FAIRWAY FINDER: TRIP QUERIES ——— */
+/** ——— TRIP QUERIES ——— **/
 
 export const QUERY_TRIPS = gql`
   query getAllTrips {

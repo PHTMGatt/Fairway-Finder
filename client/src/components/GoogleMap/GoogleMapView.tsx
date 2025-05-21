@@ -1,5 +1,6 @@
 import React from 'react';
 import { Map, MapCameraChangedEvent } from '@vis.gl/react-google-maps';
+import './GoogleMapView.css';
 
 const GoogleMapView: React.FC = () => {
   const handleCameraChange = (ev: MapCameraChangedEvent) => {
@@ -8,14 +9,16 @@ const GoogleMapView: React.FC = () => {
   };
 
   return (
-    <Map
-      defaultZoom={7}
-      defaultCenter={{ lat: 27.6648, lng: -81.5158 }}
-      onCameraChanged={handleCameraChange}
-    />
+    <div className="google-map">
+      <Map
+        defaultZoom={7}
+        defaultCenter={{ lat: 27.6648, lng: -81.5158 }}
+        onCameraChanged={handleCameraChange}
+      />
+    </div>
   );
 };
 
 export default GoogleMapView;
 
-// import { APIProvider, Map, MapCameraChangedEvent } from '@vis.gl/react-google-maps'; will go in App.tsx
+// import { APIProvider, Map, MapCameraChangedEvent } from '@vis.gl/react-google-maps'; is in App.tsx
