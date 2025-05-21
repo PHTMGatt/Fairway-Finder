@@ -1,18 +1,25 @@
 import React from 'react';
+import GoogleMapView from '../../components/GoogleMap/GoogleMapView';
 import './MapRouting.css';
 
 /*
   MapRouting Component
   --------------------
-  This will be your main map interaction page.
-  Ideal place to embed the routing logic using Google Maps API or similar.
+  This is your main map interaction page.
+  Ideal place to embed routing logic using Google Maps API or similar.
 */
 
 const MapRouting: React.FC = () => {
   return (
-    <main className="map-routing">
+    <main className="map-routing container">
       <h2 className="map-routing__title">Trip Planner</h2>
-      <p className="map-routing__desc">Map routing functionality coming soon...</p>
+      <p className="map-routing__desc">
+        Use the map below to plan and visualize your golf route.
+      </p>
+
+      <div className="map-routing__map-container">
+        <GoogleMapView />
+      </div>
     </main>
   );
 };

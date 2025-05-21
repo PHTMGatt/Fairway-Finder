@@ -2,6 +2,8 @@ import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import App from './App';
+
+// Pages
 import Home from './pages/Home/Home';
 import Dashboard from './pages/Misc/Dashboard';
 import Signup from './pages/Auth/Signup';
@@ -12,6 +14,7 @@ import MapRouting from './pages/Routing/MapRouting';
 import Weather from './pages/Weather/Weather';
 import TripDetails from './pages/Trips/TripDetails';
 
+// Main router config
 const router = createBrowserRouter([
   {
     path: '/',
@@ -26,7 +29,7 @@ const router = createBrowserRouter([
       { path: 'courses', element: <CourseFinder /> },
       { path: 'routing', element: <MapRouting /> },
       { path: 'weather', element: <Weather /> },
-      { path: 'trip/:tripId', element: <TripDetails /> },  // ✅ important
+      { path: 'trip/:tripId', element: <TripDetails /> }, // ✅ dynamic trip page
     ],
   },
 ]);

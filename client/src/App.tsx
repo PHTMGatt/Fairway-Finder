@@ -7,6 +7,7 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
+import { APIProvider } from '@vis.gl/react-google-maps';
 
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
@@ -37,13 +38,15 @@ const client = new ApolloClient({
 function App() {
   return (
     <ApolloProvider client={client}>
-      <div className="app-layout">
-        <Header />
-        <main className="app-content">
-          <Outlet />
-        </main>
-        <Footer />
-      </div>
+      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+        <div className="app-layout">
+          <Header />
+          <main className="app-content">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </APIProvider>
     </ApolloProvider>
   );
 }

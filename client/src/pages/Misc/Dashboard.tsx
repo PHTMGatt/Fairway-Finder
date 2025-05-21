@@ -1,4 +1,3 @@
-import React from 'react';
 import { useQuery } from '@apollo/client';
 import { Navigate } from 'react-router-dom';
 
@@ -8,12 +7,11 @@ import Auth from '../../utils/auth';
 import { QUERY_MY_TRIPS } from '../../utils/queries';
 import './Dashboard.css';
 
-const Dashboard: React.FC = () => {
+const Dashboard = () => {
   if (!Auth.loggedIn()) {
     return <Navigate to="/login" replace />;
   }
 
-  const { loading, error, data } = useQuery(QUERY_MY_TRIPS);
   const myTrips = data?.me?.trips || [];
 
   return (
