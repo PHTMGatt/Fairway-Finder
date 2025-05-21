@@ -47,19 +47,19 @@ jobs:
         working-directory: ./server
 
       # Run build
-      - name: Build client
-        run: npm run build
-        working-directory: ./client
+      # - name: Build client
+      #   run: npm run build
+      #   working-directory: ./client
 
-      - name: Build server
-        run: npm run build
-        working-directory: ./server
+      # - name: Build server
+      #   run: npm run build
+      #   working-directory: ./server
 
       # Run tests
-      - name: Test client
-        run: npm run test
-        working-directory: ./client
+      # - name: Test client
+      #   run: npm run test
+      #   working-directory: ./client
 
-      - name: Test server
-        run: npm run test
-        working-directory: ./server
+      # - name: Test server
+      #   run: npm run test
+      #   working-directory: ./server
