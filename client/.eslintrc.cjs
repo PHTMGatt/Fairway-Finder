@@ -13,6 +13,6 @@ module.exports = {
   plugins: ['react-refresh', 'react', '@typescript-eslint'],
   rules: {
     'react-refresh/only-export-components': 'warn',
-    'react/prop-types': 'off',
+    'react/prop-types': 'off', '@typescript-eslint/no-explicit-any': 'off',
   },
 }
