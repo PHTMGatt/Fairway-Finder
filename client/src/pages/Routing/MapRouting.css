@@ -1,13 +1,13 @@
 /* src/pages/Routing/MapRouting.css */
 
-/* Note; Page wrapper */
+/* Page wrapper */
 .map-routing {
   padding: 2rem;
   background: #e9faff;
   min-height: 100vh;
 }
 
-/* Note; Title */
+/* Title */
 .map-routing__title {
   font-size: 1.75rem;
   text-align: center;
@@ -15,7 +15,7 @@
   color: #114b8b;
 }
 
-/* Note; Form layout */
+/* Form layout */
 .map-routing__form {
   display: flex;
   justify-content: center;
@@ -24,7 +24,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* Note; Input fields */
+/* Input fields */
 .map-routing__input {
   padding: 0.5rem;
   font-size: 1rem;
@@ -39,7 +39,7 @@
   outline: none;
 }
 
-/* Note; Go button */
+/* Go button */
 .map-routing__btn {
   padding: 0.5rem 1rem;
   background: #3a79d8;
@@ -56,7 +56,7 @@
   transform: translateY(-2px);
 }
 
-/* Note; Map container ensures fixed height & relative positioning */
+/* Map container ensures fixed height & relative positioning */
 .map-routing__map {
   position: relative;
   width: 100%;
@@ -66,9 +66,10 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  overscroll-behavior: contain;    /* ← Note; keep scroll inside this block */
 }
 
-/* Note; Draggable instruction overlay */
+/* Frosted-glass instruction overlay */
 .map-overlay {
   position: absolute;
   top: 16px;
@@ -78,13 +79,14 @@
   color: #fff;
   padding: 0.5rem 1rem;
   border-radius: 8px;
-  font-size: 0.95rem;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 1;
   transition: opacity 0.3s;
-  z-index: 10;
+  pointer-events: none;  /* allow map interactions */
 }
 
-/* Note; Hide overlay on hover (when user moves cursor over the map) */
+/* Hide overlay when interacting with the map */
 .map-routing__map:hover .map-overlay {
   opacity: 0;
 }
