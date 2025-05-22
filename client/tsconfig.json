@@ -15,11 +15,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"]        // ← Added this
+    "types": ["vite/client"]
   },
   "include": [
-    "src",
-    "src/components/ToggleSwitch/**/*"
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
   ],
   "references": [
     {
