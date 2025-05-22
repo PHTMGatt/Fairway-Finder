@@ -1,3 +1,6 @@
+/* src/components/CourseForm/CourseForm.css */
+
+/* Note; Wrapper container for the form */
 .course-form {
   margin: 1rem 0;
   background: #f0f8f5;
@@ -6,18 +9,21 @@
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
+/* Note; Title above the form */
 .course-form__title {
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
   font-weight: 600;
 }
 
+/* Note; Form layout using flexbox */
 .course-form__form {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
 
+/* Note; Input field styling */
 .course-form__input {
   flex: 1 1 auto;
   padding: 0.5rem;
@@ -26,37 +32,50 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+/* Note; Input focus styling */
 .course-form__input:focus {
   border-color: #6dc2ff;
   box-shadow: 0 0 4px #6dc2ff;
   outline: none;
 }
 
+/* Note; Submit button styling */
 .course-form__btn {
   flex: 0 0 auto;
+  padding: 0.5rem 1rem;
+  background: #6dc2ff;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
   transition: transform 0.2s;
 }
 
+/* Note; Slight lift on hover */
 .course-form__btn:hover {
   transform: scale(1.05);
 }
 
+/* Note; Message for non-logged-in users */
 .course-form__prompt {
   font-size: 0.95rem;
   margin-top: 0.5rem;
 }
 
+/* Note; Style for login/signup links */
 .course-form__prompt a {
   color: #0077cc;
   text-decoration: underline;
 }
 
+/* Note; Error message style */
 .course-form__error {
   color: #b00020;
   margin-top: 0.5rem;
 }
 
-/* Mobile */
+/* Note; Responsive form layout for mobile */
 @media (max-width: 500px) {
   .course-form__form {
     flex-direction: column;

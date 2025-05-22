@@ -1,18 +1,45 @@
+/* ===== Error Page Wrapper ===== */
 .error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  padding: 3rem 1rem;
+  background: linear-gradient(to bottom right, #e0f7ff, #f9fcff);
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(109, 194, 255, 0.15);
+  backdrop-filter: blur(4px);
   text-align: center;
-  padding: 2rem;
 }
 
+/* ===== Error Title ===== */
 .error-page__title {
-  font-size: 2rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1f3b24;
   margin-bottom: 1rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Error Description ===== */
 .error-page__desc {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #444;
+  margin-bottom: 0.75rem;
 }
 
+/* ===== Error Info Message ===== */
 .error-page__info {
-  color: #666;
+  font-size: 1rem;
+  color: #555;
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.65);
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(109, 194, 255, 0.1);
+  max-width: 600px;
+  margin-top: 0.5rem;
 }

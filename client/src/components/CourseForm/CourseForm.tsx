@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { useMutation } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import { ADD_COURSE_TO_TRIP } from '../../utils/mutations';
@@ -18,8 +18,8 @@ const CourseForm: React.FC<CourseFormProps> = ({ tripId }) => {
     try {
       await addCourse({ variables: { tripId, courseName } });
       setCourseName('');
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // handle error if needed
     }
   };
 
@@ -33,15 +33,22 @@ const CourseForm: React.FC<CourseFormProps> = ({ tripId }) => {
             className="course-form__input"
             placeholder="Enter golf course name..."
             value={courseName}
-            onChange={(e) => setCourseName(e.target.value)}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setCourseName(e.target.value)
+            }
           />
-          <button className="btn btn--light course-form__btn" type="submit">
+          <button
+            className="btn course-form__btn"
+            type="submit"
+            disabled={!courseName.trim()}
+          >
             Add Course
           </button>
         </form>
       ) : (
         <p className="course-form__prompt">
-          Please <Link to="/login">login</Link> or <Link to="/signup">signup</Link> to add courses.
+          Please <Link to="/login">login</Link> or{' '}
+          <Link to="/signup">signup</Link> to add courses.
         </p>
       )}
 

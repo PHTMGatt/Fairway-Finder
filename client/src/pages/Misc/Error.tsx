@@ -1,14 +1,16 @@
 import { useRouteError } from 'react-router-dom';
 import './Error.css';
 
+// Note; Define error shape returned by the router
 interface RouteError {
   statusText?: string;
   message?: string;
 }
 
 const ErrorPage: React.FC = () => {
+  // Note; Grab error from React Router
   const error = useRouteError() as RouteError;
-  console.error(error);
+  console.error(error); // Optional: useful for debugging in dev
 
   return (
     <div className="error-page">

@@ -10,7 +10,8 @@
     "start": "node dist/server.js",
     "watch": "nodemon dist/server.js",
     "seed": "node dist/seeds/seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"cd server && npm run watch\" \"wait-on tcp:3001 && cd client && npm run dev\""
   },
   "keywords": [],
   "author": "",
@@ -24,6 +25,7 @@
     "graphql": "^16.9.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^8.4.3",
+    "node-fetch": "^2.7.0",
     "server": "file:"
   },
   "devDependencies": {

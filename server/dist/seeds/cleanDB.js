@@ -1,11 +1,18 @@
-import { Profile } from '../models/index.js';
+import { Profile, Trip, Course } from '../models/index.js';
+// Note; Utility to clear all documents from Profile, Trip, and Course collections
 const cleanDB = async () => {
     try {
+        // Note; Remove all profiles
         await Profile.deleteMany({});
-        console.log('Profile collection cleaned.');
+        // Note; Remove all trips
+        await Trip.deleteMany({});
+        // Note; Remove all courses
+        await Course.deleteMany({});
+        console.log('🧹 Collections cleaned: Profile, Trip, Course');
     }
     catch (err) {
-        console.error('Error cleaning collections:', err);
+        // Note; Log error and exit process on failure
+        console.error('❌ Error cleaning collections:', err);
         process.exit(1);
     }
 };

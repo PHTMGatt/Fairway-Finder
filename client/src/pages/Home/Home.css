@@ -3,8 +3,10 @@
   flex-direction: column;
   align-items: center;
   padding: 1rem;
+  background: #eafaff;
 }
 
+/* — Hero Section — */
 .home__hero {
   text-align: center;
   margin-bottom: 2rem;
@@ -14,6 +16,8 @@
 .home__title {
   font-size: 2rem;
   margin-bottom: 1rem;
+  font-weight: 700;
+  color: #1f3b24;
 }
 
 .home__buttons {
@@ -25,13 +29,24 @@
 .home__btn {
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  transition: transform 0.2s;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(to bottom right, #4eb6f5, #6dc2ff);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(6px);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 
 .home__btn:hover {
   transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
+/* — Search Form — */
 .home__search {
   display: flex;
   flex-wrap: wrap;
@@ -39,30 +54,45 @@
   margin-bottom: 2rem;
   width: 100%;
   max-width: 600px;
+  justify-content: center;
 }
 
 .home__input {
-  flex: 1 1 100%;
+  flex: 1 1 200px;
   padding: 0.75rem;
   font-size: 1rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+
+.home__input:focus {
+  border-color: #6dc2ff;
+  box-shadow: 0 0 6px #6dc2ff;
+  outline: none;
 }
 
 .home__find-btn {
-  flex: 1 1 100%;
-  padding: 0.75rem;
+  flex: 0 0 auto;
+  padding: 0.75rem 1.25rem;
   font-size: 1rem;
-  background: #cceeff;
+  background: linear-gradient(to bottom right, #4eb6f5, #6dc2ff);
+  color: white;
+  font-weight: 600;
   border: none;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .home__find-btn:hover {
-  background-color: #99ddff;
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(109, 194, 255, 0.5);
 }
 
+/* — Map Section — */
 .home__map {
   width: 100%;
   max-width: 800px;
@@ -70,62 +100,75 @@
   margin-bottom: 2rem;
   border-radius: 6px;
   overflow: hidden;
+  border: 1px solid #b3e5fc;
+  box-shadow: 0 6px 12px rgba(109, 194, 255, 0.1);
 }
 
-/* Ensure the embedded GoogleMapView fills its space */
 .map-container {
   width: 100%;
   height: 100%;
 }
 
+/* — Saved Trips — */
 .home__saved-trips {
   width: 100%;
   max-width: 800px;
   margin: 2rem auto;
 }
 
+/* — Bottom Navigation — */
 .home__bottom-nav {
   display: flex;
   justify-content: space-around;
   width: 100%;
   max-width: 700px;
   border-top: 1px solid #ddd;
-  padding: 1rem 0 2rem;
+  padding: 1.5rem 0 2rem;
 }
 
 .home__nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #555;
-  background: #e0f7fa;
+  justify-content: center;
+  background: linear-gradient(to bottom right, #2494dc, #3fbfff);
+  color: #ffffff;
   border: none;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
   padding: 0.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-  text-align: center;
   font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .home__nav-item:hover {
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+  transform: scale(1.12);
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4), 0 0 24px rgba(109, 194, 255, 0.6);
 }
 
 .home__nav-item span {
   font-size: 0.7rem;
-  margin-top: 0.2rem;
+  margin-top: 0.25rem;
+  color: #ffffff;
 }
 
-@media (min-width: 600px) {
-  .home__input {
-    flex: 1 1 auto;
+/* — Responsive Fixes — */
+@media (max-width: 600px) {
+  .home__input,
+  .home__find-btn {
+    flex: 1 1 100%;
   }
 
-  .home__find-btn {
-    flex: 0 0 auto;
-    width: auto;
+  .home__bottom-nav {
+    flex-direction: column;
+    gap: 1.25rem;
+    align-items: center;
   }
 }

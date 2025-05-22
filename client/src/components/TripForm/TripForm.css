@@ -1,23 +1,29 @@
+/* Note; Wrapper for trip form section */
 .trip-form {
   margin: 1rem 0;
-  background: #f0f8f5;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(to bottom right, #e3f5ff, #f9fcff);
+  padding: 1.25rem;
+  border-radius: 10px;
+  box-shadow: 0 6px 14px rgba(109, 194, 255, 0.25);
+  border: 1px solid #b3e5fc;
 }
 
+/* Note; Section title */
 .trip-form__title {
-  margin-bottom: 0.5rem;
-  font-size: 1.2rem;
-  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f3b24;
 }
 
+/* Note; Horizontal layout with wrap support */
 .trip-form__form {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
+/* Note; Input field style */
 .trip-form__input {
   flex: 1 1 auto;
   padding: 0.5rem;
@@ -27,27 +33,40 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
+/* Note; Input focus effect */
 .trip-form__input:focus {
   border-color: #6dc2ff;
-  box-shadow: 0 0 4px #6dc2ff;
+  box-shadow: 0 0 6px #6dc2ff;
   outline: none;
 }
 
+/* Note; Button appearance and hover scale */
 .trip-form__btn {
   flex: 0 0 auto;
   padding: 0.5rem 1rem;
-  transition: transform 0.2s;
+  background-color: #6dc2ff;
+  color: white;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
+/* Note; Button glow on hover */
 .trip-form__btn:hover {
   transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(109, 194, 255, 0.5);
 }
 
+/* Note; Mutation error text */
 .trip-form__error {
   color: #b00020;
   margin-top: 0.5rem;
+  font-size: 0.95rem;
 }
 
+/* Note; Mobile form column layout */
 @media (max-width: 500px) {
   .trip-form__form {
     flex-direction: column;

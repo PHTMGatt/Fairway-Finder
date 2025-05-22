@@ -1,16 +1,200 @@
+/* ===== Page Layout ===== */
 .weather-page {
+  display: flex;
+  justify-content: center;
   padding: 2rem 1rem;
-  text-align: center;
+  background: #eafaff;
 }
 
-.weather-page__title {
-  font-size: 1.6rem;
-  font-weight: 600;
+/* ===== Unified Glass Card ===== */
+.weather-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  background: rgba(255, 255, 255, 0.6);             /* semi-transparent white */
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(109, 194, 255, 0.2);  /* deeper glow */
+  backdrop-filter: blur(8px);                        /* stronger blur */
+  overflow: hidden;
+}
+
+/* ===== Both Panels ===== */
+.weather-card__search,
+.weather-card__result {
+  flex: 1;
+  padding: 2rem;
+}
+
+/* ===== Search Panel Styling ===== */
+.weather-card__search {
+  border-right: 1px solid rgba(255, 255, 255, 0.3);  /* separator */
+}
+
+.weather-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f3b24;
+}
+
+.weather-card__desc {
+  margin: 0 0 1.5rem;
+  font-size: 1rem;
+  color: #444;
+}
+
+/* ===== Unit Toggle ===== */
+.weather-card__toggle {
+  display: flex;
+  justify-content: flex-end;
   margin-bottom: 1rem;
 }
 
-.weather-page__desc {
+/* ToggleSwitch.css overrides in this file */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.toggle-switch__label {
+  font-size: 0.9rem;
+  color: #1f3b24;
+}
+.toggle-switch__checkbox {
+  display: none;
+}
+/* track */
+.toggle-switch__slider {
+  position: relative;
+  width: 46px;
+  height: 24px;
+  background: #4eb6f5;              /* blue when off */
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s;
+  border: 1px solid #2494dc;
+}
+.toggle-switch__slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.3s;
+}
+.toggle-switch__checkbox:checked + .toggle-switch__slider {
+  background: #6dc2ff;              /* lighter blue when on */
+}
+.toggle-switch__checkbox:checked + .toggle-switch__slider::after {
+  transform: translateX(22px);
+}
+
+/* ===== Input Group ===== */
+.weather-card__input-group {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.weather-card__input {
+  flex: 1 1 200px;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  color: #666;
-  font-style: italic;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.weather-card__input:focus {
+  border-color: #6dc2ff;
+  box-shadow: 0 0 6px #6dc2ff;
+  outline: none;
+}
+
+.weather-card__btn {
+  flex: 0 0 auto;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(to right, #4eb6f5, #6dc2ff);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(109, 194, 255, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.weather-card__btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 18px rgba(109, 194, 255, 0.5);
+}
+
+/* ===== Result Panel Styling ===== */
+.weather-card__result {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.weather-result {
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(109, 194, 255, 0.15);
+}
+
+.weather-result__icon-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(to bottom right, #4eb6f5, #6dc2ff);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.weather-icon {
+  color: #fff;
+  width: 56px;
+  height: 56px;
+}
+
+.weather-result__city {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f3b24;
+}
+
+.weather-result__desc {
+  margin: 0.5rem 0;
+  font-size: 1.05rem;
+  text-transform: capitalize;
+  color: #333;
+}
+
+.weather-result__temp {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #057a5d;
+}
+
+/* ===== Responsive ===== */
+@media (min-width: 768px) {
+  .weather-card {
+    flex-direction: row;
+  }
+  .weather-card__search,
+  .weather-card__result {
+    flex: 1;
+  }
 }

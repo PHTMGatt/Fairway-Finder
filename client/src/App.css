@@ -1,90 +1,151 @@
-/* App.css */
+/* ===== App.css ===== */
 
 /* — Global Base Styles — */
-body {
-  background-color: #f5fbfd;
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, Helvetica, Arial, sans-serif;
-  color: #1a1a1a;
+body, html {
   margin: 0;
   padding: 0;
+  height: 100%;
+}
+#root {
+  height: 100%;
 }
 
-a {
-  color: #1b89bc;
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+body {
+  background: linear-gradient(to bottom right, #eafaff, #ffffff);
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #1a3d7c;
 }
 
-/* — Header “Score-Card” Styling — */
+/* — App Layout — */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;           /* fill viewport */
+}
+.app-content {
+  flex: 1;                 /* grow to fill between header + footer */
+  display: flex;
+  flex-direction: column;
+}
+
+/* — Header & Footer remain sticky — */
+header, footer {
+  flex: 0 0 auto;
+}
+
+/* — Main content container (map will fill this) — */
+.app-content > * {
+  flex: 1;
+}
+
+/* ===== Header “Score-Card” Styling ===== */
 .header {
-  background-color: #d9f1fa; /* very light sky blue */
-  border-bottom: 2px solid #b3e1f4;
+  background: repeating-linear-gradient(
+    to bottom,
+    #1a3d7c 0,
+    #1a3d7c 33.33%,
+    #3052a4 33.33%,
+    #3052a4 66.66%,
+    #1a3d7c 66.66%,
+    #1a3d7c 100%
+  );
+  border-bottom: 2px solid #1a3d7c;
   padding: 1rem 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
+
 .header__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.header__logo h1 {
-  margin: 0;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.75rem;
-  color: #2d3e50;
-}
-.header__tagline {
-  flex: 1;
-  text-align: center;
-  font-size: 0.9rem;
-  color: #555;
-}
-.header__actions .header__btn {
-  margin-left: 0.5rem;
-  transition: background-color 0.2s ease;
-}
-.header__actions .header__btn:hover {
-  background-color: rgba(27, 137, 188, 0.1);
-}
-
-/* — Main Content Container — */
-.container {
-  padding: 2rem 1rem;
-  width: 100%;
   max-width: 960px;
   margin: 0 auto;
 }
 
-/* — Footer Styling — */
+/* ===== Header Title & Toggles ===== */
+.header__title {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #ffffff;
+  transition: color 0.2s;
+}
+.header__title:hover {
+  color: #53bfff;
+}
+
+.header__toggle {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+.header__toggle .toggle-btn {
+  width: 2rem;
+  height: 2rem;
+  background: #ffffff;
+  border: 2px solid #ccc;
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+}
+.header__toggle .toggle-btn:hover {
+  background: linear-gradient(135deg, #53bfff, #1f9eff);
+  border-color: #1f9eff;
+  transform: scale(1.2);
+  box-shadow:
+    0 0 8px rgba(255,255,255,0.8),
+    0 0 20px rgba(83,191,255,0.7),
+    0 6px 16px rgba(0,0,0,0.3);
+}
+
+/* ===== Header Action Buttons ===== */
+.header__actions .header__btn {
+  background: #ffffff !important;
+  color: #1a3d7c !important;
+  border: 1px solid #ccc !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s !important;
+}
+.header__actions .header__btn:hover {
+  background: linear-gradient(135deg, #53bfff, #1f9eff) !important;
+  color: #fff !important;
+  border-color: #1f9eff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3) !important;
+}
+.header__actions .header__btn:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+}
+
+/* ===== Footer Styling ===== */
 .footer {
-  background-color: #d9f1fa; /* same light sky blue */
-  border-top: 2px solid #b3e1f4;
+  background: #f0f8ff;
+  border-top: 2px solid #1a3d7c;
   padding: 1rem 0;
-  margin-top: auto;
+  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
+  position: sticky;
+  bottom: 0;
 }
 .footer__inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-.footer__back {
-  margin-bottom: 0.5rem;
+  max-width: 960px;
+  margin: 0 auto;
 }
 .footer__copy {
   margin: 0;
   font-size: 0.85rem;
   color: #555;
 }
-@media (max-width: 500px) {
-  .footer__copy {
-    font-size: 0.75rem;
-  }
-}
 
-/* — Utility Helpers (if needed) — */
+/* ===== Utility Helpers ===== */
 .min-100-vh {
   min-height: 100vh;
 }

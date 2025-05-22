@@ -20,15 +20,20 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^22.15.19",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.21",
     "concurrently": "^8.2.2",
     "wait-on": "^7.2.0"
   },
   "dependencies": {
+    "@googlemaps/react-wrapper": "^1.2.0",
+    "@react-google-maps/api": "^2.20.6",
     "@vis.gl/react-google-maps": "^1.5.2",
     "cors": "^2.8.5",
     "main": "file:",
     "normalize.css": "^8.0.1",
-    "react-icons": "^5.5.0"
+    "pacman": "^0.15.0",
+    "react-icons": "^5.5.0",
+    "tree": "^0.1.3"
   }
 }

@@ -4,6 +4,7 @@ import Auth from '../../utils/auth';
 import './Header.css';
 
 const Header: React.FC = () => {
+  // Note; Logs the user out
   const logout = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     Auth.logout();
@@ -11,20 +12,24 @@ const Header: React.FC = () => {
 
   return (
     <header className="header">
+      {/* Logo */}
       <div className="header__logo-cell">
         <Link to="/" className="header__logo">
           FAIRWAY FINDER
         </Link>
       </div>
 
+      {/* Golf holes */}
       <div className="header__holes">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="header__hole" />
         ))}
       </div>
 
+      {/* Spacer */}
       <div className="header__spacer" />
 
+      {/* Auth buttons */}
       <div className="header__actions">
         {Auth.loggedIn() ? (
           <>

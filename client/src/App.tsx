@@ -14,16 +14,19 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 
-// ——— Apollo HTTP Link ———
+const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+console.log('🔑 VITE_GOOGLE_MAPS_API_KEY →', MAP_KEY);
+if (!MAP_KEY) {
+  throw new Error('Missing VITE_GOOGLE_MAPS_API_KEY in .env');
+}
+
 const httpLink = createHttpLink({
   uri:
-    process.env.NODE_ENV === 'development'
+    import.meta.env.MODE === 'development'
       ? 'http://localhost:3001/graphql'
       : '/graphql',
   credentials: 'include',
 });
-
-// ——— Auth Middleware ———
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {
@@ -33,18 +36,15 @@ const authLink = setContext((_, { headers }) => {
     },
   };
 });
-
-// ——— Apollo Client ———
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
-// ——— Main App Layout ———
 function App() {
   return (
     <ApolloProvider client={client}>
-      <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
+      <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
         <div className="app-layout">
           <Header />
           <main className="app-content">

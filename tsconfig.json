@@ -1,26 +1,38 @@
 {
   "compilerOptions": {
     /* Language and Environment */
-    "target": "ES2020" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "target": "ES2020",                          // Note; Use modern JS features
     /* Modules */
-    "module": "ESNext" /* Specify what module code is generated. */,
-    "moduleResolution": "Bundler" /* Specify how TypeScript looks up a file from a given module specifier. */,
-    "skipLibCheck": true,
+    "module": "ESNext",                          // Note; Emit native ES modules
+    "moduleResolution": "Bundler",               // Note; Resolve imports like a bundler
+    "skipLibCheck": true,                        // Note; Skip type-checking of declaration files
+
     /* JavaScript Support */
-    "allowJs": true /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */,
-    "checkJs": true /* Enable error reporting in type-checked JavaScript files. */,
+    "allowJs": true,                             // Note; Include .js files in compilation
+    "checkJs": true,                             // Note; Report errors in .js files
+
     /* Interop Constraints */
-    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */,
-    "allowSyntheticDefaultImports": true /* Allow default imports from modules with no default export. This does not affect code emit, just typechecking. */,
-    "forceConsistentCasingInFileNames": true /* Ensure that casing is correct in imports. */,
+    "esModuleInterop": true,                     // Note; Support default imports from CommonJS
+    "allowSyntheticDefaultImports": true,        // Note; Allow default import syntax for modules without default
+    "forceConsistentCasingInFileNames": true,    // Note; Enforce correct import casing
+
     /* Type Checking */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "exactOptionalPropertyTypes": true /* Interpret optional property types as written, rather than adding 'undefined'. */,
-    "noImplicitReturns": true /* Enable error reporting for codepaths that do not explicitly return in a function. */,
-    "noImplicitOverride": true /* Ensure overriding members in derived classes are marked with an override modifier. */,
-    "useUnknownInCatchVariables": true /* Ensure 'unknown' is used for catch clause variables. */
-  }
+    "strict": true,                              // Note; Enable all strict type-checking options
+    "noUnusedLocals": true,                      // Note; Error on unused locals
+    "noUnusedParameters": true,                  // Note; Error on unused parameters
+    "noFallthroughCasesInSwitch": true,          // Note; Disallow fallthrough in switch
+    "exactOptionalPropertyTypes": true,          // Note; Preserve optional property types
+    "noImplicitReturns": true,                   // Note; Error when not all code paths return
+    "noImplicitOverride": true,                  // Note; Require 'override' on overridden methods
+    "useUnknownInCatchVariables": true,          // Note; Use 'unknown' for catch error variables
+
+    /* Vite Globals Support */
+    "types": ["vite/client"]                     // Note; Include Vite's type definitions (import.meta.env)
+  },
+
+  // Note; Include source files and the vite-env declaration
+  "include": [
+    "src",
+    "src/vite-env.d.ts"
+  ]
 }
