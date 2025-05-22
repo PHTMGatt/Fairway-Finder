@@ -1,17 +1,31 @@
+/* ===== Dashboard Layout ===== */
 .dashboard {
-  padding: 1rem;
+  padding: 2rem 1rem;
   max-width: 900px;
   margin: 0 auto;
+  background: linear-gradient(to bottom, #eafaff, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(109, 194, 255, 0.15);
+  backdrop-filter: blur(4px);
 }
 
+/* ===== Dashboard Title ===== */
 .dashboard__title {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 2rem;
+  font-weight: 700;
   text-align: center;
+  margin-bottom: 2rem;
+  color: #1f3b24;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Trip Form Section ===== */
 .dashboard__form {
-  margin-top: 2rem;
-  border-top: 1px solid #ddd;
-  padding-top: 1.5rem;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid #b3e5fc;
+  background: linear-gradient(to bottom right, #f8fdff, #e3f5ff);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(109, 194, 255, 0.1);
 }

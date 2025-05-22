@@ -1,12 +1,14 @@
 import { Link } from 'react-router-dom';
 import './TripList.css';
 
+// Note; Props: list of trips and an optional title
 interface TripListProps {
   trips: any[];
   title: string;
 }
 
 const TripList: React.FC<TripListProps> = ({ trips = [], title }) => {
+  // Note; Empty state fallback
   if (!trips.length) {
     return <h3 className="trip-list__empty">No Trips Planned Yet</h3>;
   }
@@ -20,8 +22,7 @@ const TripList: React.FC<TripListProps> = ({ trips = [], title }) => {
             <h4 className="trip-card__header">
               {trip.name}
               <span className="trip-card__count">
-                {trip.courses?.length || 0} course
-                {trip.courses?.length !== 1 ? 's' : ''}
+                {trip.courses?.length || 0} course{trip.courses?.length !== 1 ? 's' : ''}
               </span>
             </h4>
             <Link className="btn btn--light trip-card__btn" to={`/trip/${trip._id}`}>

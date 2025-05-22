@@ -1,5 +1,8 @@
+// server/src/schemas/resolvers.ts
+
 import { Profile, Trip } from '../models/index.js';
-import { signToken, AuthenticationError } from '../utils/auth.js';
+import { signToken } from '../utils/auth.js';
+import { AuthenticationError, UserInputError } from '@apollo/server/errors';
 
 interface ProfileType {
   _id: string;
@@ -23,67 +26,88 @@ interface Context {
 
 const resolvers = {
   Query: {
-    // Get all profiles
     profiles: async () => {
       return await Profile.find().populate('trips');
     },
 
-    // Get profile by ID
     profile: async (_: any, { profileId }: { profileId: string }) => {
       return await Profile.findById(profileId).populate('trips');
     },
 
-    // Get logged-in user's profile
     me: async (_: any, __: any, context: Context) => {
-      if (!context.user) throw AuthenticationError;
+      if (!context.user) {
+        throw new AuthenticationError('Not authenticated');
+      }
       return await Profile.findById(context.user._id).populate('trips');
     },
 
-    // Get all trips
     trips: async () => {
       return await Trip.find();
     },
 
-    // Get a single trip by ID
     trip: async (_: any, { id }: { id: string }) => {
       return await Trip.findById(id);
     },
   },
 
   Mutation: {
-    // Signup
     addProfile: async (_: any, { input }: AddProfileArgs) => {
+      // Prevent duplicate emails
+      const existing = await Profile.findOne({ email: input.email });
+      if (existing) {
+        throw new UserInputError('Email already in use', {
+          invalidArgs: ['email'],
+        });
+      }
+
       const profile = await Profile.create(input);
-      const token = signToken(profile.name, profile.email, profile._id);
+      const token = signToken(
+        profile.name,
+        profile.email,
+        profile._id.toString()
+      );
       return { token, profile };
     },
 
-    // Login
-    login: async (_: any, { email, password }: { email: string; password: string }) => {
+    login: async (
+      _: any,
+      { email, password }: { email: string; password: string }
+    ) => {
       const profile = await Profile.findOne({ email });
-      if (!profile) throw AuthenticationError;
+      if (!profile) {
+        throw new AuthenticationError(
+          'No profile found with this email address'
+        );
+      }
 
-      const isValid = await profile.isCorrectPassword(password);
-      if (!isValid) throw AuthenticationError;
+      const valid = await profile.isCorrectPassword(password);
+      if (!valid) {
+        throw new AuthenticationError('Incorrect password');
+      }
 
-      const token = signToken(profile.name, profile.email, profile._id);
+      const token = signToken(
+        profile.name,
+        profile.email,
+        profile._id.toString()
+      );
       return { token, profile };
     },
 
-    // Add a trip
     addTrip: async (_: any, { name }: { name: string }, context: Context) => {
-      if (!context.user) throw AuthenticationError;
-
+      if (!context.user) {
+        throw new AuthenticationError('Not authenticated');
+      }
       const trip = await Trip.create({ name });
       await Profile.findByIdAndUpdate(context.user._id, {
         $push: { trips: trip._id },
       });
-
       return trip;
     },
 
-    // Add course to a trip
-    addCourseToTrip: async (_: any, { tripId, courseName }: { tripId: string; courseName: string }) => {
+    addCourseToTrip: async (
+      _: any,
+      { tripId, courseName }: { tripId: string; courseName: string }
+    ) => {
       return await Trip.findByIdAndUpdate(
         tripId,
         { $push: { courses: { name: courseName } } },
@@ -91,8 +115,10 @@ const resolvers = {
       );
     },
 
-    // Remove course by name
-    removeCourseFromTrip: async (_: any, { courseName }: { courseName: string }) => {
+    removeCourseFromTrip: async (
+      _: any,
+      { courseName }: { courseName: string }
+    ) => {
       return await Trip.findOneAndUpdate(
         { 'courses.name': courseName },
         { $pull: { courses: { name: courseName } } },
@@ -100,10 +126,14 @@ const resolvers = {
       );
     },
 
-    // Optional - Add skill
-    addSkill: async (_: any, { profileId, skill }: { profileId: string; skill: string }, context: Context) => {
-      if (!context.user) throw AuthenticationError;
-
+    addSkill: async (
+      _: any,
+      { profileId, skill }: { profileId: string; skill: string },
+      context: Context
+    ) => {
+      if (!context.user) {
+        throw new AuthenticationError('Not authenticated');
+      }
       return await Profile.findByIdAndUpdate(
         profileId,
         { $addToSet: { skills: skill } },
@@ -111,10 +141,10 @@ const resolvers = {
       );
     },
 
-    // Optional - Remove skill
     removeSkill: async (_: any, { skill }: { skill: string }, context: Context) => {
-      if (!context.user) throw AuthenticationError;
-
+      if (!context.user) {
+        throw new AuthenticationError('Not authenticated');
+      }
       return await Profile.findByIdAndUpdate(
         context.user._id,
         { $pull: { skills: skill } },

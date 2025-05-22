@@ -1,0 +1,4 @@
+
+
+find . -type d -not -path "*/node_modules/*" -not -path "*/dist/*"
+

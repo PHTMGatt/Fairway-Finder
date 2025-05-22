@@ -1,20 +1,27 @@
+/* src/pages/Trips/TripDetails.css */
+
+/* ===== Main Trip Details Container ===== */
 .trip-detail {
   padding: 2rem 1rem;
   max-width: 900px;
   margin: 0 auto;
-  background-color: #f9fcfe;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(to bottom right, #eafaff, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.1);
+  backdrop-filter: blur(6px);
 }
 
+/* ===== Trip Title ===== */
 .trip-detail__title {
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  font-size: 2.2rem;
+  margin-bottom: 1.5rem;
   text-align: center;
-  color: #2d3e50;
-  font-weight: 600;
+  color: #1f3b24;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* ===== Course Section (List + Form) ===== */
 .trip-detail__courses {
   margin-top: 2rem;
   display: flex;
@@ -22,12 +29,21 @@
   gap: 2rem;
 }
 
+/* ===== Status messages (loading/error/not found) ===== */
+.trip-detail__status {
+  text-align: center;
+  font-size: 1rem;
+  color: #555;
+  margin-top: 2rem;
+}
+
+/* ===== Responsive Adjustments ===== */
 @media (max-width: 600px) {
   .trip-detail {
     padding: 1.5rem 1rem;
   }
 
   .trip-detail__title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
   }
 }

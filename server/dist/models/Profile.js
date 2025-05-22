@@ -1,36 +1,36 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
-// Define the schema for the Profile document
+// Note; Define Profile schema with validation and constraints
 const profileSchema = new Schema({
     name: {
         type: String,
-        required: true,
-        unique: true,
-        trim: true,
+        required: true, // Note; Name is required
+        unique: true, // Note; No duplicate usernames
+        trim: true, // Note; Trim whitespace
     },
     email: {
         type: String,
-        required: true,
-        unique: true,
-        match: [/.+@.+\..+/, 'Must match an email address!'],
+        required: true, // Note; Email is required
+        unique: true, // Note; No duplicate emails
+        match: [/.+@.+\..+/, 'Must match an email address!'], // Note; Validate format
     },
     password: {
         type: String,
-        required: true,
-        minlength: 5,
+        required: true, // Note; Password is required
+        minlength: 5, // Note; Enforce minimum length
     },
     skills: [
         {
             type: String,
-            trim: true,
+            trim: true, // Note; Trim each skill entry
         },
     ],
 }, {
-    timestamps: true,
-    toJSON: { getters: true },
-    toObject: { getters: true },
+    timestamps: true, // Note; Adds createdAt and updatedAt
+    toJSON: { getters: true }, // Note; Apply getters on toJSON
+    toObject: { getters: true }, // Note; Apply getters on toObject
 });
-// set up pre-save middleware to create password
+// Note; Hash password before saving new or modified documents
 profileSchema.pre('save', async function (next) {
     if (this.isNew || this.isModified('password')) {
         const saltRounds = 10;
@@ -38,9 +38,10 @@ profileSchema.pre('save', async function (next) {
     }
     next();
 });
-// compare the incoming password with the hashed password
+// Note; Method to compare provided password with stored hashed password
 profileSchema.methods.isCorrectPassword = async function (password) {
     return bcrypt.compare(password, this.password);
 };
+// Note; Create and export Profile model
 const Profile = model('Profile', profileSchema);
 export default Profile;

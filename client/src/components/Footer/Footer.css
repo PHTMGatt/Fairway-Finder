@@ -1,34 +1,46 @@
+/* Note; Main footer container with deep soft blue gradient */
 .footer {
   margin-top: auto;
-  padding: 1rem 0;
-  background: linear-gradient(to top, #c8e6c9, #f0f8f5); /* grass-themed */
-  border-top: 4px solid #66bb6a;
+  padding: 1.5rem 0;
+  background: linear-gradient(to top, #a8d8ff, #d7efff);
+  border-top: 4px solid #6dc2ff;
   font-family: inherit;
+  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+  transition: background 0.3s ease;
 }
 
+/* Note; Centered content with spacing */
 .footer__inner {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 0.75rem;
 }
 
+/* Note; 'Go Back' button with glowing hover */
 .footer__back {
-  margin-bottom: 0.5rem;
-  background-color: #444;
-  color: white;
+  background-color: #6dc2ff;
+  color: #fff;
   border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 8px rgba(109, 194, 255, 0.4);
+  transition: all 0.2s ease-in-out;
 }
 
 .footer__back:hover {
-  background-color: #222;
+  background-color: #4eb6f5;
+  box-shadow: 0 0 12px rgba(109, 194, 255, 0.6);
+  transform: scale(1.05);
 }
 
+/* Note; Footer copyright text */
 .footer__copy {
   margin: 0;
   font-size: 0.9rem;
   color: #333;
+  opacity: 0.85;
 }

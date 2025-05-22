@@ -6,10 +6,13 @@ import './TripForm.css';
 
 const TripForm: React.FC = () => {
   const [tripName, setTripName] = useState('');
+
+  // Note; Apollo mutation for adding a new trip
   const [addTrip, { error }] = useMutation(ADD_TRIP, {
-    refetchQueries: [QUERY_TRIPS, 'getAllTrips'],
+    refetchQueries: [QUERY_TRIPS, 'getAllTrips'], // Note; Refresh trip list after submit
   });
 
+  // Note; Handle form submission
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
@@ -34,6 +37,7 @@ const TripForm: React.FC = () => {
           Add Trip
         </button>
       </form>
+      {/* Note; Display error if mutation fails */}
       {error && <p className="trip-form__error">Error: {error.message}</p>}
     </div>
   );

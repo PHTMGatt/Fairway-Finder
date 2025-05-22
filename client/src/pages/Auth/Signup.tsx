@@ -7,24 +7,32 @@ import { ADD_PROFILE } from '../../utils/mutations';
 import './Auth.css';
 
 const Signup: React.FC = () => {
+  // Note; Form state for new user
   const [formState, setFormState] = useState({ name: '', email: '', password: '' });
+
+  // Note; GraphQL mutation for profile creation
   const [addProfile, { data, error }] = useMutation(ADD_PROFILE);
 
+  // Note; Input change handler
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Note; Submit form handler
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      const response = await addProfile({ variables: { input: { ...formState } } });
-      Auth.login(response.data.addProfile.token);
+      const response = await addProfile({
+        variables: { input: { ...formState } },
+      });
+      Auth.login(response.data.addProfile.token); // Note; Login immediately on signup
     } catch (err) {
       console.error(err);
     }
   };
 
+  // Note; Redirect if already logged in
   if (Auth.loggedIn()) return <Navigate to="/dashboard" replace />;
 
   return (
@@ -33,10 +41,12 @@ const Signup: React.FC = () => {
         <h4 className="auth-header">Sign Up</h4>
         <div className="auth-body">
           {data ? (
+            // Note; Success message after signup
             <p>
               Success! Go <Link to="/dashboard">to your trips.</Link>
             </p>
           ) : (
+            // Note; Signup form UI
             <form onSubmit={handleSubmit} className="auth-form">
               <input
                 className="auth-input"
@@ -67,6 +77,7 @@ const Signup: React.FC = () => {
               </button>
             </form>
           )}
+          {/* Note; Show GraphQL error if any */}
           {error && <div className="auth-error">{error.message}</div>}
         </div>
       </div>

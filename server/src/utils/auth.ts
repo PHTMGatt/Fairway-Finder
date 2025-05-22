@@ -1,48 +1,53 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Define a type-safe user payload structure
+// Note; Structure of the user data stored inside the JWT
 interface UserPayload {
   username: string;
   email: string;
   _id: string;
 }
 
-// Context enhancer to extract user from token
+// Note; Middleware for GraphQL context to extract and verify JWT from request
 export const authenticateToken = ({ req }: { req: any }) => {
+  // Note; Try to get token from body, query, or headers
   let token = req.body?.token || req.query?.token || req.headers?.authorization;
 
-  // Extract token if "Bearer <token>" format
+  // Note; If header is of form "Bearer <token>", extract the token part
   if (req.headers?.authorization) {
-    token = token.split(' ').pop().trim();
+    token = (token as string).split(' ').pop()?.trim();
   }
 
+  // Note; If no token, return request as-is (unauthenticated)
   if (!token) {
-    return req; // No token, allow unauthenticated access if route permits
+    return req;
   }
 
-try {
-  const secret = process.env.JWT_SECRET_KEY || '';
-  const { data }: any = jwt.verify(token, secret, { maxAge: '2h' }) as { data: UserPayload };
-  req.user = data;
-} catch (err) {
-  console.warn('Token verification failed:', err);
-}
+  try {
+    // Note; Verify token using JWT_SECRET_KEY, enforce max age
+    const secret = process.env.JWT_SECRET_KEY || '';
+    const { data } = jwt.verify(token as string, secret, { maxAge: '2h' }) as { data: UserPayload };
+    // Note; Attach decoded user payload to request
+    req.user = data;
+  } catch (err) {
+    // Note; Log verification failures (token expired or invalid)
+    console.warn('Token verification failed:', err);
+  }
 
   return req;
 };
 
-// Generate a signed JWT
+// Note; Utility to sign a JWT for a given user payload
 export const signToken = (username: string, email: string, _id: string) => {
   const payload: UserPayload = { username, email, _id };
   const secret = process.env.JWT_SECRET_KEY || '';
-
+  // Note; Return signed token with 'data' field and 2-hour expiry
   return jwt.sign({ data: payload }, secret, { expiresIn: '2h' });
 };
 
-// Custom GraphQL error for auth failures
+// Note; Custom error for authentication failures in GraphQL
 export class AuthenticationError extends GraphQLError {
   constructor(message = 'You must be logged in.') {
     super(message, {

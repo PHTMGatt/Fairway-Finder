@@ -1,3 +1,6 @@
+/* src/components/CourseList/CourseList.css */
+
+/* Note; Container for the entire list */
 .course-list {
   margin: 1rem 0;
   display: flex;
@@ -5,6 +8,7 @@
   gap: 0.75rem;
 }
 
+/* Note; Each course entry block */
 .course-card {
   border: 1px solid #ddd;
   border-radius: 6px;
@@ -12,6 +16,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+/* Note; Course name with optional remove button */
 .course-card__name {
   background: #00796b;
   color: #fff;
@@ -23,6 +28,7 @@
   font-weight: 500;
 }
 
+/* Note; Style for the remove button */
 .course-card__remove {
   margin-left: 0.75rem;
   padding: 0.25rem 0.5rem;
@@ -34,16 +40,19 @@
   transition: background-color 0.2s;
 }
 
+/* Note; Hover state for remove button */
 .course-card__remove:hover {
   background-color: #b71c1c;
 }
 
+/* Note; Fallback text for empty list */
 .course-list__empty {
   font-size: 1rem;
   color: #555;
   margin-top: 1rem;
 }
 
+/* Note; Mutation error styling */
 .course-list__error {
   color: #b00020;
   margin-top: 0.5rem;
