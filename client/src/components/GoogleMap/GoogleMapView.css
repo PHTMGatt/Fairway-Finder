@@ -1,22 +1,57 @@
-/* Note; Container for the map with visual enhancements */
+/* Note; container around the map—now fills parent height */
+.map-container {
+  position: relative;
+  width: 100%;
+  height: 100%;              /* Note; inherit height from parent (.map-routing__map) */
+  border-radius: 12px;
+  overflow: hidden;
+  overscroll-behavior: contain;    /* ← Note; keep scroll & pinch inside map */
+}
+
+/* Note; map styling: gradient bg, border, shadow, transition */
 .google-map {
   width: 100%;
   height: 100%;
-  border-radius: 12px;
-  overflow: hidden;
   background: linear-gradient(to bottom right, #d0ecff, #f0faff);
   border: 2px solid #6dc2ff;
   box-shadow: 0 8px 20px rgba(109, 194, 255, 0.35);
   transition: box-shadow 0.3s ease;
+  pointer-events: auto;      /* Note; ensure map always gets pointer events */
+   overscroll-behavior: contain;    /* ← Note; prevent page scroll when over map */
 }
 
-/* Note; Smooth hover glow */
+/* Note; subtle glow on hover */
 .google-map:hover {
   box-shadow: 0 12px 24px rgba(109, 194, 255, 0.55);
 }
 
-/* Note; Make sure the map fills its container */
+/* Note; ensure Google map pane fills this container */
 .google-map > div {
   width: 100%;
   height: 100%;
+  pointer-events: auto;
+}
+
+/* Note; glass overlay for instructions, no pointer-events so map stays interactive */
+.glass-card {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(109, 194, 255, 0.2);
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: #333;
+  z-index: 10;
+  pointer-events: none;      /* Note; let drag & scroll pass through */
+  user-select: none;
+  transition: opacity 0.3s;
+}
+
+/* Note; fade instructions on hover of map-container */
+.map-container:hover .glass-card {
+  opacity: 0;
 }

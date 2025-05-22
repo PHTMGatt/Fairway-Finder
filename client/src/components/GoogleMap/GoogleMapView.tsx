@@ -1,6 +1,5 @@
-// src/components/GoogleMapView/GoogleMapView.tsx
-
 import React, { useRef, useEffect } from 'react';
+import './GoogleMapView.css';
 
 type GoogleMapViewProps = {
   origin: string;
@@ -15,12 +14,13 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   useEffect(() => {
+    // Note; guard against missing API key
     if (!MAP_KEY) {
       console.error('Missing VITE_GOOGLE_MAPS_API_KEY');
       return;
     }
 
-    // Load script once
+    // Note; load Google Maps script once
     if (!document.getElementById('gmaps-script')) {
       const script = document.createElement('script');
       script.id = 'gmaps-script';
@@ -33,14 +33,21 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     }
 
     function initMap() {
+      // Note; ensure container and google available
       if (!mapRef.current || !(window as any).google) return;
       const googleMaps = (window as any).google.maps;
+
+      // Note; initialize map with drag + scroll enabled
       const map = new googleMaps.Map(mapRef.current, {
         center: { lat: 27.6648, lng: -81.5158 },
         zoom: 7,
+        draggable: true,              
+        gestureHandling: 'greedy',    // Note; capture wheel & drag
+        scrollwheel: true,            // Note; ensure older versions honor scroll
+        zoomControl: true             // Note; show zoom buttons
       });
 
-      // Fetch and draw route
+      // Note; fetch directions from backend and draw route
       fetch(
         `/api/map/directions?origin=${encodeURIComponent(
           origin
@@ -54,6 +61,8 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
           const overview = data.routes?.[0]?.overviewPolyline;
           if (!overview) return;
           const path = googleMaps.geometry.encoding.decodePath(overview);
+
+          // Note; draw route polyline
           new googleMaps.Polyline({
             map,
             path,
@@ -61,6 +70,8 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
             strokeOpacity: 0.75,
             strokeWeight: 5,
           });
+
+          // Note; auto-fit map to route bounds
           const bounds = new googleMaps.LatLngBounds();
           path.forEach((pt: any) => bounds.extend(pt));
           map.fitBounds(bounds);
@@ -70,10 +81,14 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   }, [origin, destination, MAP_KEY]);
 
   return (
-    <div
-      ref={mapRef}
-      style={{ width: '100%', height: '400px', borderRadius: '8px' }}
-    />
+    <div className="map-container">
+      {/* Note; actual map canvas */}
+      <div ref={mapRef} className="google-map" />
+      {/* Note; on-hover-fade instructions */}
+      <div className="glass-card">
+        Drag to move map • Scroll to zoom
+      </div>
+    </div>
   );
 };
 
