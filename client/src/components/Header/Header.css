@@ -1,100 +1,92 @@
-/* ===== Header Container ===== */
 .header {
-  display: grid;
-  align-items: center;
-  height: 100px;
-  padding: 0 1rem;
-  background: repeating-linear-gradient(
-    to bottom,
-    #2f5d34 0,
-    #2f5d34 33.33%,
-    #3e7a49 33.33%,
-    #3e7a49 66.66%,
-    #2f5d34 66.66%,
-    #2f5d34 100%
-  );
-  border-bottom: 2px solid #1f3b24;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  grid-template-columns:
-    minmax(200px, auto)
-    repeat(6, 36px)
-    1fr
-    auto auto;
-  column-gap: 0.75rem;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-/* ===== Logo Section ===== */
-.header__logo-cell {
-  border-right: 2px solid #1f3b24;
-  padding-right: 1rem;
-}
-.header__logo {
+  position: relative;
+  height: 120px;
+  padding: 0 2rem;
+  border-bottom: 3px solid #1f3b24;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #ffffff;              /* pure white */
+  display: flex;
+  align-items: center;
+}
+
+/* Golf animation GIF on the left, vertically centered */
+.header__gif-icon {
+  position: absolute;
+  left: 55px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 150px;
+  height: 150px;
+  pointer-events: none; /* so it doesn't interfere with clicks */
+  user-select: none;
+  z-index: 10;
+
+}
+
+/* Centered logo absolutely positioned */
+.header__logo {
+  position: absolute;
+  left: 50%;
+  top: 30px; /* adjust vertical position */
+  transform: translateX(-50%);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   text-decoration: none;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-}
-.header__logo:focus {
-  outline: none;
-}
-
-/* ===== Golf Holes ===== */
-.header__holes {
-  display: contents;
-}
-.header__hole {
-  width: 36px;
-  height: 36px;
-  background: #e6f4ea;
-  border-radius: 4px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+  pointer-events: auto;
+  z-index: 20;
 }
 
-/* ===== Spacer ===== */
-.header__spacer {}
+/* Spacer pushes auth buttons to right */
+.header__spacer {
+  flex-grow: 1;
+}
 
-/* ===== Auth Button Group ===== */
+/* Auth buttons container */
 .header__actions {
   display: flex;
   gap: 0.5rem;
-  border-left: 2px solid #1f3b24;
-  padding-left: 1rem;
+  z-index: 10;
 }
 
-/* ===== White-Glass Buttons ===== */
+/* Buttons styling */
 .header__btn {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  padding: 0.4rem 0.8rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(31, 59, 36, 0.6);
+  padding: 0.4rem 0.75rem;
+  background: #fff;
+  border: 2px solid #1f3b24;
   border-radius: 4px;
   color: #1f3b24;
   text-decoration: none;
-  outline: none;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .header__btn:hover {
-  background: #ffffff;
-  color: #1f3b24;
+  background: #f0f0f0;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .header__btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .header__btn:focus {
-  box-shadow: 0 0 0 3px rgba(31, 59, 36, 0.5);
+  box-shadow: 0 0 0 2px rgba(31, 59, 36, 0.3);
+  outline: none;
 }
+
+
+
+
+
+
+
+
