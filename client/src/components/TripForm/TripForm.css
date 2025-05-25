@@ -1,49 +1,49 @@
-/* Note; Wrapper for trip form section */
+/* ===== Trip Form Layout ===== */
 .trip-form {
-  margin: 1rem 0;
+  margin: 2rem 0;
   background: linear-gradient(to bottom right, #e3f5ff, #f9fcff);
-  padding: 1.25rem;
-  border-radius: 10px;
-  box-shadow: 0 6px 14px rgba(109, 194, 255, 0.25);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(109, 194, 255, 0.3);
   border: 1px solid #b3e5fc;
 }
 
-/* Note; Section title */
+/* ===== Title ===== */
 .trip-form__title {
-  margin-bottom: 0.75rem;
-  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #1f3b24;
 }
 
-/* Note; Horizontal layout with wrap support */
+/* ===== Form Group Layout ===== */
 .trip-form__form {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
-/* Note; Input field style */
+/* ===== Input Fields ===== */
 .trip-form__input {
   flex: 1 1 auto;
-  padding: 0.5rem;
+  padding: 0.55rem;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Note; Input focus effect */
 .trip-form__input:focus {
   border-color: #6dc2ff;
   box-shadow: 0 0 6px #6dc2ff;
   outline: none;
 }
 
-/* Note; Button appearance and hover scale */
+/* ===== Buttons ===== */
 .trip-form__btn {
   flex: 0 0 auto;
-  padding: 0.5rem 1rem;
+  padding: 0.55rem 1.2rem;
   background-color: #6dc2ff;
   color: white;
   font-weight: 600;
@@ -53,22 +53,57 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* Note; Button glow on hover */
 .trip-form__btn:hover {
   transform: scale(1.05);
   box-shadow: 0 0 10px rgba(109, 194, 255, 0.5);
 }
 
-/* Note; Mutation error text */
+/* ===== Error Messages ===== */
 .trip-form__error {
   color: #b00020;
   margin-top: 0.5rem;
   font-size: 0.95rem;
 }
 
-/* Note; Mobile form column layout */
+/* ===== Course Results ===== */
+.trip-form__results {
+  list-style: none;
+  padding-left: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.trip-form__result-item {
+  margin: 0.4rem 0;
+  cursor: pointer;
+  transition: background 0.2s, padding 0.2s;
+  padding: 0.3rem;
+  border-radius: 6px;
+}
+
+.trip-form__result-item:hover {
+  background-color: #e0f4ff;
+  padding-left: 0.5rem;
+}
+
+.trip-form__result-item.selected {
+  background-color: #c7eeff;
+  font-weight: bold;
+}
+
+/* ===== Confirmation Message ===== */
+.trip-form__confirmation {
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+  color: #1f3b24;
+}
+
+/* ===== Mobile Responsive ===== */
 @media (max-width: 500px) {
   .trip-form__form {
     flex-direction: column;
+  }
+
+  .trip-form__btn {
+    width: 100%;
   }
 }

@@ -1,3 +1,5 @@
+// src/pages/Weather/Weather.tsx
+
 import React, { useState } from 'react';
 import {
   WiDaySunny,
@@ -32,33 +34,41 @@ const iconMap: Record<string, JSX.Element> = {
   Tornado: <WiThunderstorm className="weather-icon" />,
 };
 
+// Note; Helpers to convert Kelvin → Celsius & Fahrenheit
+const kelvinToCelsius = (k: number) => Math.round(k - 273.15);
+const kelvinToFahrenheit = (k: number) =>
+  Math.round((k - 273.15) * (9 / 5) + 32);
+
 const Weather: React.FC = () => {
   const [location, setLocation] = useState('');
   const [useFahrenheit, setUseFahrenheit] = useState(true); // Note; toggle state
   const [weather, setWeather] = useState<{
-    temp: number;
+    rawTempK: number;
     main: string;
     description: string;
     name: string;
   } | null>(null);
 
-  // Note; Fetch and parse weather based on unit toggle
+  // Note; Fetch once in Kelvin, then convert on toggle
   const handleSearch = async () => {
-    if (!location) return alert('Please enter a city name.');
+    if (!location.trim()) {
+      alert('Please enter a city name.');
+      return;
+    }
 
     try {
       const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-      const units = useFahrenheit ? 'imperial' : 'metric';
+      // Note; omit units param to get Kelvin by default
       const res = await fetch(
         `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
           location
-        )}&units=${units}&appid=${apiKey}`
+        )}&appid=${apiKey}`
       );
       const data = await res.json();
-      if (!data?.weather?.[0] || !data?.main) throw new Error();
+      if (!data?.weather?.[0] || !data?.main?.temp) throw new Error();
 
       setWeather({
-        temp: Math.round(data.main.temp),
+        rawTempK: data.main.temp,       // Note; store Kelvin
         main: data.weather[0].main,
         description: data.weather[0].description,
         name: data.name,
@@ -68,6 +78,13 @@ const Weather: React.FC = () => {
       console.error(err);
     }
   };
+
+  // Note; derive display temp
+  const displayTemp = weather
+    ? useFahrenheit
+      ? kelvinToFahrenheit(weather.rawTempK)
+      : kelvinToCelsius(weather.rawTempK)
+    : null;
 
   return (
     <main className="weather-page">
@@ -79,6 +96,7 @@ const Weather: React.FC = () => {
           </p>
 
           <div className="weather-card__toggle">
+            {/* Note; Toggle between °F & °C */}
             <ToggleSwitch
               id="unitToggle"
               checked={useFahrenheit}
@@ -101,20 +119,16 @@ const Weather: React.FC = () => {
           </div>
         </section>
 
-        {weather && (
+        {weather && displayTemp !== null && (
           <section className="weather-card__result">
             <div className="weather-result">
               <h3 className="weather-result__city">{weather.name}</h3>
               <div className="weather-result__icon-wrapper">
-                {iconMap[weather.main] || (
-                  <WiCloud className="weather-icon" />
-                )}
+                {iconMap[weather.main] || <WiCloud className="weather-icon" />}
               </div>
-              <p className="weather-result__desc">
-                {weather.description}
-              </p>
+              <p className="weather-result__desc">{weather.description}</p>
               <p className="weather-result__temp">
-                {weather.temp}°{useFahrenheit ? 'F' : 'C'}
+                {displayTemp}°{useFahrenheit ? 'F' : 'C'}
               </p>
             </div>
           </section>

@@ -1,62 +1,49 @@
-import { Link } from 'react-router-dom';
-import { MouseEvent, CSSProperties } from 'react';
-import Auth from '../../utils/auth';
-import texture from '../../assets/images/pool-table.png'; // Adjust path as needed
-import golfGif from '../../assets/images/golf2.gif'; // Your gif path
+// src/components/Header/Header.tsx
+
+import { Link, useNavigate } from 'react-router-dom';
+import { MouseEvent } from 'react';
+import { useAuth } from '../../pages/Auth/AuthContext'; // ✅ Correct relative path
 import './Header.css';
 
 const Header: React.FC = () => {
-  const logout = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    Auth.logout();
-  };
+  const navigate = useNavigate();
+  const { isLoggedIn, logout } = useAuth(); // ✅ Context hook for auth state
 
-  // Inline style with texture + stripes background
-  const headerStyle: CSSProperties = {
-    position: 'relative',
-    height: '120px',
-    padding: '0 2rem',
-    backgroundImage: `
-      url(${texture}),
-      repeating-linear-gradient(
-        45deg,
-        #2e5633,
-        #2e5633 40px,
-        #3b6e40 40px,
-        #3b6e40 80px
-      )
-    `,
-    backgroundRepeat: 'repeat',
-    borderBottom: '3px solid #1f3b24',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
-    fontFamily: `'Helvetica Neue', Helvetica, Arial, sans-serif`,
-    display: 'flex',
-    alignItems: 'center',
-    zIndex: 1, 
+  // Note; Logs out the user and redirects to home
+  const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    logout(); // Note; Clears token and updates context
+    navigate('/');
   };
 
   return (
-    <header className="header" style={headerStyle}>
-      {/* GIF icon on left */}
-      <img src={golfGif} alt="Golf animation" className="header__gif-icon" />
+    <header className="header">
+      {/* Note; App logo links back to home */}
+      <div className="header__logo-cell">
+        <Link to="/" className="header__logo">
+          FAIRWAY FINDER
+        </Link>
+      </div>
 
-      {/* Centered Logo */}
-      <Link to="/" className="header__logo">
-        FAIRWAY FINDER
-      </Link>
+      {/* Note; Six styled 'golf holes' */}
+      <div className="header__holes">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="header__hole" />
+        ))}
+      </div>
 
-      {/* Spacer */}
+      {/* Note; Spacer pushes auth buttons to right side */}
       <div className="header__spacer" />
 
-      {/* Auth buttons on right */}
+      {/* Note; Show login/signup if not logged in, else My Trips and Logout */}
       <div className="header__actions">
-        {Auth.loggedIn() ? (
+        {isLoggedIn ? (
           <>
-            <Link to="/dashboard" className="header__btn">
+            <Link to="/me" className="header__btn">
               My Trips
             </Link>
-            <button onClick={logout} className="header__btn">
-              Log Out
+            <button onClick={handleLogout} className="header__btn">
+              Logout
             </button>
           </>
         ) : (

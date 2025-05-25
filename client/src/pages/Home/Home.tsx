@@ -11,105 +11,75 @@ import './Home.css';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
-
-  // Note; track start/end inputs for the map
-  const [start, setStart] = useState('Orlando, FL');
-  const [end, setEnd] = useState('Tampa, FL');
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [maxDistance, setMaxDistance] = useState('');
+  const [searchTriggered, setSearchTriggered] = useState(false);
 
   const loggedIn = Auth.loggedIn();
-  const { loading, data, error } = useQuery(QUERY_TRIPS, {
-    skip: !loggedIn,
-  });
+  const { loading, data, error } = useQuery(QUERY_TRIPS, { skip: !loggedIn });
   const trips = data?.trips || [];
+
+  const handleSearch = () => setSearchTriggered(true);
 
   return (
     <main className="home">
-      {/* Note; Hero Section */}
       <section className="home__hero">
         <h2 className="home__title">Plan your next golf adventure.</h2>
         <div className="home__buttons">
-          <button
-            className="btn btn--light home__btn"
-            onClick={() => navigate('/routing')}
-          >
-            Plan a Trip
-          </button>
-          <button
-            className="btn btn--light home__btn"
-            onClick={() => navigate('/me')}
-          >
-            View Saved Trips
-          </button>
+          <button className="btn btn--light home__btn" onClick={() => navigate('/routing')}>Plan a Trip</button>
+          <button className="btn btn--light home__btn" onClick={() => navigate('/me')}>View Saved Trips</button>
         </div>
       </section>
 
-      {/* Note; Search Form for map defaults */}
-      <section className="home__search">
-        <input
-          className="home__input"
-          type="text"
-          placeholder="Start Location"
-          value={start}
-          onChange={(e) => setStart(e.target.value)}
-        />
-        <input
-          className="home__input"
-          type="text"
-          placeholder="End Location"
-          value={end}
-          onChange={(e) => setEnd(e.target.value)}
-        />
-        <input
-          className="home__input"
-          type="text"
-          placeholder="Max Distance"
-        />
-        <button className="btn home__find-btn">
-          Find Courses
-        </button>
-      </section>
+      {loggedIn ? (
+        <>
+          <section className="home__search">
+            <input
+              className="home__input"
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+              placeholder="Start Location"
+            />
+            <input
+              className="home__input"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder="End Location"
+            />
+            <input
+              className="home__input"
+              value={maxDistance}
+              onChange={(e) => setMaxDistance(e.target.value)}
+              placeholder="Max Distance (miles)"
+            />
+            <button className="btn home__find-btn" onClick={handleSearch}>Find Courses</button>
+          </section>
 
-      {/* Note; Map Section – now passes props and allows interactions */}
-      <section className="home__map">
-        <GoogleMapView origin={start} destination={end} />
-      </section>
-
-      {/* Note; Saved Trips Section */}
-      {loggedIn && (
-        <section className="home__saved-trips container">
-          {loading ? (
-            <p>Loading trips…</p>
-          ) : error ? (
-            <p>Error: {error.message}</p>
-          ) : (
-            <TripList trips={trips} title="Saved Trips" />
-          )}
+          <section className="home__map">
+            <GoogleMapView
+              origin={searchTriggered ? origin : ''}
+              destination={searchTriggered ? destination : ''}
+              maxDistance={searchTriggered ? maxDistance : ''}
+            />
+          </section>
+        </>
+      ) : (
+        <section className="home__locked">
+          <p>Please log in to access trip planning and course search.</p>
         </section>
       )}
 
-      {/* Note; Bottom Navigation */}
+      {loggedIn && (
+        <section className="home__saved-trips container">
+          {loading ? <p>Loading trips…</p> : error ? <p>Error: {error.message}</p> : <TripList trips={trips} title="Saved Trips" />}
+        </section>
+      )}
+
       <nav className="home__bottom-nav">
-        <button
-          className="home__nav-item btn--circle"
-          onClick={() => navigate('/routing')}
-        >
-          <FaMapMarkedAlt size={20} />
-          <span>Map Routing</span>
-        </button>
-        <button
-          className="home__nav-item btn--circle"
-          onClick={() => navigate('/courses')}
-        >
-          <FaFlag size={20} />
-          <span>Course Finder</span>
-        </button>
-        <button
-          className="home__nav-item btn--circle"
-          onClick={() => navigate('/weather')}
-        >
-          <FaCloudSun size={20} />
-          <span>Weather</span>
-        </button>
+        <button className="home__nav-item btn--circle" onClick={() => navigate('/routing')}><FaMapMarkedAlt size={20} /><span>Map Routing</span></button>
+        <button className="home__nav-item btn--circle" onClick={() => navigate('/courses')}><FaFlag size={20} /><span>Course Finder</span></button>
+        <button className="home__nav-item btn--circle" onClick={() => navigate('/weather')}><FaCloudSun size={20} /><span>Weather</span></button>
       </nav>
     </main>
   );

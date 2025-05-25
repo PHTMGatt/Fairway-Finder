@@ -2,44 +2,71 @@ import express, { Request, Response } from 'express';
 import fetch from 'node-fetch';
 
 const router = express.Router();
-
-// Note; Use your server-side OpenWeatherMap API key
 const API_KEY = process.env.WEATHER_API_KEY as string;
+
 if (!API_KEY) {
   console.error('Weather API key is missing in environment variables.');
 }
 
-// Note; GET /weather?city=CityName — returns current weather data
+/** ——— GET /api/weather?city=CityName — returns current weather ——— **/
 router.get('/weather', async (req: Request, res: Response): Promise<void> => {
   const { city } = req.query;
-
-  // Note; Validate that city parameter is provided and is a string
   if (!city || typeof city !== 'string') {
     res.status(400).json({ error: 'City is required' });
-    return; // ensures early exit
+    return;
   }
 
   try {
-    // Note; Fetch from OpenWeatherMap with imperial units
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-        city
-      )}&units=imperial&appid=${API_KEY}`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&units=imperial&appid=${API_KEY}`
     );
 
-    // Note; Handle non-OK responses
     if (!response.ok) {
-      console.error('OpenWeatherMap API error status:', response.status);
-      res.status(500).json({ error: 'Failed to fetch weather data' });
+      res.status(500).json({ error: 'Failed to fetch current weather' });
       return;
     }
 
-    // Note; Parse and forward JSON data to client
     const data = await response.json();
     res.json(data);
   } catch (err) {
-    // Note; Log and return server error on exceptions
-    console.error('Weather API error:', err);
+    console.error('Current weather API error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/** ——— GET /api/weather/forecast?city=CityName&date=YYYY-MM-DD ——— **/
+router.get('/weather/forecast', async (req: Request, res: Response): Promise<void> => {
+  const { city, date } = req.query;
+  if (!city || typeof city !== 'string') {
+    res.status(400).json({ error: 'City is required' });
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&units=imperial&appid=${API_KEY}`
+    );
+
+    if (!response.ok) {
+      res.status(500).json({ error: 'Failed to fetch forecast' });
+      return;
+    }
+
+    const forecastData = await response.json();
+    const targetDate = date && typeof date === 'string' ? new Date(date) : new Date();
+
+    const closest = forecastData.list.reduce((prev: any, curr: any) => {
+      const prevDiff = Math.abs(new Date(prev.dt_txt).getTime() - targetDate.getTime());
+      const currDiff = Math.abs(new Date(curr.dt_txt).getTime() - targetDate.getTime());
+      return currDiff < prevDiff ? curr : prev;
+    });
+
+    res.json({
+      city: forecastData.city.name,
+      forecast: closest,
+    });
+  } catch (err) {
+    console.error('Forecast API error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

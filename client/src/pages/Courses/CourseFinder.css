@@ -1,122 +1,139 @@
-/* src/pages/Courses/CourseFinder.css */
-
-/* Note; Full layout for course finder */
+/* ===== Overall Page Layout ===== */
 .course-finder {
-  padding: 2rem;
+  padding: 2rem 1rem;
+  background: linear-gradient(to bottom right, #e8faff, #f9fcff);
+  min-height: 100vh;
+}
+
+/* ===== Banner Header ===== */
+.course-finder__banner {
+  background: linear-gradient(135deg, #00897b, #26c6da);
+  color: white;
+  padding: 2.5rem 1.5rem;
+  border-radius: 14px;
   text-align: center;
-  background: linear-gradient(to bottom right, #e0f7ff, #f9fcff);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.2);
+  margin-bottom: 3rem;
+  box-shadow: 0 8px 24px rgba(0, 137, 123, 0.25);
 }
 
-/* Note; Title styling */
 .course-finder__title {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 700;
-  color: #1f3b24;
-  margin-bottom: 1rem;
+  margin-bottom: 0.4rem;
 }
 
-/* Note; Search bar layout */
+.course-finder__subtitle {
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+/* ===== Search Area ===== */
 .course-finder__search {
   display: flex;
   justify-content: center;
-  gap: 0.5rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-/* Note; Input field styling */
 .course-finder__input {
-  padding: 0.6rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  width: 240px;
+  width: 280px;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border-radius: 8px;
+  transition: box-shadow 0.2s ease;
 }
 
 .course-finder__input:focus {
-  border-color: #6dc2ff;
-  box-shadow: 0 0 6px #6dc2ff;
   outline: none;
+  border-color: #26c6da;
+  box-shadow: 0 0 8px rgba(38, 198, 218, 0.4);
 }
 
-/* Note; Search button styling */
 .course-finder__btn {
-  padding: 0.6rem 1.2rem;
-  background: #6dc2ff;
+  padding: 0.75rem 1.5rem;
+  background: #26c6da;
   color: white;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.2s, box-shadow 0.2s;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .course-finder__btn:hover {
-  background-color: #4eb6f5;
-  box-shadow: 0 0 10px rgba(109, 194, 255, 0.5);
+  background: #00acc1;
+  box-shadow: 0 0 12px rgba(0, 172, 193, 0.4);
 }
 
-/* Note; Results grid layout */
+/* ===== Course Cards Grid ===== */
 .course-finder__results {
   list-style: none;
   padding: 0;
   margin-top: 2rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
 }
 
-/* Note; Course card styling */
+/* ===== Individual Card Layout ===== */
 .course-card {
-  background: linear-gradient(to top left, #ffffff, #e9f6ff);
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(109, 194, 255, 0.15);
-  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .course-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.3);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
-/* Note; Clickable link wrapper */
+/* ===== Card Header (Teal Banner) ===== */
+.course-card__banner {
+  background: linear-gradient(135deg, #00bfa5, #26c6da);
+  padding: 1rem;
+  text-align: center;
+}
+
+.course-card__name {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* ===== Card Body (Baby Blue) ===== */
 .course-card__link {
   display: block;
-  color: inherit;
   text-decoration: none;
-  padding: 1rem;
+  background: #baffff;
+  padding: 1rem 1.25rem;
+  color: #222;
 }
 
-/* Note; Course name */
-.course-card__name {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
-  color: #1f3b24;
-}
-
-/* Note; Course address */
 .course-card__address {
-  margin: 0 0 0.75rem;
-  color: #555;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  color: #444;
 }
 
-/* Note; Course rating */
 .course-card__rating {
   font-size: 1rem;
   color: #ffc107;
 }
 
-/* Note; Error + loading message styles */
-.course-finder__error {
-  color: #b00020;
-  margin-top: 1rem;
+/* ===== Errors and Loading States ===== */
+.course-finder__error,
+.course-finder__loading {
+  text-align: center;
+  font-size: 1rem;
+  margin-top: 1.5rem;
+  color: #444;
 }
 
-.course-finder__loading {
-  color: #555;
-  margin-top: 1rem;
+.course-finder__error {
+  color: #b00020;
 }
