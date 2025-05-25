@@ -31,7 +31,7 @@
     "useUnknownInCatchVariables": true,
     
     /* Include type definitions for Vite’s globals */
-    "types": ["vite/client"]
+    "types": []
   },
   /* Ensure both your app code and vite-env file are included */
   "include": [

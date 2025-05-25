@@ -83,3 +83,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Note; Delete Trips*/
+/* Delete All button */
+.trip-list__delete-all {
+  margin-bottom: 1rem;
+  background-color: #c62828;
+  color: white;
+  padding: 0.6rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.trip-list__delete-all:hover {
+  background-color: #b71c1c;
+}
+
+/* Inline delete icon */
+.trip-card__delete {
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.2s ease;
+}
+.trip-card__delete:hover {
+  transform: scale(1.2);
+}

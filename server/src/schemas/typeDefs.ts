@@ -1,8 +1,7 @@
-// src/schema/typeDefs.ts
-
-// Note; GraphQL schema definitions for Fairway Finder
+// server/src/schemas/typeDefs.ts
 
 const typeDefs = `
+
   # --------- Profile & Authentication Types --------- #
 
   type Profile {
@@ -10,64 +9,85 @@ const typeDefs = `
     name: String
     email: String
     password: String
-    skills: [String]
     trips: [Trip]
   }
 
   type Auth {
-    token: ID!      # Note; JWT token for authenticated sessions
+    token: ID!
     profile: Profile
   }
 
-  # --------- Course & Trip Types --------- #
+  # --------- Trip & Course Types --------- #
 
   type Course {
     _id: ID
     name: String
+    address: String
+    location: Location
+  }
+
+  type Location {
+    lat: Float
+    lng: Float
+  }
+
+  type Score {
+    hole: Int
+    score: Int
+  }
+
+  type Player {
+    name: String
+    scores: [Score]
   }
 
   type Trip {
     _id: ID
     name: String
+    date: String
     courses: [Course]
+    players: [Player]
   }
 
   # --------- Input Types --------- #
 
   input ProfileInput {
-    name: String!   # Note; Username for registration
-    email: String!  # Note; Email for login/notifications
-    password: String! # Note; Password for authentication
+    name: String!
+    email: String!
+    password: String!
+  }
+
+  input TripInput {
+    name: String!
+    date: String!
+    courseName: String!
   }
 
   # --------- Query Definitions --------- #
 
   type Query {
-    # Profile/User Queries
-    profiles: [Profile]           # Note; Fetch all user profiles
-    profile(profileId: ID!): Profile  # Note; Fetch single profile by ID
-    me: Profile                  # Note; Fetch current authenticated user
-
-    # Trip Queries
-    trips: [Trip]               # Note; Fetch all trips
-    trip(id: ID!): Trip         # Note; Fetch a single trip by ID
+    me: Profile
+    profiles: [Profile]
+    profile(profileId: ID!): Profile
+    trips: [Trip]
+    trip(id: ID!): Trip
   }
 
   # --------- Mutation Definitions --------- #
 
   type Mutation {
-    # Auth/User Management
-    addProfile(input: ProfileInput!): Auth   # Note; Register new user and return Auth payload
-    login(email: String!, password: String!): Auth  # Note; Log in and return Auth payload
+    addProfile(input: ProfileInput!): Auth
+    login(email: String!, password: String!): Auth
 
-    # Trip Management
-    addTrip(name: String!): Trip                     # Note; Create a new trip
-    addCourseToTrip(tripId: ID!, courseName: String!): Trip  # Note; Add course to a trip
-    removeCourseFromTrip(courseName: String!): Trip          # Note; Remove course from a trip
+    addTrip(input: TripInput!): Trip
+    deleteTrip(tripId: ID!): Trip
 
-    # Optional Skills Management
-    addSkill(profileId: ID!, skill: String!): Profile  # Note; Add skill to user profile
-    removeSkill(skill: String!): Profile              # Note; Remove skill from user profile
+    addCourseToTrip(tripId: ID!, courseName: String!): Trip
+    removeCourseFromTrip(courseName: String!): Trip
+
+    addPlayer(tripId: ID!, name: String!): Trip
+    removePlayer(tripId: ID!, name: String!): Trip
+    updateScore(tripId: ID!, player: String!, hole: Int!, score: Int!): Trip
   }
 `;
 

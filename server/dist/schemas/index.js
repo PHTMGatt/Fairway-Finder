@@ -1,9 +1,10 @@
+// server/src/schemas/index.ts
 import typeDefs from './typeDefs.js';
 import resolvers from './resolvers.js';
-// Note; Combine type definitions and resolvers into a single schema export
+// 🔗 Export as Apollo schema
 export const schema = {
     typeDefs,
     resolvers,
 };
-// Note; Also export typeDefs and resolvers individually for flexibility
+// Also export separately if needed elsewhere
 export { typeDefs, resolvers };

@@ -1,50 +1,50 @@
-import { Schema, model, Document } from 'mongoose';
+// server/src/models/Profile.ts
+
+import { Schema, model, Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 
-// Note; Interface for Profile document, extending Mongoose’s Document
 export interface IProfile extends Document {
   name: string;
   email: string;
   password: string;
-  skills: string[];
+  trips: Types.ObjectId[]; // Related trips
   isCorrectPassword(password: string): Promise<boolean>;
 }
 
-// Note; Define Profile schema with validation and constraints
 const profileSchema = new Schema<IProfile>(
   {
     name: {
       type: String,
-      required: true,    // Note; Name is required
-      unique: true,      // Note; No duplicate usernames
-      trim: true,        // Note; Trim whitespace
+      required: true,
+      unique: true,
+      trim: true,
     },
     email: {
       type: String,
-      required: true,    // Note; Email is required
-      unique: true,      // Note; No duplicate emails
-      match: [/.+@.+\..+/, 'Must match an email address!'], // Note; Validate format
+      required: true,
+      unique: true,
+      match: [/.+@.+\..+/, 'Must match a valid email address'],
     },
     password: {
       type: String,
-      required: true,    // Note; Password is required
-      minlength: 5,      // Note; Enforce minimum length
+      required: true,
+      minlength: 5,
     },
-    skills: [
+    trips: [
       {
-        type: String,
-        trim: true,      // Note; Trim each skill entry
+        type: Schema.Types.ObjectId,
+        ref: 'Trip',
       },
     ],
   },
   {
-    timestamps: true,    // Note; Adds createdAt and updatedAt
-    toJSON: { getters: true },  // Note; Apply getters on toJSON
-    toObject: { getters: true },// Note; Apply getters on toObject
+    timestamps: true,
+    toJSON: { getters: true },
+    toObject: { getters: true },
   }
 );
 
-// Note; Hash password before saving new or modified documents
+// Hash password before saving
 profileSchema.pre<IProfile>('save', async function (next) {
   if (this.isNew || this.isModified('password')) {
     const saltRounds = 10;
@@ -53,11 +53,10 @@ profileSchema.pre<IProfile>('save', async function (next) {
   next();
 });
 
-// Note; Method to compare provided password with stored hashed password
+// Method to validate password
 profileSchema.methods.isCorrectPassword = async function (password: string): Promise<boolean> {
   return bcrypt.compare(password, this.password);
 };
 
-// Note; Create and export Profile model
 const Profile = model<IProfile>('Profile', profileSchema);
 export default Profile;

@@ -32,7 +32,7 @@ export const signToken = (username, email, _id) => {
     const payload = { username, email, _id };
     const secret = process.env.JWT_SECRET_KEY || '';
     // Note; Return signed token with 'data' field and 2-hour expiry
-    return jwt.sign({ data: payload }, secret, { expiresIn: '2h' });
+    return jwt.sign({ data: payload }, secret, { expiresIn: '12h' });
 };
 // Note; Custom error for authentication failures in GraphQL
 export class AuthenticationError extends GraphQLError {

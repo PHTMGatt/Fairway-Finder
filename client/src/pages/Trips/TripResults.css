@@ -1,0 +1,135 @@
+/* ===== Trip Results Page Container ===== */
+.trip-results {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(109, 194, 255, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+/* ===== Page Title & Label ===== */
+.trip-results__title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: #003e1f;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.trip-results__label {
+  text-align: center;
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  color: #222;
+}
+
+/* ===== Top Section Layout ===== */
+.trip-results__top {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* ===== Individual Cards ===== */
+.trip-results__card {
+  flex: 1 1 48%;
+  background: #f0faff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.15);
+  backdrop-filter: blur(6px);
+  transition: transform 0.3s ease;
+}
+
+.trip-results__card:hover {
+  transform: translateY(-4px);
+}
+
+/* Optional specific classes (for future targeting if needed) */
+.trip-results__course-card {}
+.trip-results__weather-card {}
+
+.trip-results__card h3 {
+  font-size: 1.35rem;
+  margin-bottom: 0.75rem;
+  color: #003e1f;
+}
+
+.trip-results__card p {
+  font-size: 1rem;
+  color: #222;
+  margin-bottom: 0.3rem;
+}
+
+/* ===== Google Maps Link ===== */
+.trip-results__map-link {
+  display: inline-block;
+  margin-top: 0.8rem;
+  background: #38a5f9;
+  color: white;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.trip-results__map-link:hover {
+  background: #1e8be7;
+}
+
+/* ===== Scorecard Section ===== */
+.trip-results__scorecard {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #cdeeff;
+}
+
+.trip-results__scorecard h3 {
+  font-size: 1.4rem;
+  color: #003e1f;
+  margin-bottom: 1rem;
+}
+
+/* ===== Status/Error Message ===== */
+.trip-results__status {
+  text-align: center;
+  color: #333;
+  font-size: 1rem;
+  margin: 1rem 0;
+}
+
+/* ===== Back Button ===== */
+.trip-results__back-btn {
+  display: block;
+  margin: 3rem auto 1rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  background: #38a5f9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(56, 165, 249, 0.3);
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.trip-results__back-btn:hover {
+  background: #1e8be7;
+}
+
+/* ===== Responsive Layout ===== */
+@media (max-width: 768px) {
+  .trip-results__top {
+    flex-direction: column;
+  }
+
+  .trip-results__card {
+    flex: 1 1 100%;
+  }
+}
