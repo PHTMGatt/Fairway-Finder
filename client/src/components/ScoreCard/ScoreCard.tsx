@@ -1,6 +1,6 @@
 // src/components/ScoreCard/ScoreCard.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ScoreCard.css';
 
 interface Player {
@@ -14,57 +14,56 @@ const defaultPlayers: Player[] = [
   { id: '1', name: 'Player 1', scores: Array(18).fill(0) },
 ];
 
-const ScoreCard: React.FC = () => {
-  // Note; State for all players and their scores
-  const [playerList, setPlayerList] = useState<Player[]>(defaultPlayers);
+// Define props for ScoreCard
+interface ScoreCardProps {
+  tripId: string;
+}
 
-  // Note; State for the “Add Player” input field
+const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
+  // Load from localStorage if present, else default players
+  const [playerList, setPlayerList] = useState<Player[]>(() => {
+    const saved = localStorage.getItem(`scores-${tripId}`);
+    return saved ? JSON.parse(saved) as Player[] : defaultPlayers;
+  });
+
+  // Persist to localStorage whenever playerList changes
+  useEffect(() => {
+    localStorage.setItem(`scores-${tripId}`, JSON.stringify(playerList));
+  }, [tripId, playerList]);
+
   const [newPlayerName, setNewPlayerName] = useState<string>('');
-
-  // Note; Which block of 9 holes to display (0 = holes 1–9, 9 = holes 10–18)
   const [currentStartHoleIndex, setCurrentStartHoleIndex] = useState<number>(0);
 
-  // Note; Array of hole numbers to render as columns
   const holeNumbers = Array.from(
     { length: 9 },
     (_, i) => currentStartHoleIndex + i + 1
   );
 
-  // Note; Handler to add a new player with empty scores
   const handleAddPlayer = () => {
-    const trimmedName = newPlayerName.trim();
-    if (!trimmedName) return;
-
-    setPlayerList((prev) => [
+    const trimmed = newPlayerName.trim();
+    if (!trimmed) return;
+    setPlayerList(prev => [
       ...prev,
-      {
-        id: Date.now().toString(),
-        name: trimmedName,
-        scores: Array(18).fill(0),
-      },
+      { id: Date.now().toString(), name: trimmed, scores: Array(18).fill(0) }
     ]);
-    setNewPlayerName(''); // Note; Clear input
+    setNewPlayerName('');
   };
 
-  // Note; Handler to remove a player by their ID
   const handleRemovePlayer = (playerId: string) => {
-    setPlayerList((prev) => prev.filter((p) => p.id !== playerId));
+    setPlayerList(prev => prev.filter(p => p.id !== playerId));
   };
 
-  // Note; Handler to update a specific player's score for a hole
   const handleScoreChange = (
     playerId: string,
     holeIndex: number,
     newScore: number
   ) => {
-    setPlayerList((prev) =>
-      prev.map((p) =>
+    setPlayerList(prev =>
+      prev.map(p =>
         p.id === playerId
           ? {
               ...p,
-              scores: p.scores.map((s, i) =>
-                i === holeIndex ? newScore : s
-              ),
+              scores: p.scores.map((s, i) => (i === holeIndex ? newScore : s)),
             }
           : p
       )
@@ -73,7 +72,7 @@ const ScoreCard: React.FC = () => {
 
   return (
     <div className="scorecard">
-      {/* Note; Header with back/front 9 navigation */}
+      {/* Header/nav */}
       <div className="scorecard__header">
         <h4 className="scorecard__title">
           Holes {currentStartHoleIndex + 1}–{currentStartHoleIndex + 9}
@@ -84,36 +83,35 @@ const ScoreCard: React.FC = () => {
             onClick={() => setCurrentStartHoleIndex(0)}
             disabled={currentStartHoleIndex === 0}
           >
-            Front 9
+            Front 9
           </button>
           <button
             className="scorecard__btn"
             onClick={() => setCurrentStartHoleIndex(9)}
             disabled={currentStartHoleIndex === 9}
           >
-            Back 9
+            Back 9
           </button>
         </div>
       </div>
 
-      {/* Note; Scores table */}
+      {/* Score table */}
       <table className="scorecard__table">
         <thead>
           <tr>
             <th>Player</th>
-            {holeNumbers.map((h) => (
-              <th key={h}>Hole {h}</th>
+            {holeNumbers.map(h => (
+              <th key={h}>Hole {h}</th>
             ))}
             <th>Total</th>
             <th>✖</th>
           </tr>
         </thead>
         <tbody>
-          {playerList.map((player) => {
-            // Note; Sum of the displayed 9 holes
+          {playerList.map(player => {
             const total = player.scores
               .slice(currentStartHoleIndex, currentStartHoleIndex + 9)
-              .reduce((sum, val) => sum + val, 0);
+              .reduce((sum, v) => sum + v, 0);
 
             return (
               <tr key={player.id}>
@@ -125,7 +123,7 @@ const ScoreCard: React.FC = () => {
                       min="0"
                       className="scorecard__input"
                       value={player.scores[currentStartHoleIndex + idx]}
-                      onChange={(e) =>
+                      onChange={e =>
                         handleScoreChange(
                           player.id,
                           currentStartHoleIndex + idx,
@@ -150,19 +148,16 @@ const ScoreCard: React.FC = () => {
         </tbody>
       </table>
 
-      {/* Note; Add Player controls */}
+      {/* Add player */}
       <div className="scorecard__add-player">
         <input
           type="text"
           className="scorecard__player-input"
           placeholder="Add player name"
           value={newPlayerName}
-          onChange={(e) => setNewPlayerName(e.target.value)}
+          onChange={e => setNewPlayerName(e.target.value)}
         />
-        <button
-          className="scorecard__add-btn"
-          onClick={handleAddPlayer}
-        >
+        <button className="scorecard__add-btn" onClick={handleAddPlayer}>
           Add Player
         </button>
       </div>
