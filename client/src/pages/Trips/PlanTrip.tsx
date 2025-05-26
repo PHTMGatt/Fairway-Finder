@@ -1,4 +1,6 @@
-import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+// src/pages/Trips/PlanTrip.tsx
+
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import { useMutation } from '@apollo/client';
@@ -11,11 +13,6 @@ interface Course {
   address: string;
   rating: number | null;
   place_id: string;
-}
-interface AddTripInput {
-  name: string;
-  date: string;
-  courseName: string;
 }
 
 const PlanTrip: React.FC = () => {
@@ -45,7 +42,9 @@ const PlanTrip: React.FC = () => {
   // Handlers…
   const handleCourseSearch = async (e: FormEvent) => {
     e.preventDefault();
-    setCourseOptions([]); setCourseError(''); setSelectedCourse(null);
+    setCourseOptions([]);
+    setCourseError('');
+    setSelectedCourse(null);
 
     const city = searchCity.trim();
     if (!city) {
