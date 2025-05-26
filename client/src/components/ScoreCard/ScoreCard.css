@@ -1,0 +1,116 @@
+/* src/components/ScoreCard/ScoreCard.css */
+
+/* ===== Scorecard Layout ===== */
+.scorecard {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 16px;
+  box-shadow: 0 12px 24px rgba(109, 194, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+/* ===== Header Controls ===== */
+.scorecard__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.scorecard__title {
+  font-size: 1.25rem;
+  color: #1f3b24;
+  font-weight: 600;
+}
+
+.scorecard__nav .scorecard__btn {
+  background: #6dc2ff;
+  color: #fff;
+  padding: 0.4rem 1rem;
+  margin-left: 0.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.scorecard__nav .scorecard__btn:disabled {
+  background: #c5e8ff;
+  cursor: not-allowed;
+}
+
+.scorecard__nav .scorecard__btn:hover:not(:disabled) {
+  background: #4eb6f5;
+}
+
+/* ===== Table Styles ===== */
+.scorecard__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.scorecard__table th,
+.scorecard__table td {
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid #d0ecfa;
+}
+
+.scorecard__table th {
+  background-color: #eafaff;
+  color: #1f3b24;
+  font-weight: 600;
+}
+
+.scorecard__input {
+  width: 3rem;
+  padding: 0.3rem;
+  text-align: center;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.scorecard__remove {
+  background: transparent;
+  border: none;
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+/* ===== Add Player Input ===== */
+.scorecard__add-player {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.scorecard__player-input {
+  padding: 0.5rem;
+  flex: 1;
+  max-width: 300px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.scorecard__add-btn {
+  background: #28a745;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.scorecard__add-btn:hover {
+  background: #218838;
+}
