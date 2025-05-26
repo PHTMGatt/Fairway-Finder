@@ -1,0 +1,93 @@
+/* client/src/pages/Auth/Login.css */
+
+/* ===== Page Wrapper ===== */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+  background: #eafaff;
+  min-height: calc(100vh - 100px - 60px); /* subtract header & footer */
+}
+
+/* ===== Card ===== */
+.auth-card {
+  background: linear-gradient(to bottom right, #6dc2ff, #eafaff);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.25);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+/* ===== Header ===== */
+.auth-header {
+  background: rgba(255, 255, 255, 0.2);
+  color: #003344;
+  padding: 1rem;
+  font-size: 1.25rem;
+  text-align: center;
+  font-weight: 700;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Body ===== */
+.auth-body {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ===== Form ===== */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-input {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-input:focus {
+  border-color: #6dc2ff;
+  box-shadow: 0 0 6px #6dc2ff;
+  outline: none;
+}
+
+/* ===== Button ===== */
+.auth-btn {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(31, 59, 36, 0.6);
+  border-radius: 6px;
+  color: #1f3b24;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+.auth-btn:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.auth-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Error ===== */
+.auth-error {
+  color: #b00020;
+  font-size: 0.9rem;
+  text-align: center;
+  font-weight: bold;
+}

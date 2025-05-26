@@ -1,0 +1,81 @@
+.plan-trip {
+  margin: 2rem auto;
+  max-width: 600px;
+  background: linear-gradient(to bottom right, #e3f5ff, #f9fcff);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(109, 194, 255, 0.3);
+  border: 1px solid #b3e5fc;
+}
+
+.plan-trip__title {
+  margin-bottom: 1rem;
+  font-size: 1.6rem;
+  text-align: center;
+  color: #064e3b;
+}
+
+.plan-trip__form {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.plan-trip__input {
+  flex: 1 1 auto;
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.plan-trip__btn {
+  flex: 0 0 auto;
+  background: linear-gradient(to right, #4eb6f5, #6dc2ff);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.plan-trip__btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(109, 194, 255, 0.4);
+}
+
+.plan-trip__results {
+  list-style: none;
+  padding-left: 1rem;
+  margin-bottom: 1rem;
+}
+
+.plan-trip__result-item {
+  margin: 0.4rem 0;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.plan-trip__result-item:hover {
+  background: #e0f4ff;
+}
+.plan-trip__result-item.selected {
+  background: #c7eeff;
+  font-weight: bold;
+}
+
+.plan-trip__confirmation {
+  margin-bottom: 1rem;
+  color: #064e3b;
+  font-weight: 600;
+}
+
+.plan-trip__error {
+  color: #b00020;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}

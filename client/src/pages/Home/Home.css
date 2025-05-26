@@ -1,3 +1,6 @@
+/* src/pages/Home/Home.css */
+
+/* ===== Page Wrapper ===== */
 .home {
   display: flex;
   flex-direction: column;
@@ -96,15 +99,15 @@
 .home__map {
   width: 100%;
   max-width: 800px;
-  height: 300px;              /* Note; explicit height so child can fill */
+  height: 300px; /* explicit height so child can fill */
   margin-bottom: 2rem;
   border-radius: 6px;
   overflow: hidden;
   border: 1px solid #b3e5fc;
   box-shadow: 0 6px 12px rgba(109, 194, 255, 0.1);
-  position: relative;         /* Note; for child absolute positioning */
-  pointer-events: auto;       /* Note; allow all map interactions */
-  overscroll-behavior: contain;    /* ← Note; keep zoom & pan inside map */
+  position: relative;
+  pointer-events: auto;
+  overscroll-behavior: contain;
 }
 
 /* Note; child map-container from GoogleMapView fills this */
@@ -154,8 +157,9 @@
 
 .home__nav-item:hover {
   transform: scale(1.12);
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4),
-              0 0 24px rgba(109, 194, 255, 0.6);
+  box-shadow:
+    0 0 16px rgba(255, 255, 255, 0.4),
+    0 0 24px rgba(109, 194, 255, 0.6);
 }
 
 .home__nav-item span {

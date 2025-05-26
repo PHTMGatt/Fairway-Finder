@@ -1,3 +1,5 @@
+/* src/components/ScoreCard/ScoreCard.css */
+
 /* ===== Scorecard Layout ===== */
 .scorecard {
   margin-top: 2rem;
@@ -111,21 +113,4 @@
 
 .scorecard__add-btn:hover {
   background: #218838;
-}
-
-/* ===== Back Button (inherits trip-results layout) ===== */
-.trip-results__back-btn {
-  margin-top: 2rem;
-  background: #daf5e3;
-  color: #065f46;
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  border: 1px solid #b4ebca;
-  font-weight: 500;
-  transition: background 0.2s ease-in-out;
-  cursor: pointer;
-}
-
-.trip-results__back-btn:hover {
-  background: #c1edd2;
 }

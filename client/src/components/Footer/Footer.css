@@ -1,3 +1,5 @@
+/* src/components/Footer/Footer.css */
+
 /* Note; Main footer container with deep soft blue gradient */
 .footer {
   margin-top: auto;
@@ -9,7 +11,7 @@
   transition: background 0.3s ease;
 }
 
-/* Note; Centered content with spacing */
+/* Note; Centered inner content with vertical spacing */
 .footer__inner {
   display: flex;
   flex-direction: column;
@@ -17,7 +19,7 @@
   gap: 0.75rem;
 }
 
-/* Note; 'Go Back' button with glowing hover */
+/* Note; 'Go Back' button styling (non-sticky) */
 .footer__back {
   background-color: #6dc2ff;
   color: #fff;

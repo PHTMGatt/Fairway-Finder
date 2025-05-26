@@ -1,25 +1,34 @@
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+// server/src/config/connection.ts
 
-// Load env vars from .env
+import mongoose, { ConnectOptions } from 'mongoose';
+import dotenv from 'dotenv';
+
+// Load environment variables from server/.env
 dotenv.config();
 
-// Use Fairway-Finder DB URI from environment
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Fairway-Finder';
+// Note; MongoDB connection URI loaded from environment.
+// Throws if not defined to avoid silent failures.
+const MONGODB_URI = process.env.MONGODB_URI!;
+if (!MONGODB_URI) {
+  throw new Error('Missing MONGODB_URI environment variable');
+}
 
 /**
- * Connects to MongoDB (Fairway-Finder only) and returns the active connection
+ * Note; Establishes a connection to MongoDB using Mongoose.
+ * @returns The active mongoose.Connection
+ * @throws If the connection attempt fails
  */
-const db = async (): Promise<typeof mongoose.connection> => {
+export async function connectDatabase(): Promise<mongoose.Connection> {
   try {
-    console.log('🔗 Connecting to MongoDB:', MONGODB_URI);
-    await mongoose.connect(MONGODB_URI);
+    console.log(`🔗 Connecting to MongoDB at ${MONGODB_URI}`);
+    await mongoose.connect(MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    } as ConnectOptions);
     console.log('✅ MongoDB connected (Fairway-Finder)');
     return mongoose.connection;
-  } catch (err) {
-    console.error('❌ MongoDB connection failed:', err);
+  } catch (error) {
+    console.error('❌ MongoDB connection failed:', error);
     throw new Error('Database connection failed');
   }
-};
-
-export default db;
+}

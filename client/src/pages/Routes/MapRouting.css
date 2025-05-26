@@ -1,13 +1,13 @@
-/* src/pages/Routing/MapRouting.css */
+/* src/pages/Routes/MapRouting.css */
 
-/* Page wrapper */
+/* Note; Page wrapper with light background */
 .map-routing {
   padding: 2rem;
   background: #e9faff;
   min-height: 100vh;
 }
 
-/* Title */
+/* Note; Section title styling */
 .map-routing__title {
   font-size: 1.75rem;
   text-align: center;
@@ -15,7 +15,7 @@
   color: #114b8b;
 }
 
-/* Form layout */
+/* Note; Input form layout */
 .map-routing__form {
   display: flex;
   justify-content: center;
@@ -24,7 +24,7 @@
   margin-bottom: 1.5rem;
 }
 
-/* Input fields */
+/* Note; Styling for text inputs */
 .map-routing__input {
   padding: 0.5rem;
   font-size: 1rem;
@@ -39,7 +39,7 @@
   outline: none;
 }
 
-/* Go button */
+/* Note; Submit button for the form */
 .map-routing__btn {
   padding: 0.5rem 1rem;
   background: #3a79d8;
@@ -56,7 +56,7 @@
   transform: translateY(-2px);
 }
 
-/* Map container ensures fixed height & relative positioning */
+/* Note; Container for the map canvas */
 .map-routing__map {
   position: relative;
   width: 100%;
@@ -65,17 +65,17 @@
   height: 450px;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  overscroll-behavior: contain;    /* ← Note; keep scroll inside this block */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overscroll-behavior: contain; /* keep scroll inside this block */
 }
 
-/* Frosted-glass instruction overlay */
+/* Note; Instruction overlay that fades on hover */
 .map-overlay {
   position: absolute;
   top: 16px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -83,10 +83,9 @@
   z-index: 1000;
   opacity: 1;
   transition: opacity 0.3s;
-  pointer-events: none;  /* allow map interactions */
+  pointer-events: none;
 }
 
-/* Hide overlay when interacting with the map */
 .map-routing__map:hover .map-overlay {
   opacity: 0;
 }

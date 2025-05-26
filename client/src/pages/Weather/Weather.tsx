@@ -1,138 +1,214 @@
-// src/pages/Weather/Weather.tsx
+// client/src/pages/Weather/Weather.tsx
 
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import {
   WiDaySunny,
-  WiCloud,
   WiCloudy,
   WiRain,
   WiThunderstorm,
   WiSnow,
   WiFog,
+  WiStars,
+  WiRaindrops,
+  WiStrongWind,
 } from 'react-icons/wi';
 import ToggleSwitch from '../../components/ToggleSwitch/ToggleSwitch';
 import './Weather.css';
 
-/*
-  Note; Map OpenWeather “main” values to react-icons/wi components
-*/
+/**
+ * Shape of the data we pull from our /api/weather proxy:
+ * - tempF      raw temperature in °F (server uses units=imperial)
+ * - humidity   relative humidity %
+ * - precipitation  rain or snow volume (mm in last 1h)
+ * - windSpeed  wind speed (mph)
+ * - iconCode   OpenWeather icon code (e.g. "01d", "01n")
+ * - main       high-level condition (Clear, Clouds, etc.)
+ * - description detailed text
+ * - name       city name
+ */
+interface WeatherInfo {
+  tempF: number;
+  humidity: number;
+  precipitation: number;
+  windSpeed: number;
+  iconCode: string;
+  main: string;
+  description: string;
+  name: string;
+}
+
+// Map OpenWeather “main” to a day-time icon
 const iconMap: Record<string, JSX.Element> = {
-  Clear: <WiDaySunny className="weather-icon" />,
-  Clouds: <WiCloudy className="weather-icon" />,
-  Rain: <WiRain className="weather-icon" />,
-  Drizzle: <WiRain className="weather-icon" />,
+  Clear:        <WiDaySunny    className="weather-icon" />,
+  Clouds:       <WiCloudy      className="weather-icon" />,
+  Rain:         <WiRain        className="weather-icon" />,
+  Drizzle:      <WiRain        className="weather-icon" />,
   Thunderstorm: <WiThunderstorm className="weather-icon" />,
-  Snow: <WiSnow className="weather-icon" />,
-  Mist: <WiFog className="weather-icon" />,
-  Smoke: <WiFog className="weather-icon" />,
-  Haze: <WiFog className="weather-icon" />,
-  Dust: <WiFog className="weather-icon" />,
-  Fog: <WiFog className="weather-icon" />,
-  Sand: <WiFog className="weather-icon" />,
-  Ash: <WiFog className="weather-icon" />,
-  Squall: <WiCloud className="weather-icon" />,
-  Tornado: <WiThunderstorm className="weather-icon" />,
+  Snow:         <WiSnow        className="weather-icon" />,
+  Mist:         <WiFog         className="weather-icon" />,
+  Smoke:        <WiFog         className="weather-icon" />,
+  Haze:         <WiFog         className="weather-icon" />,
+  Dust:         <WiFog         className="weather-icon" />,
+  Fog:          <WiFog         className="weather-icon" />,
+  Sand:         <WiFog         className="weather-icon" />,
+  Ash:          <WiFog         className="weather-icon" />,
+  Squall:       <WiCloudy      className="weather-icon" />,
+  Tornado:      <WiThunderstorm className="weather-icon" />,
 };
 
-// Note; Helpers to convert Kelvin → Celsius & Fahrenheit
-const kelvinToCelsius = (k: number) => Math.round(k - 273.15);
-const kelvinToFahrenheit = (k: number) =>
-  Math.round((k - 273.15) * (9 / 5) + 32);
+/** Convert Fahrenheit → Celsius */
+const fahrenheitToCelsius = (f: number) =>
+  Math.round(((f - 32) * 5) / 9);
 
 const Weather: React.FC = () => {
-  const [location, setLocation] = useState('');
-  const [useFahrenheit, setUseFahrenheit] = useState(true); // Note; toggle state
-  const [weather, setWeather] = useState<{
-    rawTempK: number;
-    main: string;
-    description: string;
-    name: string;
-  } | null>(null);
+  // controlled inputs & flags
+  const [city, setCity] = useState<string>('');
+  const [isFahrenheit, setIsFahrenheit] = useState<boolean>(true);
+  const [weather, setWeather] = useState<WeatherInfo | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
 
-  // Note; Fetch once in Kelvin, then convert on toggle
+  /** update input */
+  const handleCityChange = (e: ChangeEvent<HTMLInputElement>) =>
+    setCity(e.target.value);
+
+  /** fetch from our server proxy */
   const handleSearch = async () => {
-    if (!location.trim()) {
-      alert('Please enter a city name.');
+    const name = city.trim();
+    if (!name) {
+      setError('Please enter a city name.');
+      setWeather(null);
       return;
     }
 
+    setLoading(true);
+    setError('');
+    setWeather(null);
+
     try {
-      const apiKey = import.meta.env.VITE_WEATHER_API_KEY;
-      // Note; omit units param to get Kelvin by default
       const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-          location
-        )}&appid=${apiKey}`
+        `/api/weather?city=${encodeURIComponent(name)}`
       );
+      if (!res.ok) throw new Error('Failed to fetch weather');
       const data = await res.json();
-      if (!data?.weather?.[0] || !data?.main?.temp) throw new Error();
+
+      console.log('Raw weather data (°F):', data.main.temp, data);
+
+      // validate
+      if (!data.weather?.[0] || data.main?.temp == null) {
+        throw new Error('Incomplete weather data');
+      }
 
       setWeather({
-        rawTempK: data.main.temp,       // Note; store Kelvin
+        tempF: data.main.temp,
+        humidity: data.main.humidity,
+        precipitation: data.rain?.['1h'] ?? data.snow?.['1h'] ?? 0,
+        windSpeed: data.wind.speed,
+        iconCode: data.weather[0].icon,
         main: data.weather[0].main,
         description: data.weather[0].description,
         name: data.name,
       });
-    } catch (err) {
-      alert('Failed to fetch weather. Check city name.');
-      console.error(err);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load weather.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Note; derive display temp
-  const displayTemp = weather
-    ? useFahrenheit
-      ? kelvinToFahrenheit(weather.rawTempK)
-      : kelvinToCelsius(weather.rawTempK)
-    : null;
+  /** pick day vs night icon */
+  const renderIcon = () => {
+    if (!weather) return null;
+    // night codes end in “n”
+    return weather.iconCode.endsWith('n')
+      ? <WiStars className="weather-icon" />
+      : iconMap[weather.main] || <WiCloudy className="weather-icon" />;
+  };
+
+  /** which temp to show */
+  const displayTemp = weather == null
+    ? null
+    : isFahrenheit
+    ? Math.round(weather.tempF)                      // raw °F
+    : fahrenheitToCelsius(weather.tempF);            // to °C
 
   return (
     <main className="weather-page">
       <div className="weather-card">
+
+        {/* ===== Search Panel ===== */}
         <section className="weather-card__search">
           <h2 className="weather-card__title">Weather Forecast</h2>
           <p className="weather-card__desc">
-            Enter a city to view current golf weather conditions.
+            Enter a city to view precipitation, humidity, wind, and more.
           </p>
 
           <div className="weather-card__toggle">
-            {/* Note; Toggle between °F & °C */}
             <ToggleSwitch
               id="unitToggle"
-              checked={useFahrenheit}
-              onChange={setUseFahrenheit}
-              label={useFahrenheit ? '°F' : '°C'}
+              checked={isFahrenheit}
+              onChange={setIsFahrenheit}
+              label={isFahrenheit ? '°F' : '°C'}
             />
           </div>
 
           <div className="weather-card__input-group">
             <input
-              className="weather-card__input"
               type="text"
+              className="weather-card__input"
               placeholder="Enter city"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              value={city}
+              onChange={handleCityChange}
             />
-            <button className="weather-card__btn" onClick={handleSearch}>
-              Check Weather
+            <button
+              className="weather-card__btn"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {loading ? 'Checking…' : 'Check Weather'}
             </button>
           </div>
+
+          {error && (
+            <p className="trip-details__status" style={{ color: '#b00020' }}>
+              ❌ {error}
+            </p>
+          )}
         </section>
 
+        {/* ===== Result Panel ===== */}
         {weather && displayTemp !== null && (
           <section className="weather-card__result">
             <div className="weather-result">
-              <h3 className="weather-result__city">{weather.name}</h3>
               <div className="weather-result__icon-wrapper">
-                {iconMap[weather.main] || <WiCloud className="weather-icon" />}
+                {renderIcon()}
               </div>
-              <p className="weather-result__desc">{weather.description}</p>
-              <p className="weather-result__temp">
-                {displayTemp}°{useFahrenheit ? 'F' : 'C'}
+              <h3 className="weather-result__city">{weather.name}</h3>
+              <p className="weather-result__desc">
+                {weather.description}
               </p>
+              <p className="weather-result__temp">
+                {displayTemp}°{isFahrenheit ? 'F' : 'C'}
+              </p>
+
+              <div className="weather-result__details">
+                <div className="detail">
+                  <WiRain className="detail-icon" />
+                  <span>Precip: <strong>{weather.precipitation} mm</strong></span>
+                </div>
+                <div className="detail">
+                  <WiRaindrops className="detail-icon" />
+                  <span>Humidity: <strong>{weather.humidity}%</strong></span>
+                </div>
+                <div className="detail">
+                  <WiStrongWind className="detail-icon" />
+                  <span>Wind: <strong>{weather.windSpeed} mph</strong></span>
+                </div>
+              </div>
             </div>
           </section>
         )}
+
       </div>
     </main>
   );

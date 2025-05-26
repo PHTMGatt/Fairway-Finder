@@ -3,83 +3,101 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-
 import Auth from '../../utils/auth';
 import { LOGIN_USER } from '../../utils/mutations';
-import { useAuth } from './AuthContext'; // Note; Access auth context to trigger refresh
-import './Auth.css';
+import { useAuth } from './AuthContext';
+import './Login.css';
 
 const Login: React.FC = () => {
-  // Note; Form state for email and password
-  const [formState, setFormState] = useState({ email: '', password: '' });
-  const [loginError, setLoginError] = useState<string | null>(null);
+  // Note; Track email/password inputs and any error message
+  const [credentials, setCredentials] = useState({
+    email: '',
+    password: '',
+  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const [loginMutation, { loading }] = useMutation(LOGIN_USER);
-  const { refresh } = useAuth(); // Note; Needed to trigger isLoggedIn update after login
+  // Note; Apollo mutation for logging in
+  const [loginUser, { loading }] = useMutation(LOGIN_USER);
 
-  // Note; Input change handler
+  // Note; Refresh auth context after successful login
+  const { refreshAuth } = useAuth();
+
+  // Note; Update form state on each keystroke
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
-    setLoginError(null);
+    setCredentials((prev) => ({ ...prev, [name]: value }));
+    setErrorMessage(null);
   };
 
-  // Note; Form submit handler
+  // Note; Submit the login mutation
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setLoginError(null);
-    if (!formState.email || !formState.password) {
-      setLoginError('Email and password are required.');
+    setErrorMessage(null);
+
+    const { email, password } = credentials;
+    if (!email || !password) {
+      setErrorMessage('Email and password are required.');
       return;
     }
+
     try {
-      const res = await loginMutation({ variables: formState });
-      if (res.data?.login?.token) {
-        Auth.login(res.data.login.token); // Note; Stores token in localStorage
-        refresh(); // Note; Update context so Header sees logged-in state
+      const { data } = await loginUser({ variables: { email, password } });
+      const token = data?.login?.token;
+      if (token) {
+        Auth.login(token);     // Note; Save token to localStorage
+        refreshAuth();         // Note; Trigger context update
       } else {
-        setLoginError('Invalid login.');
+        setErrorMessage('Invalid credentials.');
       }
     } catch (err: any) {
-      const gqlMessage = err?.graphQLErrors?.[0]?.message || err.message;
-      setLoginError(gqlMessage);
+      const message =
+        err?.graphQLErrors?.[0]?.message || err.message || 'Login failed.';
+      setErrorMessage(message);
     }
   };
 
-  // Note; Redirect if already logged in
-  if (Auth.loggedIn()) return <Navigate to="/me" replace />;
+  // Note; If already authenticated, redirect to saved trips
+  if (Auth.loggedIn()) {
+    return <Navigate to="/saved-trips" replace />;
+  }
 
   return (
     <main className="auth-page">
       <div className="auth-card">
         <h4 className="auth-header">Log In</h4>
         <div className="auth-body">
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form className="auth-form" onSubmit={handleSubmit}>
             <input
-              className="auth-input"
               name="email"
-              placeholder="Email"
               type="email"
-              value={formState.email}
+              className="auth-input"
+              placeholder="Email"
+              value={credentials.email}
               onChange={handleChange}
             />
             <input
-              className="auth-input"
               name="password"
-              placeholder="Password"
               type="password"
-              value={formState.password}
+              className="auth-input"
+              placeholder="Password"
+              value={credentials.password}
               onChange={handleChange}
             />
-            <button className="btn auth-btn" type="submit" disabled={loading}>
+            <button
+              type="submit"
+              className="btn auth-btn"
+              disabled={loading}
+            >
               {loading ? 'Logging in…' : 'Submit'}
             </button>
           </form>
-          {loginError && <div className="auth-error">{loginError}</div>}
+          {errorMessage && (
+            <div className="auth-error">{errorMessage}</div>
+          )}
         </div>
       </div>
     </main>
-  );
-};
+);
+}
 
 export default Login;
