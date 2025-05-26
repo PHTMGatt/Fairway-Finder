@@ -23,7 +23,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   // Load from localStorage if present, else default players
   const [playerList, setPlayerList] = useState<Player[]>(() => {
     const saved = localStorage.getItem(`scores-${tripId}`);
-    return saved ? JSON.parse(saved) as Player[] : defaultPlayers;
+    return saved ? (JSON.parse(saved) as Player[]) : defaultPlayers;
   });
 
   // Persist to localStorage whenever playerList changes
@@ -75,7 +75,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
       {/* Header/nav */}
       <div className="scorecard__header">
         <h4 className="scorecard__title">
-          Holes {currentStartHoleIndex + 1}–{currentStartHoleIndex + 9}
+          Holes {currentStartHoleIndex + 1}-{currentStartHoleIndex + 9}
         </h4>
         <div className="scorecard__nav">
           <button
@@ -83,14 +83,14 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
             onClick={() => setCurrentStartHoleIndex(0)}
             disabled={currentStartHoleIndex === 0}
           >
-            Front 9
+            Front 9
           </button>
           <button
             className="scorecard__btn"
             onClick={() => setCurrentStartHoleIndex(9)}
             disabled={currentStartHoleIndex === 9}
           >
-            Back 9
+            Back 9
           </button>
         </div>
       </div>
@@ -101,7 +101,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
           <tr>
             <th>Player</th>
             {holeNumbers.map(h => (
-              <th key={h}>Hole {h}</th>
+              <th key={h}>Hole {h}</th>
             ))}
             <th>Total</th>
             <th>✖</th>
