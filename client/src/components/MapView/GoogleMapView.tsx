@@ -1,6 +1,6 @@
 // src/components/GoogleMap/GoogleMapView.tsx
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import './GoogleMapView.css';
 
 interface GoogleMapViewProps {
@@ -24,7 +24,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   const coordDisplayRef = useRef<HTMLDivElement>(null);
 
   // Note; Initialize map at default coordinates
-  const initializeMap = () => {
+  const initializeMap = useCallback(() => {
     if (!mapContainerRef.current || !window.google?.maps) return;
 
     mapInstanceRef.current = new window.google.maps.Map(
@@ -45,10 +45,10 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
         coordDisplayRef.current.innerText = `Map Center → Lat: ${lat}, Lng: ${lng}`;
       }
     });
-  };
+  }, []);
 
   // Note; Fetch route and nearby courses, then draw on map
-  const drawRouteAndCourses = async () => {
+  const drawRouteAndCourses = useCallback(async () => {
     if (!origin || !destination || !mapInstanceRef.current) return;
 
     // Note; GET directions from our server proxy
@@ -97,7 +97,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
         });
       }
     });
-  };
+  }, [origin, destination, maxDistance]);
 
   useEffect(() => {
     // Note; Load Google Maps JS using a server-side proxy (no client env key)
@@ -119,14 +119,14 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
       initializeMap();
       drawRouteAndCourses();
     }
-  }, []); // Note; Run once on mount
+  }, [initializeMap, drawRouteAndCourses]);  // exhaustive-deps satisfied
 
   useEffect(() => {
     // Note; Redraw when origin, destination, or maxDistance changes
-    if (origin && destination) {
+    if (origin && destination && mapInstanceRef.current) {
       drawRouteAndCourses();
     }
-  }, [origin, destination, maxDistance]);
+  }, [origin, destination, maxDistance, drawRouteAndCourses]);  // exhaustive-deps satisfied
 
   return (
     <div className="map-container">

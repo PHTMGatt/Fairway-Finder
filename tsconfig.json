@@ -1,38 +1,42 @@
 {
   "compilerOptions": {
     /* Language and Environment */
-    "target": "ES2020",                          // Note; Use modern JS features
-    /* Modules */
-    "module": "ESNext",                          // Note; Emit native ES modules
-    "moduleResolution": "Bundler",               // Note; Resolve imports like a bundler
-    "skipLibCheck": true,                        // Note; Skip type-checking of declaration files
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
 
     /* JavaScript Support */
-    "allowJs": true,                             // Note; Include .js files in compilation
-    "checkJs": true,                             // Note; Report errors in .js files
+    "allowJs": true,
+    "checkJs": true,
 
     /* Interop Constraints */
-    "esModuleInterop": true,                     // Note; Support default imports from CommonJS
-    "allowSyntheticDefaultImports": true,        // Note; Allow default import syntax for modules without default
-    "forceConsistentCasingInFileNames": true,    // Note; Enforce correct import casing
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
 
     /* Type Checking */
-    "strict": true,                              // Note; Enable all strict type-checking options
-    "noUnusedLocals": true,                      // Note; Error on unused locals
-    "noUnusedParameters": true,                  // Note; Error on unused parameters
-    "noFallthroughCasesInSwitch": true,          // Note; Disallow fallthrough in switch
-    "exactOptionalPropertyTypes": true,          // Note; Preserve optional property types
-    "noImplicitReturns": true,                   // Note; Error when not all code paths return
-    "noImplicitOverride": true,                  // Note; Require 'override' on overridden methods
-    "useUnknownInCatchVariables": true,          // Note; Use 'unknown' for catch error variables
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "useUnknownInCatchVariables": true,
 
     /* Vite Globals Support */
-    "types": ["vite/client"]                     // Note; Include Vite's type definitions (import.meta.env)
+    
   },
 
-  // Note; Include source files and the vite-env declaration
+  // now include both client & server source!
   "include": [
-    "src",
-    "src/vite-env.d.ts"
-  ]
+    "server/src/**/*.ts",
+    "client/src/**/*.ts",
+    "client/src/**/*.tsx",
+    "client/src/vite-env.d.ts"
+  ],
+
+  // skip these folders
+  "exclude": ["node_modules", "dist"]
 }
