@@ -1,9 +1,11 @@
-/* Note; Wrapper for the entire trip list section */
+/* src/components/TripList/TripList.css */
+
+/* Wrapper for the entire trip list section */
 .trip-list {
   margin: 1rem 0;
 }
 
-/* Note; Section title */
+/* Section title */
 .trip-list__title {
   font-size: 1.3rem;
   font-weight: 700;
@@ -11,32 +13,33 @@
   color: #1f3b24;
 }
 
-/* Note; Grid layout for trip cards */
+/* Grid layout for trip cards */
 .trip-list__grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
 
-/* Note; Individual card style with soft glow */
+/* Individual card style with soft glow and flex layout */
 .trip-card {
+  display: flex;
+  flex-direction: column;
   border-radius: 10px;
   background: linear-gradient(to bottom right, #e0f7fa, #f5fcff);
   box-shadow: 0 6px 12px rgba(109, 194, 255, 0.2);
   border: 1px solid #b3e5fc;
   overflow: hidden;
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .trip-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 18px rgba(109, 194, 255, 0.35);
 }
 
-/* Note; Card header with course count */
+/* Card header with bold colored bar */
 .trip-card__header {
   background: linear-gradient(to right, #81c784, #66bb6a);
-  color: white;
+  color: #fff;
   margin: 0;
   padding: 0.6rem 0.9rem;
   display: flex;
@@ -46,46 +49,64 @@
   font-size: 1rem;
 }
 
+/* Course count badge */
 .trip-card__count {
   font-size: 0.85rem;
   opacity: 0.95;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
 }
 
-/* Note; Full-width trip link button */
+/* Delete icon in header */
+.trip-card__delete {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  color: #ffe3e3;
+  transition: transform 0.2s ease;
+}
+.trip-card__delete:hover {
+  transform: scale(1.2);
+}
+
+/* View details button with gradient and hover effect */
 .trip-card__btn {
   display: block;
   width: 100%;
   padding: 0.75rem;
   text-align: center;
-  background: #6dc2ff;
-  color: white;
+  background: linear-gradient(45deg, #4eb6f5, #6dc2ff);
+  color: #fff;
   font-weight: 600;
+  border: none;
   border-top: 1px solid #b3e5fc;
-  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-
 .trip-card__btn:hover {
-  background-color: #4eb6f5;
-  box-shadow: 0 0 10px rgba(109, 194, 255, 0.5);
+  background: linear-gradient(45deg, #6dc2ff, #4eb6f5);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(109, 194, 255, 0.5);
 }
 
-/* Note; Empty state message */
+/* Empty state message */
 .trip-list__empty {
   font-size: 1rem;
   color: #666;
   margin-top: 1rem;
   text-align: center;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* Note; Responsive layout for mobile */
-@media (max-width: 500px) {
-  .trip-list__grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Note; Delete Trips*/
-/* Delete All button */
+/* Delete All Trips button */
 .trip-list__delete-all {
   margin-bottom: 1rem;
   background-color: #c62828;
@@ -101,16 +122,74 @@
   background-color: #b71c1c;
 }
 
-/* Inline delete icon */
-.trip-card__delete {
-  background: transparent;
-  border: none;
+/* Responsive layout for narrow screens */
+@media (max-width: 500px) {
+  .trip-list__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Individual Trip Card ===== */
+.trip-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 12px;
+  background: linear-gradient(to bottom right, #e0f7fa, #f5fcff);
+  box-shadow: 0 6px 16px rgba(109, 194, 255, 0.2);
+  border: 1px solid #b3e5fc;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.trip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(109, 194, 255, 0.35);
+}
+
+/* ===== Card Header ===== */
+.trip-card__header {
+  background: linear-gradient(to right, #81c784, #66bb6a);
+  color: #fff;
+  padding: 0.75rem 1rem;
   font-size: 1rem;
-  margin-left: 0.5rem;
-  cursor: pointer;
-  color: white;
-  transition: transform 0.2s ease;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ===== Course Count Badge ===== */
+.trip-card__count {
+  background: rgba(255,255,255,0.3);
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+/* ===== Delete Icon ===== */
+.trip-card__delete {
+  font-size: 1.1rem;
+  transition: color 0.2s, transform 0.2s;
 }
 .trip-card__delete:hover {
+  color: #b71c1c;
   transform: scale(1.2);
 }
+
+/* ===== View Details Button ===== */
+.trip-card__btn {
+  margin-top: auto;
+  padding: 0.75rem;
+  text-align: center;
+  background: linear-gradient(to right, #4eb6f5, #6dc2ff);
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-top: 1px solid #b3e5fc;
+  transition: background-color 0.25s, box-shadow 0.25s;
+}
+.trip-card__btn:hover {
+  background-color: #4aa7e0;
+  box-shadow: 0 4px 12px rgba(109,194,255,0.5);
+}
+
