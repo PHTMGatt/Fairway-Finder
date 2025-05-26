@@ -1,5 +1,6 @@
-// src/App.tsx
+// client/src/App.tsx
 
+import React from 'react';
 import './App.css';
 import {
   ApolloClient,
@@ -10,18 +11,16 @@ import {
 import { setContext } from '@apollo/client/link/context';
 import { Outlet } from 'react-router-dom';
 import { APIProvider } from '@vis.gl/react-google-maps';
-
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 
-// Note; Pull Google Maps API Key from Vite env
+// Note; Pull Google Maps API key from environment (handled on server in production)
 const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-console.log('🔑 VITE_GOOGLE_MAPS_API_KEY →', MAP_KEY ? 'Found' : 'Missing');
 if (!MAP_KEY) {
-  throw new Error('Missing VITE_GOOGLE_MAPS_API_KEY in .env');
+  throw new Error('Missing VITE_GOOGLE_MAPS_API_KEY in environment variables');
 }
 
-// Note; Set up base GraphQL endpoint
+// Note; Base GraphQL endpoint (uses relative path in prod, localhost in dev)
 const httpLink = createHttpLink({
   uri:
     import.meta.env.MODE === 'development'
@@ -30,7 +29,7 @@ const httpLink = createHttpLink({
   credentials: 'include',
 });
 
-// Note; Inject JWT token into all request headers
+// Note; Attach JWT token from localStorage to each GraphQL request
 const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem('id_token');
   return {
@@ -41,31 +40,30 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// Note; Create Apollo Client instance with auth and caching
-const client = new ApolloClient({
+// Note; Instantiate Apollo Client with auth middleware and in-memory cache
+const apolloClient = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
-function App() {
-  return (
-    <ApolloProvider client={client}>
-      <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
-        <div className="app-layout">
-          {/* Note; Sticky Header */}
-          <Header />
+const App: React.FC = () => (
+  <ApolloProvider client={apolloClient}>
+    {/* Note; Provides Google Maps JS API to all descendants */}
+    <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
+      <div className="app-layout">
+        {/* Note; Persistent header at top */}
+        <Header />
 
-          {/* Note; Routed Page Outlet */}
-          <main className="app-content">
-            <Outlet />
-          </main>
+        {/* Note; Routed pages render here */}
+        <main className="app-content">
+          <Outlet />
+        </main>
 
-          {/* Note; Global Footer */}
-          <Footer />
-        </div>
-      </APIProvider>
-    </ApolloProvider>
-  );
-}
+        {/* Note; Persistent footer at bottom */}
+        <Footer />
+      </div>
+    </APIProvider>
+  </ApolloProvider>
+);
 
 export default App;
