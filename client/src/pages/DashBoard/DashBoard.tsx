@@ -9,13 +9,16 @@ import { QUERY_MY_TRIPS } from '../../utils/queries';
 import './Dashboard.css';
 
 const Dashboard: React.FC = () => {
+  const isLoggedIn = Auth.loggedIn();  // Note; always check auth flag
+  // Note; Always call useQuery, but skip fetching if not logged in
+  const { loading, error, data } = useQuery(QUERY_MY_TRIPS, {
+    skip: !isLoggedIn,
+  });
+
   // Note; Redirect to login if user is not authenticated
-  if (!Auth.loggedIn()) {
+  if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
-
-  // Note; Fetch the currently logged-in user's trips
-  const { loading, error, data } = useQuery(QUERY_MY_TRIPS);
 
   // Note; Extract the trips array or default to empty
   const myTrips = data?.me?.trips || [];
@@ -33,8 +36,6 @@ const Dashboard: React.FC = () => {
       ) : (
         <TripList trips={myTrips} title="Your Trips" />
       )}
-
-      {/* Note; TripForm removed as per latest refactor */}
     </main>
   );
 };

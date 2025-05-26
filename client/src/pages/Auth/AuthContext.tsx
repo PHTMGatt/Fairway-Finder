@@ -1,4 +1,5 @@
-// src/pages/Auth/'AuthContext.tsx'
+/* eslint-disable react-refresh/only-export-components */
+// src/pages/Auth/AuthContext.tsx
 
 import React, {
   createContext,
