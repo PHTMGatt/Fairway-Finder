@@ -3,11 +3,16 @@
 import typeDefs from './typeDefs.js';
 import resolvers from './resolvers.js';
 
-// 🔗 Export as Apollo schema
+/**
+ * Combined GraphQL schema for Apollo Server
+ *
+ * - typeDefs: GraphQL SDL string
+ * - resolvers: Resolver map implementing the schema's behavior
+ */
 export const schema = {
   typeDefs,
   resolvers,
 };
 
-// Also export separately if needed elsewhere
+// Also export individually if needed elsewhere
 export { typeDefs, resolvers };
