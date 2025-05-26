@@ -1,41 +1,41 @@
 // src/components/Header/Header.tsx
 
+import React, { MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MouseEvent } from 'react';
-import { useAuth } from '../../pages/Auth/AuthContext'; // ✅ Correct relative path
+import { useAuth } from '../../pages/Auth/AuthContext';
 import './Header.css';
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();
-  const { isLoggedIn, logout } = useAuth(); // ✅ Context hook for auth state
+  const navigate = useNavigate();                 // Note; Hook to programmatically navigate
+  const { isLoggedIn, logout } = useAuth() as any; // Note; Auth context for login state (cast to any so logout is recognized)
 
-  // Note; Logs out the user and redirects to home
+  // Note; Logs out the user and returns them to the home page
   const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    logout(); // Note; Clears token and updates context
+    logout();
     navigate('/');
   };
 
   return (
     <header className="header">
-      {/* Note; App logo links back to home */}
+      {/* Note; Logo section linking back to home */}
       <div className="header__logo-cell">
         <Link to="/" className="header__logo">
           FAIRWAY FINDER
         </Link>
       </div>
 
-      {/* Note; Six styled 'golf holes' */}
+      {/* Note; Decorative “golf holes” */}
       <div className="header__holes">
         {[...Array(6)].map((_, i) => (
           <div key={i} className="header__hole" />
         ))}
       </div>
 
-      {/* Note; Spacer pushes auth buttons to right side */}
+      {/* Note; Spacer to push action buttons to the right */}
       <div className="header__spacer" />
 
-      {/* Note; Show login/signup if not logged in, else My Trips and Logout */}
+      {/* Note; Authentication action buttons */}
       <div className="header__actions">
         {isLoggedIn ? (
           <>
