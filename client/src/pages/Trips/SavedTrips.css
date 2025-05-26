@@ -1,0 +1,56 @@
+/* ===== Saved Trips Page ===== */
+.saved-trips {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: rgba(234, 250, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(109, 194, 255, 0.2);
+}
+
+/* ===== Header ===== */
+.saved-trips__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #064e3b;
+  margin: 0 0 1rem;
+}
+.saved-trips__status {
+  text-align: center;
+  color: #b00020;
+  margin: 2rem 0;
+}
+
+/* ===== TripList Delete All Button Override ===== */
+.trip-list__delete-all {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  background-color: #d32f2f;
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.95rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+.trip-list__delete-all:hover {
+  background-color: #b71c1c;
+  transform: translateY(-1px);
+}
+
+/* ===== Trip Cards Grid ===== */
+.trip-list__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ===== Empty State ===== */
+.trip-list__empty {
+  font-size: 1rem;
+  color: #475569;
+  text-align: center;
+  margin-top: 2rem;
+}
