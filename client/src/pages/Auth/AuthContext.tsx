@@ -1,42 +1,62 @@
-// client/src/context/AuthContext.tsx
+// src/pages/Auth/AuthContext.tsx
 
-import {
+import React, {
   createContext,
   useContext,
-  useEffect,
   useState,
+  useEffect,
   ReactNode,
 } from 'react';
 import Auth from '../../utils/auth';
 
 interface AuthContextType {
-  isLoggedIn: boolean;
-  refresh: () => void;
-  logout: () => void;
+  isLoggedIn: boolean;  // Note; Indicates whether a valid token is present
+  refreshAuth: () => void;  // Note; Re-checks login status
+  logoutUser: () => void;   // Note; Clears token and updates context
 }
 
+// Note; Default context values (used only before initialization)
 const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
-  refresh: () => {},
-  logout: () => {},
+  refreshAuth: () => {},
+  logoutUser: () => {},
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(Auth.loggedIn());
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-  const refresh = () => setIsLoggedIn(Auth.loggedIn());
-  const logout = () => {
+// Note; Provides auth state & actions to the app
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  // Note; Local state tracks whether the user is logged in
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(Auth.loggedIn());
+
+  // Note; Refresh login status (e.g., after token update)
+  const refreshAuth = () => {
+    setIsLoggedIn(Auth.loggedIn());
+  };
+
+  // Note; Logout action: clear token and update state
+  const logoutUser = () => {
     Auth.logout();
     setIsLoggedIn(false);
   };
 
-  useEffect(refresh, []);
+  // Note; On mount, ensure state reflects current token
+  useEffect(() => {
+    refreshAuth();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, refresh, logout }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, refreshAuth, logoutUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// Note; Custom hook to consume auth context
+export const useAuth = (): AuthContextType => {
+  return useContext(AuthContext);
+};

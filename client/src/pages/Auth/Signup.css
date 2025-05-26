@@ -1,3 +1,5 @@
+/* client/src/pages/Auth/Signup.css */
+
 /* ===== Page Wrapper ===== */
 .auth-page {
   display: flex;
@@ -5,7 +7,7 @@
   align-items: center;
   padding: 2rem 1rem;
   background: #eafaff;
-  min-height: calc(100vh - 100px - 60px); /* Note; subtract header & footer */
+  min-height: calc(100vh - 100px - 60px);
 }
 
 /* ===== Card ===== */

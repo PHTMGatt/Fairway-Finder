@@ -14,19 +14,16 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "types": ["vite/client"]
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src/**/*"
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "dist",
+    "vite.config.ts",
+    "vite.config.d.ts"
   ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
-  ]
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

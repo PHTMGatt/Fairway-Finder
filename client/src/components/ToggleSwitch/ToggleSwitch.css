@@ -1,3 +1,5 @@
+/* src/components/ToggleSwitch/ToggleSwitch.css */
+
 .toggle-switch {
   display: flex;
   align-items: center;
@@ -39,6 +41,7 @@
   transition: transform 0.3s;
 }
 
+/* Note; Checked state styling */
 .toggle-switch__checkbox:checked + .toggle-switch__slider {
   background: rgba(31,59,36,0.8);
 }

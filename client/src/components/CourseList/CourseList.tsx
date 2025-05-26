@@ -6,32 +6,34 @@ import { REMOVE_COURSE_FROM_TRIP } from '../../utils/mutations';
 import { QUERY_MY_TRIPS } from '../../utils/queries';
 import './CourseList.css';
 
-// Note; Props expected: course list and user status
 interface CourseListProps {
-  courses?: string[]; // Note; Optional array of course names
-  isLoggedInUser: boolean; // Note; Controls remove button visibility
+  courses?: string[];          // Note; Optional array of course names
+  isLoggedInUser: boolean;     // Note; Controls visibility of remove buttons
 }
 
 const CourseList: React.FC<CourseListProps> = ({
   courses = [],
   isLoggedInUser,
 }) => {
-  // Note; Setup mutation for removing a course from a trip
-  const [removeCourse, { error }] = useMutation(REMOVE_COURSE_FROM_TRIP, {
-    refetchQueries: [QUERY_MY_TRIPS, 'me'], // Note; Refresh user trip data after removal
-  });
+  // Note; GraphQL mutation hook for removing a course, refetching trips after
+  const [removeCourseFromTrip, { error: removeCourseError }] = useMutation(
+    REMOVE_COURSE_FROM_TRIP,
+    {
+      refetchQueries: [{ query: QUERY_MY_TRIPS }],
+    }
+  );
 
-  // Note; Remove button click handler
-  const handleRemove = async (courseName: string) => {
+  // Note; Handler invoked when clicking “Remove”
+  const handleCourseRemove = async (courseName: string) => {
     try {
-      await removeCourse({ variables: { courseName } });
-    } catch (err) {
-      console.error(err); // Note; Catch mutation errors
+      await removeCourseFromTrip({ variables: { courseName } });
+    } catch {
+      // Note; any error displayed below
     }
   };
 
-  // Note; Show fallback message if no courses present
-  if (!courses.length) {
+  // Note; Fallback when no courses have been added
+  if (courses.length === 0) {
     return <h3 className="course-list__empty">No Courses Added Yet</h3>;
   }
 
@@ -41,10 +43,11 @@ const CourseList: React.FC<CourseListProps> = ({
         <div key={course} className="course-card">
           <h4 className="course-card__name">
             {course}
+            {/* Note; Only show Remove if this user owns the trip */}
             {isLoggedInUser && (
               <button
                 className="course-card__remove"
-                onClick={() => handleRemove(course)}
+                onClick={() => handleCourseRemove(course)}
               >
                 Remove
               </button>
@@ -52,8 +55,13 @@ const CourseList: React.FC<CourseListProps> = ({
           </h4>
         </div>
       ))}
-      {/* Note; Show error if mutation fails */}
-      {error && <p className="course-list__error">Error: {error.message}</p>}
+
+      {/* Note; Display any mutation error here */}
+      {removeCourseError && (
+        <p className="course-list__error">
+          Error: {removeCourseError.message}
+        </p>
+      )}
     </div>
   );
 };

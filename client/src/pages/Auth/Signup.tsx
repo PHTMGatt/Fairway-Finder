@@ -3,89 +3,113 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
-
 import Auth from '../../utils/auth';
 import { ADD_PROFILE } from '../../utils/mutations';
-import { useAuth } from './AuthContext'; // Note; Access auth context to trigger refresh
-import './Auth.css';
+import { useAuth } from './AuthContext';
+import './Signup.css';
 
 const Signup: React.FC = () => {
-  const [formState, setFormState] = useState({ name: '', email: '', password: '' });
-  const [signupError, setSignupError] = useState<string | null>(null);
-  const [addProfile, { loading }] = useMutation(ADD_PROFILE);
-  const { refresh } = useAuth(); // Note; Refresh context after signup
+  // Note; Track name/email/password and potential error
+  const [formValues, setFormValues] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Note; Apollo mutation for creating a new profile
+  const [addProfile, { loading }] = useMutation(ADD_PROFILE);
+
+  // Note; Refresh auth context after signup
+  const { refreshAuth } = useAuth();
+
+  // Note; Handle changes in any of the input fields
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormState((prev) => ({ ...prev, [name]: value }));
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+    setErrorMessage(null);
   };
 
+  // Note; Submit the signup mutation
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setSignupError(null);
+    setErrorMessage(null);
 
-    const { name, email, password } = formState;
+    const { name, email, password } = formValues;
     if (!name || !email || !password) {
-      setSignupError('All fields are required.');
+      setErrorMessage('All fields are required.');
       return;
     }
 
     try {
-      const res = await addProfile({ variables: { input: formState } });
-      if (res.data?.addProfile?.token) {
-        Auth.login(res.data.addProfile.token); // Note; Save token to localStorage
-        refresh(); // Note; Update context to reflect logged-in state
+      const { data } = await addProfile({
+        variables: { input: formValues },
+      });
+      const token = data?.addProfile?.token;
+      if (token) {
+        Auth.login(token);   // Note; Save token to localStorage
+        refreshAuth();       // Note; Update context to logged-in
       } else {
-        setSignupError('Signup failed.');
+        setErrorMessage('Signup failed.');
       }
     } catch (err: any) {
-      const gqlMessage = err?.graphQLErrors?.[0]?.message || err.message;
-      setSignupError(gqlMessage);
+      const message =
+        err?.graphQLErrors?.[0]?.message || err.message || 'Signup failed.';
+      setErrorMessage(message);
     }
   };
 
-  // Note; Redirect if already logged in
-  if (Auth.loggedIn()) return <Navigate to="/me" replace />;
+  // Note; Redirect if already authenticated
+  if (Auth.loggedIn()) {
+    return <Navigate to="/saved-trips" replace />;
+  }
 
   return (
     <main className="auth-page">
       <div className="auth-card">
         <h4 className="auth-header">Sign Up</h4>
         <div className="auth-body">
-          <form onSubmit={handleSubmit} className="auth-form">
+          <form className="auth-form" onSubmit={handleSubmit}>
             <input
-              className="auth-input"
               name="name"
+              className="auth-input"
               placeholder="Username"
-              value={formState.name}
+              value={formValues.name}
               onChange={handleChange}
             />
             <input
-              className="auth-input"
               name="email"
+              type="email"
+              className="auth-input"
               placeholder="Email"
-              value={formState.email}
+              value={formValues.email}
               onChange={handleChange}
             />
             <input
-              className="auth-input"
               name="password"
-              placeholder="Password"
               type="password"
-              value={formState.password}
+              className="auth-input"
+              placeholder="Password"
+              value={formValues.password}
               onChange={handleChange}
             />
-            <button className="btn auth-btn" type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Submit'}
+            <button
+              type="submit"
+              className="btn auth-btn"
+              disabled={loading}
+            >
+              {loading ? 'Creating…' : 'Submit'}
             </button>
           </form>
-          {signupError && <div className="auth-error">{signupError}</div>}
+          {errorMessage && (
+            <div className="auth-error">{errorMessage}</div>
+          )}
 
-          {/* Note; Dev Nuke Button – delete all profiles */}
+          {/* Note; Dev-only: clear all user profiles */}
           <button
             className="btn auth-btn clear-session-btn"
             onClick={async () => {
-              await fetch('http://localhost:3001/api/dev/clear-users', { method: 'DELETE' });
+              await fetch('/api/dev/clear-users', { method: 'DELETE' });
               Auth.logout();
               window.location.reload();
             }}
@@ -95,7 +119,7 @@ const Signup: React.FC = () => {
         </div>
       </div>
     </main>
-  );
-};
+);
+}
 
 export default Signup;

@@ -3,49 +3,64 @@
 import { Schema, model, Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 
-export interface IProfile extends Document {
+/**
+ * Note; Interface for a user profile document, including helper methods.
+ */
+export interface ProfileDoc extends Document {
   name: string;
   email: string;
   password: string;
-  trips: Types.ObjectId[]; // Related trips
-  isCorrectPassword(password: string): Promise<boolean>;
+  trips: Types.ObjectId[];  
+  isCorrectPassword(candidatePassword: string): Promise<boolean>;
 }
 
-const profileSchema = new Schema<IProfile>(
+/**
+ * Note; Schema definition for user profiles.
+ *       Includes name, email, hashed password, and referenced trips.
+ */
+const profileSchema = new Schema<ProfileDoc>(
   {
     name: {
       type: String,
-      required: true,
-      unique: true,
-      trim: true,
+      required: true,      // Note; Username is mandatory
+      unique: true,        // Note; Prevent duplicate usernames
+      trim: true,          // Note; Remove surrounding whitespace
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
+      required: true,      // Note; Email is mandatory
+      unique: true,        // Note; Prevent duplicate emails
       match: [/.+@.+\..+/, 'Must match a valid email address'],
     },
     password: {
       type: String,
-      required: true,
-      minlength: 5,
+      required: true,      // Note; Password is mandatory
+      minlength: 5,        // Note; Enforce minimum length
     },
     trips: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Trip',
+        ref: 'Trip',       // Note; References the Trip model
       },
     ],
   },
   {
-    timestamps: true,
-    toJSON: { getters: true },
-    toObject: { getters: true },
+    timestamps: true,      // Note; Adds createdAt and updatedAt fields
+    toJSON: {              // Note; Ensure virtuals and getters are applied in JSON
+      virtuals: false,
+      getters: true,
+    },
+    toObject: {
+      virtuals: false,
+      getters: true,
+    },
   }
 );
 
-// Hash password before saving
-profileSchema.pre<IProfile>('save', async function (next) {
+/**
+ * Note; Pre-save middleware to hash password before storing.
+ */
+profileSchema.pre<ProfileDoc>('save', async function (next) {
   if (this.isNew || this.isModified('password')) {
     const saltRounds = 10;
     this.password = await bcrypt.hash(this.password, saltRounds);
@@ -53,10 +68,20 @@ profileSchema.pre<IProfile>('save', async function (next) {
   next();
 });
 
-// Method to validate password
-profileSchema.methods.isCorrectPassword = async function (password: string): Promise<boolean> {
-  return bcrypt.compare(password, this.password);
+/**
+ * Note; Instance method to verify a plaintext password against the stored hash.
+ *
+ * @param candidatePassword - Plaintext password to verify
+ * @returns true if the password matches, false otherwise
+ */
+profileSchema.methods.isCorrectPassword = function (
+  candidatePassword: string
+): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-const Profile = model<IProfile>('Profile', profileSchema);
+/**
+ * Note; Create and export the Profile model for use in resolvers and routes.
+ */
+const Profile = model<ProfileDoc>('Profile', profileSchema);
 export default Profile;

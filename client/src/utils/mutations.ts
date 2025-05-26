@@ -1,9 +1,12 @@
+// client/src/utils/mutations.ts
+
 import { gql } from '@apollo/client';
 
-/** ——— AUTH & PROFILE ——— **/
+/** ——— AUTH & PROFILE MUTATIONS ——— **/
 
+// Note; Registers a new user profile and returns auth token & basic profile info
 export const ADD_PROFILE = gql`
-  mutation addProfile($input: ProfileInput!) {
+  mutation AddProfile($input: ProfileInput!) {
     addProfile(input: $input) {
       token
       profile {
@@ -12,10 +15,11 @@ export const ADD_PROFILE = gql`
       }
     }
   }
-`;
+`
 
+// Note; Logs in an existing user and returns auth token & basic profile info
 export const LOGIN_USER = gql`
-  mutation login($email: String!, $password: String!) {
+  mutation LoginUser($email: String!, $password: String!) {
     login(email: $email, password: $password) {
       token
       profile {
@@ -24,12 +28,13 @@ export const LOGIN_USER = gql`
       }
     }
   }
-`;
+`
 
-/** ——— TRIP MANAGEMENT ——— **/
+/** ——— TRIP MANAGEMENT MUTATIONS ——— **/
 
+// Note; Creates a new trip with name, date, and empty courses list
 export const ADD_TRIP = gql`
-  mutation addTrip($input: TripInput!) {
+  mutation AddTrip($input: TripInput!) {
     addTrip(input: $input) {
       _id
       name
@@ -40,10 +45,11 @@ export const ADD_TRIP = gql`
       }
     }
   }
-`;
+`
 
+// Note; Adds a course to an existing trip by name
 export const ADD_COURSE_TO_TRIP = gql`
-  mutation addCourseToTrip($tripId: ID!, $courseName: String!) {
+  mutation AddCourseToTrip($tripId: ID!, $courseName: String!) {
     addCourseToTrip(tripId: $tripId, courseName: $courseName) {
       _id
       name
@@ -53,10 +59,11 @@ export const ADD_COURSE_TO_TRIP = gql`
       }
     }
   }
-`;
+`
 
+// Note; Removes a course from all trips that include it
 export const REMOVE_COURSE_FROM_TRIP = gql`
-  mutation removeCourseFromTrip($courseName: String!) {
+  mutation RemoveCourseFromTrip($courseName: String!) {
     removeCourseFromTrip(courseName: $courseName) {
       _id
       name
@@ -66,37 +73,9 @@ export const REMOVE_COURSE_FROM_TRIP = gql`
       }
     }
   }
-`;
+`
 
-/** ——— SCORECARD MANAGEMENT ——— **/
-
-export const ADD_PLAYER = gql`
-  mutation AddPlayer($tripId: ID!, $name: String!) {
-    addPlayer(tripId: $tripId, name: $name) {
-      _id
-      name
-    }
-  }
-`;
-
-export const REMOVE_PLAYER = gql`
-  mutation RemovePlayer($tripId: ID!, $name: String!) {
-    removePlayer(tripId: $tripId, name: $name) {
-      _id
-      name
-    }
-  }
-`;
-
-export const UPDATE_SCORE = gql`
-  mutation UpdateScore($tripId: ID!, $player: String!, $hole: Int!, $score: Int!) {
-    updateScore(tripId: $tripId, player: $player, hole: $hole, score: $score) {
-      _id
-      name
-    }
-  }
-`;
-
+// Note; Deletes an entire trip by its ID
 export const DELETE_TRIP = gql`
   mutation DeleteTrip($tripId: ID!) {
     deleteTrip(tripId: $tripId) {
@@ -104,5 +83,46 @@ export const DELETE_TRIP = gql`
       name
     }
   }
-`;
+`
 
+/** ——— SCORECARD MANAGEMENT MUTATIONS ——— **/
+
+// Note; Adds a player to a trip’s scorecard
+export const ADD_PLAYER = gql`
+  mutation AddPlayer($tripId: ID!, $name: String!) {
+    addPlayer(tripId: $tripId, name: $name) {
+      _id
+      name
+    }
+  }
+`
+
+// Note; Removes a player from a trip’s scorecard
+export const REMOVE_PLAYER = gql`
+  mutation RemovePlayer($tripId: ID!, $name: String!) {
+    removePlayer(tripId: $tripId, name: $name) {
+      _id
+      name
+    }
+  }
+`
+
+// Note; Updates a single player’s score on a specific hole
+export const UPDATE_SCORE = gql`
+  mutation UpdateScore(
+    $tripId: ID!
+    $player: String!
+    $hole: Int!
+    $score: Int!
+  ) {
+    updateScore(
+      tripId: $tripId
+      player: $player
+      hole: $hole
+      score: $score
+    ) {
+      _id
+      name
+    }
+  }
+`

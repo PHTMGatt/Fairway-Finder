@@ -1,3 +1,5 @@
+/* client/src/pages/Weather/Weather.css */
+
 /* ===== Page Layout ===== */
 .weather-page {
   display: flex;
@@ -12,10 +14,10 @@
   flex-direction: column;
   width: 100%;
   max-width: 800px;
-  background: rgba(255, 255, 255, 0.6);             /* semi-transparent white */
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 16px;
-  box-shadow: 0 12px 32px rgba(109, 194, 255, 0.2);  /* deeper glow */
-  backdrop-filter: blur(8px);                        /* stronger blur */
+  box-shadow: 0 12px 32px rgba(109, 194, 255, 0.2);
+  backdrop-filter: blur(8px);
   overflow: hidden;
 }
 
@@ -28,7 +30,7 @@
 
 /* ===== Search Panel Styling ===== */
 .weather-card__search {
-  border-right: 1px solid rgba(255, 255, 255, 0.3);  /* separator */
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .weather-card__title {
@@ -51,30 +53,33 @@
   margin-bottom: 1rem;
 }
 
-/* ToggleSwitch.css overrides in this file */
+/* ToggleSwitch overrides */
 .toggle-switch {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
+
 .toggle-switch__label {
   font-size: 0.9rem;
   color: #1f3b24;
 }
+
 .toggle-switch__checkbox {
   display: none;
 }
-/* track */
+
 .toggle-switch__slider {
   position: relative;
   width: 46px;
   height: 24px;
-  background: #4eb6f5;              /* blue when off */
+  background: #4eb6f5;
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.3s;
   border: 1px solid #2494dc;
 }
+
 .toggle-switch__slider::after {
   content: '';
   position: absolute;
@@ -84,12 +89,14 @@
   height: 20px;
   background: #fff;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s;
 }
+
 .toggle-switch__checkbox:checked + .toggle-switch__slider {
-  background: #6dc2ff;              /* lighter blue when on */
+  background: #6dc2ff;
 }
+
 .toggle-switch__checkbox:checked + .toggle-switch__slider::after {
   transform: translateX(22px);
 }
@@ -188,7 +195,30 @@
   color: #057a5d;
 }
 
-/* ===== Responsive ===== */
+/* ===== Additional Details Grid ===== */
+.weather-result__details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+@media (min-width: 480px) {
+  .weather-result__details {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.detail-icon {
+  font-size: 2.5rem;
+  color: #4eb6f5;
+}
+
+/* ===== Responsive Layout ===== */
 @media (min-width: 768px) {
   .weather-card {
     flex-direction: row;

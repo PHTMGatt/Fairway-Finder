@@ -1,118 +1,135 @@
-// src/routes/courseRoutes.ts
+// server/src/routes/courseRoutes.ts
 
-import express, { Request, Response } from 'express';
-import fetch from 'node-fetch';
+import { Router, Request, Response } from 'express'
+import fetch from 'node-fetch'
 
-const router = express.Router();
+const router = Router()
 
-// Note; Load Google API key from environment
-const API_KEY = process.env.PLACES_API_KEY as string;
-console.log('🔑 Loaded PLACES_API_KEY →', API_KEY);
-
-if (!API_KEY) {
-  console.error('🚨 Missing PLACES_API_KEY in environment variables');
-  // Note; Fail all requests if API key is missing
-  router.use((_, res) =>
-    res.status(500).json({ error: 'Server config error: missing Places API key' })
-  );
+// Note; Load Google Places API key from environment variables
+const PLACES_API_KEY = process.env.PLACES_API_KEY
+if (!PLACES_API_KEY) {
+  throw new Error('Missing PLACES_API_KEY in server environment')
 }
 
-// Note; GET /api/courses?city=CityName&limit=number&maxDistance=number (miles)
-router.get('/courses', async (req: Request, res: Response) => {
-  // Note; Extract and sanitize query params
-  const city = String(req.query.city || '').trim();
-  const limit = Number(req.query.limit) || 10;
-  const maxDistanceMiles = Number(req.query.maxDistance);
-  const hasMax = !isNaN(maxDistanceMiles) && maxDistanceMiles > 0;
-  const radiusMeters = Math.round(maxDistanceMiles * 1609.34);
+/**
+ * Note; Raw shape from Google Places API for a single place entry
+ */
+interface GooglePlace {
+  name: string
+  place_id: string
+  formatted_address?: string
+  vicinity?: string
+  rating?: number
+  geometry?: { location: { lat: number; lng: number } }
+}
 
-  // Note; Validate city parameter
-  if (!city) {
-    return res.status(400).json({ error: 'City query parameter is required' });
-  }
+/**
+ * Note; Query parameters accepted by this endpoint
+ */
+interface CourseQuery {
+  city?: string
+  limit?: string
+  maxDistance?: string
+}
 
-  try {
-    console.log(
-      `[courses] City="${city}", limit=${limit}`,
-      hasMax ? `maxDist=${maxDistanceMiles} miles` : ''
-    );
+/**
+ * Note; Shape of course data returned to the client
+ */
+export interface Course {
+  name: string
+  address: string
+  rating: number | null
+  place_id: string
+  location: { lat: number; lng: number } | null
+}
 
-    let results: any[] = [];
-
-    if (hasMax) {
-      // 1️⃣ Note; Geocode the city to get lat/lng
-      const geoUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json');
-      geoUrl.searchParams.set('address', `${city}, USA`);
-      geoUrl.searchParams.set('key', API_KEY);
-      console.log('[courses] Geocode URL:', geoUrl.toString());
-      const geoRes = await fetch(geoUrl.toString());
-      const geoData = await geoRes.json();
-      const loc = geoData.results?.[0]?.geometry?.location;
-      if (!loc) throw new Error('Geocode failed');
-
-      // 2️⃣ Note; Nearby Search for golf courses around that location with maxDistance
-      const nearbyUrl = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
-      nearbyUrl.searchParams.set('location', `${loc.lat},${loc.lng}`);
-      nearbyUrl.searchParams.set('radius', radiusMeters.toString());
-      nearbyUrl.searchParams.set('type', 'golf_course');
-      nearbyUrl.searchParams.set('key', API_KEY);
-      console.log('[courses] NearbySearch URL (with radius):', nearbyUrl.toString());
-      const nearbyRes = await fetch(nearbyUrl.toString());
-      const nearbyData = await nearbyRes.json();
-      results = Array.isArray(nearbyData.results) ? nearbyData.results : [];
-    } else {
-      // 1️⃣ Note; Text Search for golf courses in the city
-      const textUrl = new URL('https://maps.googleapis.com/maps/api/place/textsearch/json');
-      textUrl.searchParams.set('query', `golf courses in ${city}, USA`);
-      textUrl.searchParams.set('region', 'us');
-      textUrl.searchParams.set('key', API_KEY);
-      console.log('[courses] TextSearch URL:', textUrl.toString());
-      const textRes = await fetch(textUrl.toString());
-      const textData = await textRes.json();
-      results = Array.isArray(textData.results) ? textData.results : [];
-
-      // 2️⃣ Note; Fallback to Nearby Search if no Text Search results
-      if (results.length === 0) {
-        const geoUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json');
-        geoUrl.searchParams.set('address', `${city}, USA`);
-        geoUrl.searchParams.set('key', API_KEY);
-        console.log('[courses] Geocode URL:', geoUrl.toString());
-        const geoRes = await fetch(geoUrl.toString());
-        const geoData = await geoRes.json();
-        const loc = geoData.results?.[0]?.geometry?.location;
-        if (loc) {
-          const nearbyUrl = new URL('https://maps.googleapis.com/maps/api/place/nearbysearch/json');
-          nearbyUrl.searchParams.set('location', `${loc.lat},${loc.lng}`);
-          nearbyUrl.searchParams.set('radius', '50000'); // default 50 km
-          nearbyUrl.searchParams.set('type', 'golf_course');
-          nearbyUrl.searchParams.set('key', API_KEY);
-          console.log('[courses] NearbySearch URL (default):', nearbyUrl.toString());
-          const nearbyRes = await fetch(nearbyUrl.toString());
-          const nearbyData = await nearbyRes.json();
-          results = Array.isArray(nearbyData.results) ? nearbyData.results : [];
-        }
-      }
+/**
+ * @route   GET /api/courses
+ * @query   city        — required, name of the city to search
+ * @query   limit       — optional, max number of courses to return (default 10)
+ * @query   maxDistance — optional, radius in miles around city center
+ * @returns JSON array of Course
+ */
+router.get<{}, Course[], {}, CourseQuery>(
+  '/courses',
+  async (req: Request<{}, Course[], {}, CourseQuery>, res: Response) => {
+    // Note; Validate city param
+    const city = req.query.city?.trim() || ''
+    if (!city) {
+      return res
+        .status(400)
+        .json({ error: 'The "city" query parameter is required.' })
     }
 
-    // Note; Map to our course shape including location for map markers
-    let courses = results.map((place: any) => ({
-      name: place.name,
-      address: place.formatted_address || place.vicinity || 'Address N/A',
-      rating: place.rating ?? null,
-      place_id: place.place_id,
-      location: place.geometry?.location ?? null,
-    }));
+    // Note; Clamp limit between 1 and 50
+    const limit = Math.max(1, Math.min(50, Number(req.query.limit) || 10))
 
-    // Note; Sort by rating desc, then limit
-    courses.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
-    courses = courses.slice(0, limit);
+    // Note; Determine if radius search should be used
+    const miles = Number(req.query.maxDistance)
+    const useRadius = !isNaN(miles) && miles > 0
+    const radiusMeters = Math.round(miles * 1609.34)
 
-    console.log(`[courses] Returning ${courses.length} courses`);
-    return res.json(courses);
-  } catch (err) {
-    console.error('Server error fetching courses:', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    try {
+      let places: GooglePlace[] = []
+
+      if (useRadius) {
+        // Note; First geocode the city to get lat/lng
+        const geoUrl = new URL('https://maps.googleapis.com/maps/api/geocode/json')
+        geoUrl.searchParams.set('address', `${city}, USA`)
+        geoUrl.searchParams.set('key', PLACES_API_KEY)
+        const geoRes = await fetch(geoUrl.toString())
+        const geoData = await geoRes.json()
+        const loc = geoData.results?.[0]?.geometry?.location
+        if (!loc) throw new Error('Geocoding failed for city')
+
+        // Note; Nearby search for golf courses within radius
+        const nearbyUrl = new URL(
+          'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+        )
+        nearbyUrl.searchParams.set('location', `${loc.lat},${loc.lng}`)
+        nearbyUrl.searchParams.set('radius', radiusMeters.toString())
+        nearbyUrl.searchParams.set('type', 'golf_course')
+        nearbyUrl.searchParams.set('key', PLACES_API_KEY)
+        const nearbyRes = await fetch(nearbyUrl.toString())
+        const nearbyData = await nearbyRes.json()
+        places = Array.isArray(nearbyData.results) ? nearbyData.results : []
+      } else {
+        // Note; Fallback to text search if no radius specified
+        const textUrl = new URL(
+          'https://maps.googleapis.com/maps/api/place/textsearch/json'
+        )
+        textUrl.searchParams.set('query', `golf courses in ${city}, USA`)
+        textUrl.searchParams.set('region', 'us')
+        textUrl.searchParams.set('key', PLACES_API_KEY)
+        const textRes = await fetch(textUrl.toString())
+        const textData = await textRes.json()
+        places = Array.isArray(textData.results) ? textData.results : []
+      }
+
+      // Note; Map raw results to our Course interface
+      let courses: Course[] = places.map((p) => ({
+        name: p.name,
+        address: p.formatted_address || p.vicinity || 'Address N/A',
+        rating: p.rating ?? null,
+        place_id: p.place_id,
+        location: p.geometry?.location ?? null,
+      }))
+
+      // Note; Sort by rating descending, then limit results
+      courses = courses
+        .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+        .slice(0, limit)
+
+      // Note; Return the final list
+      return res.json(courses)
+    } catch (error) {
+      console.error('❌ Error in /api/courses:', error)
+      // Note; Internal server error
+      return res
+        .status(500)
+        .json({ error: 'Internal server error while fetching courses' })
+    }
   }
-});
+)
 
-export default router;
+export default router

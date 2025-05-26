@@ -1,6 +1,9 @@
 // server/src/schemas/typeDefs.ts
+/**
+ * GraphQL schema (SDL) as a plain string.
+ * Apollo Server accepts string typeDefs directly, so no need for `gql` here.
+ */
 const typeDefs = `
-
   # --------- Profile & Authentication Types --------- #
 
   type Profile {

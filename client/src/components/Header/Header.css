@@ -1,7 +1,9 @@
-/* ===== Header Container ===== */
+/* src/components/Header/Header.css */
+
+/* Note; Main header container with grid layout and sticky positioning */
 .header {
   display: grid;
-  align-items: center; /* Note; Ensure vertical centering */
+  align-items: center;
   height: 100px;
   padding: 0 1rem;
   background: repeating-linear-gradient(
@@ -16,36 +18,35 @@
   border-bottom: 2px solid #1f3b24;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   grid-template-columns:
-    minmax(200px, auto)  /* Note; Logo section */
-    repeat(6, 36px)      /* Note; 6 golf hole icons */
-    1fr                  /* Note; spacer */
-    auto auto;           /* Note; login/signup or logout buttons */
+    minmax(200px, auto) /* Logo section */
+    repeat(6, 36px)     /* Six golf-hole icons */
+    1fr                 /* Spacer */
+    auto auto;          /* Auth buttons */
   column-gap: 0.75rem;
-  position: sticky;
+  position: sticky;    /* Note; Keeps header visible on scroll */
   top: 0;
   z-index: 100;
 }
 
-/* ===== Logo Section ===== */
+/* Note; Logo cell with divider */
 .header__logo-cell {
   border-right: 2px solid #1f3b24;
   padding-right: 1rem;
 }
+
+/* Note; Logo text styling */
 .header__logo {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #ffffff; /* Note; Pure white text */
+  color: #ffffff;
   text-decoration: none;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
-.header__logo:focus {
-  outline: none;
-}
 
-/* ===== Golf Holes Section ===== */
+/* Note; Decorative golf-hole icons */
 .header__holes {
-  display: contents; /* Note; use grid placement from parent */
+  display: contents;
 }
 .header__hole {
   width: 36px;
@@ -57,38 +58,34 @@
     inset 0 -1px 2px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== Spacer to push content right ===== */
-.header__spacer {
-  /* Intentionally empty; fills grid column */
-}
+/* Note; Invisible spacer for grid layout */
+.header__spacer {}
 
-/* ===== Button Group ===== */
+/* Note; Container for auth buttons */
 .header__actions {
   display: flex;
-  align-items: center; /* ✅ Fixes vertical alignment */
+  align-items: center;
   gap: 0.5rem;
   border-left: 2px solid #1f3b24;
   padding-left: 1rem;
 }
 
-/* ===== White-Glass Buttons ===== */
+/* Note; Button/link styling */
 .header__btn {
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 0.95rem;
   font-weight: 600;
   padding: 0.4rem 0.8rem;
-  background: rgba(255, 255, 255, 0.9);  /* Note; glassy white */
+  background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(31, 59, 36, 0.6);
   border-radius: 4px;
   color: #1f3b24;
   text-decoration: none;
-  outline: none;
   transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
 .header__btn:hover {
   background: #ffffff;
-  color: #1f3b24;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -102,7 +99,7 @@
   box-shadow: 0 0 0 3px rgba(31, 59, 36, 0.5);
 }
 
-/* ===== Active Page Highlight (optional) ===== */
+/* Note; Active page button highlight (if needed) */
 .header__btn.active {
   background: #d7f7e6;
   border-color: #3e7a49;

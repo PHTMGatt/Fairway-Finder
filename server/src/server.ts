@@ -1,64 +1,104 @@
-// src/server.ts
+// server/src/server.ts
 
 import path from 'path';
 import { fileURLToPath } from 'url';
+import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { ApolloServer } from '@apollo/server';
+import { expressMiddleware } from '@apollo/server/express4';
 
 // Note; Create __dirname for ES module compatibility
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Note; Load root-level .env for API keys and secrets
+// Note; Load all environment variables from server/.env
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-import express from 'express';
-import cors from 'cors';
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+// Note; Destructure and validate critical env vars
+const {
+  MONGODB_URI,
+  PORT = '3001',
+  WEATHER_API_KEY,
+  PLACES_API_KEY,
+  JWT_SECRET_KEY,
+} = process.env;
 
-import db from './config/connection.js';
-import { typeDefs, resolvers } from './schemas/index.js';
-import { authenticateToken } from './utils/auth.js';
+if (!MONGODB_URI) {
+  console.error('❌ Missing MONGODB_URI in environment');
+  process.exit(1);
+}
+if (!WEATHER_API_KEY) {
+  console.error('❌ Missing WEATHER_API_KEY in environment');
+  process.exit(1);
+}
+if (!PLACES_API_KEY) {
+  console.error('❌ Missing PLACES_API_KEY in environment');
+  process.exit(1);
+}
+if (!JWT_SECRET_KEY) {
+  console.error('❌ Missing JWT_SECRET_KEY in environment');
+  process.exit(1);
+}
 
+console.log(`🔑 Environment loaded:`);
+console.log(`  • MongoDB URI: ${MONGODB_URI}`);
+console.log(`  • Server Port: ${PORT}`);
+console.log(`  • Weather Key: loaded`);
+console.log(`  • Places Key: loaded`);
+console.log(`  • JWT Secret: loaded`);
+
+// Note; Import database connection utility
+import { connectDatabase } from './config/connection.js';
+
+// Note; Import GraphQL schema
+import { schema } from './schemas/index.js';
+
+// Note; Import REST route handlers
 import courseRoutes from './routes/courseRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
 import mapRoutes from './routes/mapRoutes.js';
 
-import Profile from './models/Profile.js'; // For dev user wipe
-import mongoose from 'mongoose';
+// Note; Import JWT authentication middleware
+import { authenticateToken } from './utils/auth.js';
 
-// ✅ Dev-only schema to confirm MongoDB connection
-const PingSchema = new mongoose.Schema({ name: String });
-const Ping = mongoose.model('Ping', PingSchema);
+// Note; Import Profile model for dev route
+import Profile from './models/Profile.js';
 
 async function startServer() {
   try {
-    // 🟢 Connect to MongoDB
-    await db();
+    // Note; Connect to MongoDB
+    await connectDatabase();
 
-    // ✅ One-time ping check to confirm DB exists
-    const existingPing = await Ping.findOne({ name: 'VSCodeCheck' });
-    if (!existingPing) {
+    // Note; Dev ping to confirm DB connectivity
+    const Ping = mongoose.model('Ping', new mongoose.Schema({ name: String }));
+    const existing = await Ping.findOne({ name: 'VSCodeCheck' });
+    if (!existing) {
       const ping = await Ping.create({ name: 'VSCodeCheck' });
       console.log(`✅ MongoDB test write successful (Ping ID: ${ping._id})`);
     } else {
-      console.log(`✅ MongoDB already initialized (Ping ID: ${existingPing._id})`);
+      console.log(`✅ MongoDB already initialized (Ping ID: ${existing._id})`);
     }
 
-    // 🚀 Start Apollo GraphQL
-    const apollo = new ApolloServer({ typeDefs, resolvers });
+    // Note; Initialize Apollo GraphQL server
+    const apollo = new ApolloServer({
+      typeDefs: schema.typeDefs,
+      resolvers: schema.resolvers,
+    });
     await apollo.start();
 
+    // Note; Create Express app
     const app = express();
     app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
     app.use(express.json());
 
-    // 🔗 REST API Routes
+    // Note; Mount REST API routes under /api
     app.use('/api', courseRoutes);
-    app.use('/api/weather', weatherRoutes);
-    app.use('/api/map', mapRoutes);
+    app.use('/api', weatherRoutes);
+    app.use('/api', mapRoutes);
 
-    // 🔥 Dev-only route to clear users
+    // Note; Dev-only route to clear all users
     app.delete('/api/dev/clear-users', async (_req, res) => {
       try {
         const result = await Profile.deleteMany({});
@@ -69,15 +109,15 @@ async function startServer() {
       }
     });
 
-    // 📡 GraphQL endpoint with JWT
+    // Note; Mount GraphQL endpoint with JWT auth
     app.use(
       '/graphql',
-      expressMiddleware(apollo as any, {
+      expressMiddleware(apollo, {
         context: async ({ req }) => authenticateToken({ req }),
       })
     );
 
-    // 🌐 Serve React client in production
+    // Note; Serve React client in production mode
     if (process.env.NODE_ENV === 'production') {
       const staticPath = path.join(__dirname, '../client/dist');
       app.use(express.static(staticPath));
@@ -86,16 +126,13 @@ async function startServer() {
       });
     }
 
-    const port = process.env.PORT || 3001;
-    app.listen(port, () => {
-      console.log(`🚀 GraphQL: http://localhost:${port}/graphql`);
-      console.log(`🟢 Courses REST: http://localhost:${port}/api/courses?city=Orlando`);
-      console.log(`🌤️ Weather REST: http://localhost:${port}/api/weather?city=Detroit`);
-      console.log(`🚗 Directions REST: http://localhost:${port}/api/map/directions?origin=CityA&destination=CityB`);
-      console.log(`🧼 Dev: DELETE http://localhost:${port}/api/dev/clear-users`);
+    // Note; Start listening on specified port
+    const portNumber = parseInt(PORT, 10) || 3001;
+    app.listen(portNumber, () => {
+      console.log(`🚀 Server running at http://localhost:${portNumber}`);
     });
-  } catch (err: any) {
-    console.error('Startup error:', err.stack || err);
+  } catch (err) {
+    console.error('❌ Server startup failed:', err);
     process.exit(1);
   }
 }

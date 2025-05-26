@@ -1,3 +1,6 @@
+/* src/components/GoogleMap/GoogleMapView.css */
+
+/* Note; Container for the map and overlays */
 .map-container {
   position: relative;
   width: 100%;
@@ -9,6 +12,7 @@
   background: linear-gradient(to bottom right, #eafaff, #ffffff);
 }
 
+/* Note; The Google Maps canvas */
 .google-map {
   width: 100%;
   height: 100%;
@@ -29,6 +33,7 @@
   pointer-events: auto;
 }
 
+/* Note; Instructional card that fades out on hover */
 .glass-card {
   position: absolute;
   bottom: 16px;
@@ -51,18 +56,7 @@
   opacity: 0;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@media (max-width: 600px) {
-  .glass-card {
-    font-size: 0.8rem;
-    padding: 6px 12px;
-  }
-}
-
+/* Note; Coordinate display box */
 .coord-display {
   position: absolute;
   bottom: 8px;
@@ -75,4 +69,22 @@
   z-index: 20;
   pointer-events: none;
   font-family: monospace;
+}
+
+/* Note; Fade‐in animation for container */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Note; Responsive tweaks for small screens */
+@media (max-width: 600px) {
+  .glass-card {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
 }
