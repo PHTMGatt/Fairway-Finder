@@ -9,6 +9,7 @@
     "server": "cd server && npm start",
     "server:dev": "cd server && npm run dev",
     "install": "cd server && npm i && cd ../client && npm i",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "client:build": "cd client && npm run build",
     "client:dev": "cd client && npm run dev",
     "seed": "cd server && npm run seed",
@@ -23,6 +24,7 @@
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
     "concurrently": "^8.2.2",
+    "eslint": "^9.27.0",
     "wait-on": "^7.2.0"
   },
   "dependencies": {

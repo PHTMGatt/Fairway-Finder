@@ -1,3 +1,5 @@
+// src/pages/Trips/TripDetails.tsx
+
 import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
 import { useQuery } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
