@@ -30,9 +30,9 @@ router.get(
   '/map/directions',
   async (
     req: Request<
-      {},
+      object,
       { routes: RouteShape[] },
-      {},
+      object,
       { origin?: string; destination?: string; mode?: string }
     >,
     res: Response

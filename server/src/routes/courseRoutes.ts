@@ -50,9 +50,9 @@ export interface Course {
  * @query   maxDistance — optional, radius in miles around city center
  * @returns JSON array of Course
  */
-router.get<{}, Course[], {}, CourseQuery>(
+router.get<object, Course[], object, CourseQuery>(
   '/courses',
-  async (req: Request<{}, Course[], {}, CourseQuery>, res: Response) => {
+  async (req: Request<object, Course[], object, CourseQuery>, res: Response) => {
     // Note; Validate city param
     const city = req.query.city?.trim() || ''
     if (!city) {
@@ -124,7 +124,6 @@ router.get<{}, Course[], {}, CourseQuery>(
       return res.json(courses)
     } catch (error) {
       console.error('❌ Error in /api/courses:', error)
-      // Note; Internal server error
       return res
         .status(500)
         .json({ error: 'Internal server error while fetching courses' })

@@ -1,33 +1,23 @@
-# Name of workflow
 name: Lint, Build and Test
 
-# Trigger workflow on all pull requests
 on:
   push:
     branches: ["**"]
   pull_request:
     branches: ["**"]
 
-# Jobs to carry out
 jobs:
-  test:
-    # Operating system to run job on
+  validate:
     runs-on: ubuntu-latest
 
-    # Steps in job
     steps:
-      # Get code from repo
       - name: Checkout code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
-      - name: Use Node.js 21.x
-        uses: actions/setup-node@v1
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 21.x
-
-      # Install dependencies
-      - name: Install root dependencies
-        run: npm install
 
       - name: Install client dependencies
         run: npm install
@@ -37,7 +27,6 @@ jobs:
         run: npm install
         working-directory: ./server
 
-      # Run lint
       - name: Lint client
         run: npm run lint
         working-directory: ./client
@@ -46,7 +35,6 @@ jobs:
         run: npm run lint
         working-directory: ./server
 
-      # Run build
       # - name: Build client
       #   run: npm run build
       #   working-directory: ./client
@@ -55,7 +43,6 @@ jobs:
       #   run: npm run build
       #   working-directory: ./server
 
-      # Run tests
       # - name: Test client
       #   run: npm run test
       #   working-directory: ./client

@@ -20,10 +20,23 @@ node_modules/
 
 # Build output
 dist/
-dist-ssr/
 build/
+dist-ssr/
 .out/
 .next/
+
+# Vite cache
+.vite/
+
+# Test coverage & output
+coverage/
+.cache/
+output/
+temp/
+tmp/
+
+# TypeScript
+*.tsbuildinfo
 
 # Environment variables
 .env
@@ -31,12 +44,6 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
-
-# Vite cache
-.vite/
-
-# TypeScript cache
-*.tsbuildinfo
 
 # IDEs and editors
 .vscode/
@@ -48,10 +55,3 @@ build/
 *.njsproj
 *.sln
 *.sw?
-
-# Others
-coverage/
-.cache/
-output/
-temp/
-tmp/
