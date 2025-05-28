@@ -6,7 +6,7 @@ import { Navigate } from 'react-router-dom';
 import TripList from '../../components/TripList/TripList';
 import Auth from '../../utils/auth';
 import { QUERY_MY_TRIPS } from '../../utils/queries';
-import './Dashboard.css';
+import './DashBoard.css';
 
 const Dashboard: React.FC = () => {
   const isLoggedIn = Auth.loggedIn();  // Note; always check auth flag
