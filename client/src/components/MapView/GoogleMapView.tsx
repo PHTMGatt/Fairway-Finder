@@ -1,3 +1,5 @@
+// src/components/MapView/GoogleMapView.tsx
+
 import React, { useEffect, useRef, useCallback } from 'react';
 import './GoogleMapView.css';
 
@@ -8,6 +10,14 @@ interface GoogleMapViewProps {
   filters: string[];
 }
 
+// ✅ Moved outside to prevent re-creating in every render (fixes warning)
+const filterIcons: Record<string, string> = {
+  golf_course: '⛳',
+  restaurant: '🍔',
+  gas_station: '⛽',
+  rest_area: '💤',
+};
+
 const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   origin,
   destination,
@@ -17,13 +27,6 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const coordDisplayRef = useRef<HTMLDivElement>(null);
-
-  const filterIcons: Record<string, string> = {
-    golf_course: '⛳',
-    restaurant: '🍔',
-    gas_station: '⛽',
-    rest_area: '💤',
-  };
 
   const initializeMap = useCallback(() => {
     const container = mapContainerRef.current;
@@ -101,10 +104,11 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
       mapInstanceRef.current.fitBounds(bounds);
     }
 
-    // POIs by filter
     for (const type of filters) {
       const city = origin.split(',')[0];
-      const res = await fetch(`/api/poi?city=${encodeURIComponent(city)}&type=${type}&maxDistance=${maxDistance}`);
+      const res = await fetch(
+        `/api/poi?city=${encodeURIComponent(city)}&type=${type}&maxDistance=${maxDistance}`
+      );
       const data = await res.json();
       const pois = data.places || [];
 
@@ -121,7 +125,6 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     }
   }, [origin, destination, maxDistance, filters]);
 
-  // 🔁 Ensure route/POIs only draw when everything is loaded
   useEffect(() => {
     const interval = setInterval(() => {
       if (origin && destination && mapInstanceRef.current && window.google?.maps?.geometry) {

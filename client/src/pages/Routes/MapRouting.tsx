@@ -2,8 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
 import './MapRouting.css';
 
-const FILTERS = ['golf_course', 'restaurant', 'gas_station', 'rest_area'] as const;
-type FilterType = typeof FILTERS[number];
+type FilterType = 'golf_course' | 'restaurant' | 'gas_station' | 'rest_area';
 
 const MapRouting: React.FC = () => {
   const [origin, setOrigin] = useState('');
