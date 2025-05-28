@@ -1,59 +1,66 @@
-// src/components/Header/Header.tsx
-
-import React, { MouseEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../pages/Auth/AuthContext';
+import { Link } from 'react-router-dom';
+import { MouseEvent, CSSProperties } from 'react';
+import Auth from '../../utils/auth';
+import texture from '../../assets/images/pool-table.png';
+import golfGif from '../../assets/images/golf2.gif';
 import './Header.css';
 
 const Header: React.FC = () => {
-  const navigate = useNavigate();                 // Note; Hook to programmatically navigate
-  const { isLoggedIn, logout } = useAuth() as any; // Note; Auth context for login state (cast to any so logout is recognized)
-
-  // Note; Logs out the user and returns them to the home page
-  const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
+  const logout = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    logout();
-    navigate('/');
+    Auth.logout();
+  };
+
+  const headerStyle: CSSProperties = {
+    position: 'relative',
+    height: '120px',
+    padding: '0 2rem',
+    backgroundImage: `
+      url(${texture}),
+      repeating-linear-gradient(
+        45deg,
+        #2e5633,
+        #2e5633 40px,
+        #3b6e40 40px,
+        #3b6e40 80px
+      )
+    `,
+    backgroundRepeat: 'repeat',
+    backgroundSize: 'auto, auto',
+    borderBottom: '3px solid #1f3b24',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.2)',
+    fontFamily: `'Helvetica Neue', Helvetica, Arial, sans-serif`,
+    display: 'flex',
+    alignItems: 'center',
+    zIndex: 1,
   };
 
   return (
-    <header className="header">
-      {/* Note; Logo section linking back to home */}
-      <div className="header__logo-cell">
-        <Link to="/" className="header__logo">
-          FAIRWAY FINDER
-        </Link>
-      </div>
+    <header className="header" style={headerStyle}>
+      {/* GIF icon on left, links to home */}
+      <Link to="/" className="header__icon-link">
+        <img src={golfGif} alt="Home" className="header__gif-icon" />
+      </Link>
 
-      {/* Note; Decorative “golf holes” */}
-      <div className="header__holes">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className="header__hole" />
-        ))}
-      </div>
+      {/* Centered title that also links home */}
+      <Link to="/" className="header__logo">
+        FAIRWAY FINDER
+      </Link>
 
-      {/* Note; Spacer to push action buttons to the right */}
+      {/* Spacer pushes auth buttons to right */}
       <div className="header__spacer" />
 
-      {/* Note; Authentication action buttons */}
+      {/* Auth buttons */}
       <div className="header__actions">
-        {isLoggedIn ? (
+        {Auth.loggedIn() ? (
           <>
-            <Link to="/me" className="header__btn">
-              My Trips
-            </Link>
-            <button onClick={handleLogout} className="header__btn">
-              Logout
-            </button>
+            <Link to="/dashboard" className="header__btn">My Trips</Link>
+            <button onClick={logout} className="header__btn">Log Out</button>
           </>
         ) : (
           <>
-            <Link to="/login" className="header__btn">
-              Log In
-            </Link>
-            <Link to="/signup" className="header__btn">
-              Sign Up
-            </Link>
+            <Link to="/login" className="header__btn">Log In</Link>
+            <Link to="/signup" className="header__btn">Sign Up</Link>
           </>
         )}
       </div>
@@ -62,3 +69,4 @@ const Header: React.FC = () => {
 };
 
 export default Header;
+

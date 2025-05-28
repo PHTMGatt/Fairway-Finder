@@ -1,48 +1,47 @@
-/* src/components/Footer/Footer.css */
-
-/* Note; Main footer container with deep soft blue gradient */
 .footer {
-  margin-top: auto;
-  padding: 1.5rem 0;
+  position: relative;
+  height: 55px; /* or your preferred height */
   background: linear-gradient(to top, #a8d8ff, #d7efff);
   border-top: 4px solid #6dc2ff;
-  font-family: inherit;
   box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
-  transition: background 0.3s ease;
-}
-
-/* Note; Centered inner content with vertical spacing */
-.footer__inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: flex-end;
+  overflow: visible; /* important so GIF can poke out */
 }
 
-/* Note; 'Go Back' button styling (non-sticky) */
-.footer__back {
-  background-color: #6dc2ff;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 30px;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 8px rgba(109, 194, 255, 0.4);
-  transition: all 0.2s ease-in-out;
+@keyframes rollAcross {
+  0% {
+    transform: translateX(-40%);
+  }
+  100% {
+    transform: translateX(140%);
+  }
 }
 
-.footer__back:hover {
-  background-color: #4eb6f5;
-  box-shadow: 0 0 12px rgba(109, 194, 255, 0.6);
-  transform: scale(1.05);
+.footer__gif-link {
+  position: absolute;
+  top: -90px;
+  width: 100%;
+  pointer-events: auto;
+  overflow: visible;
+  z-index: 10;
+
+  animation: rollAcross 20s linear infinite;
 }
 
-/* Note; Footer copyright text */
+.footer__gif-above {
+  height: 100px;
+  width: auto;
+  object-fit: contain;
+  user-select: none;
+}
+
 .footer__copy {
-  margin: 0;
-  font-size: 0.9rem;
+  font-size: .9rem;
   color: #333;
-  opacity: 0.85;
+  text-align: center;
+  margin-bottom: 22px; /* space below the GIF */
+  z-index: 5; /* ensure text is above footer background */
 }
