@@ -1,30 +1,29 @@
-// Note; TypeScript core plugin + parser
+// TypeScript core plugin + parser
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 const tsRecommended = tsPlugin.configs.recommended;
 
-// Note; React-specific plugins
+// React-specific plugins
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactRefreshPlugin from 'eslint-plugin-react-refresh';
 
 /** @type {import("eslint").Linter.FlatConfig[]} */
 export default [
-  // Note; Global ignores to avoid linting build artifacts
   {
+    // Global ignore patterns
     ignores: [
-      'dist/**/*',
-      'build/**/*',
-      'client/dist/**/*',
-      'server/dist/**/*',
+      '**/dist/**/*',
+      '**/build/**/*',
+      '**/node_modules/**/*',
       'client/vite.config.ts',
-      '**/*.js' // Optional; skip built .js files entirely
+      '**/*.config.{ts,js}'
     ]
   },
 
-  // Note; TypeScript linting for both client and server
+  // TypeScript linting for client + server
   {
-    files: ['server/**/*.{ts,js}', 'client/**/*.{ts,tsx}'],
+    files: ['client/src/**/*.{ts,tsx}', 'server/src/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {
@@ -38,16 +37,13 @@ export default [
     },
     rules: {
       ...tsRecommended.rules,
-      '@typescript-eslint/no-explicit-any': 'off',
-
-      // Optional override if needed:
-      // '@typescript-eslint/no-empty-object-type': 'off'
+      '@typescript-eslint/no-explicit-any': 'off'
     }
   },
 
-  // Note; React rules for the client only
+  // React rules for client only
   {
-    files: ['client/**/*.{ts,tsx,js,jsx}'],
+    files: ['client/src/**/*.{ts,tsx,js,jsx}'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

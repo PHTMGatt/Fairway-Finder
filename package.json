@@ -1,8 +1,6 @@
 {
   "name": "main",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "type": "module",
   "scripts": {
     "start": "node server/dist/server.js",
@@ -16,16 +14,12 @@
     "render-build": "npm install && npm run build",
     "install": "cd server && npm install && cd ../client && npm install",
     "clean": "rm -vrf node_modules client/node_modules server/node_modules dist client/dist server/dist build client/build server/build",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx --format ./node_modules/eslint-formatter-table/index.js",
-    "deploy:prep": "npm install && npm run build && npm run lint",
+    "lint": "eslint client/src server/src --format table",
+    "lint:all": "eslint . --ext .ts,.tsx,.js,.jsx --format table",
+    "deploy:prep": "npm install && npm run build && npm run lint:all",
     "seed": "cd server && npm run seed"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "@types/express": "^5.0.2",
-    "@types/node": "^22.15.21",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "concurrently": "^8.2.2",
@@ -34,8 +28,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.1.0",
     "wait-on": "^7.2.0"
   },
   "dependencies": {

@@ -1,13 +1,9 @@
-/* src/pages/Routes/MapRouting.css */
-
-/* Note; Page wrapper with light background */
 .map-routing {
   padding: 2rem;
   background: #e9faff;
   min-height: 100vh;
 }
 
-/* Note; Section title styling */
 .map-routing__title {
   font-size: 1.75rem;
   text-align: center;
@@ -15,7 +11,6 @@
   color: #114b8b;
 }
 
-/* Note; Input form layout */
 .map-routing__form {
   display: flex;
   justify-content: center;
@@ -24,7 +19,6 @@
   margin-bottom: 1.5rem;
 }
 
-/* Note; Styling for text inputs */
 .map-routing__input {
   padding: 0.5rem;
   font-size: 1rem;
@@ -39,7 +33,6 @@
   outline: none;
 }
 
-/* Note; Submit button for the form */
 .map-routing__btn {
   padding: 0.5rem 1rem;
   background: #3a79d8;
@@ -56,7 +49,6 @@
   transform: translateY(-2px);
 }
 
-/* Note; Container for the map canvas */
 .map-routing__map {
   position: relative;
   width: 100%;
@@ -66,10 +58,9 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  overscroll-behavior: contain; /* keep scroll inside this block */
+  overscroll-behavior: contain;
 }
 
-/* Note; Instruction overlay that fades on hover */
 .map-overlay {
   position: absolute;
   top: 16px;
@@ -88,4 +79,32 @@
 
 .map-routing__map:hover .map-overlay {
   opacity: 0;
+}
+
+/* Note; Filter buttons */
+.map-routing__filters {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-btn {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f0f0f0;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-btn:hover {
+  background: #e0f2ff;
+}
+
+.filter-btn.active {
+  background: #4eb6f5;
+  color: white;
+  border-color: #4eb6f5;
 }

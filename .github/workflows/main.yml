@@ -19,29 +19,18 @@ jobs:
         with:
           node-version: 21.x
 
-      - name: Install client dependencies
-        run: npm install
-        working-directory: ./client
+      - name: Install all dependencies
+        run: |
+          npm install
+          cd client && npm install
+          cd ../server && npm install
+          cd ..
 
-      - name: Install server dependencies
-        run: npm install
-        working-directory: ./server
-
-      - name: Lint client
+      - name: Run Lint from root
         run: npm run lint
-        working-directory: ./client
 
-      - name: Lint server
-        run: npm run lint
-        working-directory: ./server
-
-      # - name: Build client
+      # - name: Build all
       #   run: npm run build
-      #   working-directory: ./client
-
-      # - name: Build server
-      #   run: npm run build
-      #   working-directory: ./server
 
       # - name: Test client
       #   run: npm run test
