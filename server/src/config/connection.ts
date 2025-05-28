@@ -6,15 +6,15 @@ import dotenv from 'dotenv';
 // Load environment variables from server/.env
 dotenv.config();
 
-// Note; MongoDB connection URI loaded from environment.
-// Throws if not defined to avoid silent failures.
-const MONGODB_URI = process.env.MONGODB_URI!;
+// ✅ Note: MongoDB connection URI loaded from environment.
+// ✅ Throws if not defined to avoid silent failures.
+const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
   throw new Error('Missing MONGODB_URI environment variable');
 }
 
 /**
- * Note; Establishes a connection to MongoDB using Mongoose.
+ * ✅ Establishes a connection to MongoDB using Mongoose.
  * @returns The active mongoose.Connection
  * @throws If the connection attempt fails
  */
