@@ -3,7 +3,7 @@
     /* Language and Environment */
     "target": "ES2020",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
 
     /* JavaScript Support */
@@ -23,20 +23,14 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noImplicitOverride": true,
-    "useUnknownInCatchVariables": true,
-
-    /* Vite Globals Support */
-    
+    "useUnknownInCatchVariables": true
   },
 
-  // now include both client & server source!
   "include": [
     "server/src/**/*.ts",
     "client/src/**/*.ts",
     "client/src/**/*.tsx",
     "client/src/vite-env.d.ts"
   ],
-
-  // skip these folders
   "exclude": ["node_modules", "dist"]
 }

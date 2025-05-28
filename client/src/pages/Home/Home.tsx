@@ -1,6 +1,4 @@
-// client/src/pages/Home/Home.tsx
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaMapMarkedAlt, FaFlag, FaCloudSun } from 'react-icons/fa';
 import { useQuery } from '@apollo/client';
@@ -11,52 +9,54 @@ import Auth from '../../utils/auth';
 import './Home.css';
 
 const Home: React.FC = () => {
-  // Note; Hook for programmatic navigation
+  //Note; Hook for navigation
   const navigate = useNavigate();
 
-  // Note; Controlled inputs for route planning
-  const [origin, setOrigin] = useState<string>('');
-  const [destination, setDestination] = useState<string>('');
-  const [maxDistance, setMaxDistance] = useState<string>('');
-  const [searchTriggered, setSearchTriggered] = useState<boolean>(false);
+  //Note; Controlled inputs
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [maxDistance, setMaxDistance] = useState('');
+  const [searchTriggered, setSearchTriggered] = useState(false);
+  const [mapMountGate, setMapMountGate] = useState(false);
 
-  // Note; Check if the user is authenticated
+  //Note; Check authentication
   const isLoggedIn = Auth.loggedIn();
 
-  // Note; Fetch saved trips only when logged in
+  //Note; Load user trips
   const { loading, error, data } = useQuery(QUERY_TRIPS, { skip: !isLoggedIn });
   const trips = data?.trips || [];
 
-  // Note; Start the course search on button click
+  //Note; Trigger course search
   const handleFindCourses = () => {
     setSearchTriggered(true);
   };
 
+  //Note; Delay map render until DOM is mounted
+  useEffect(() => {
+    if (isLoggedIn) {
+      const delay = setTimeout(() => setMapMountGate(true), 100);
+      return () => clearTimeout(delay);
+    }
+  }, [isLoggedIn]);
+
   return (
     <main className="home">
-      {/* Note; Hero section with primary actions */}
+      {/*Note; Hero buttons */}
       <section className="home__hero">
         <h2 className="home__title">Plan your next golf adventure.</h2>
         <div className="home__buttons">
-          <button
-            className="btn btn--light home__btn"
-            onClick={() => navigate('/plan-trip')}
-          >
+          <button className="btn btn--light home__btn" onClick={() => navigate('/plan-trip')}>
             Plan a Trip
           </button>
-          <button
-            className="btn btn--light home__btn"
-            onClick={() => navigate('/saved-trips')}
-          >
+          <button className="btn btn--light home__btn" onClick={() => navigate('/saved-trips')}>
             View Saved Trips
           </button>
         </div>
       </section>
 
-      {/* Note; Show search & map only for authenticated users */}
+      {/*Note; Search + map section */}
       {isLoggedIn ? (
         <>
-          {/* Note; Inputs for origin, destination, max distance */}
           <section className="home__search">
             <input
               className="home__input"
@@ -79,31 +79,29 @@ const Home: React.FC = () => {
               value={maxDistance}
               onChange={(e) => setMaxDistance(e.target.value)}
             />
-            <button
-              className="btn home__find-btn"
-              onClick={handleFindCourses}
-            >
+            <button className="btn home__find-btn" onClick={handleFindCourses}>
               Find Courses
             </button>
           </section>
 
-          {/* Note; Render Google Map view with route & course markers */}
           <section className="home__map">
-            <GoogleMapView
-              origin={searchTriggered ? origin : ''}
-              destination={searchTriggered ? destination : ''}
-              maxDistance={searchTriggered ? maxDistance : ''}
-            />
+            {mapMountGate && (
+              <GoogleMapView
+                origin={searchTriggered ? origin : ''}
+                destination={searchTriggered ? destination : ''}
+                maxDistance={searchTriggered ? maxDistance : ''}
+                filters={[]}
+              />
+            )}
           </section>
         </>
       ) : (
-        /* Note; Prompt to log in when unauthenticated */
         <section className="home__locked">
           <p>Please log in to access trip planning and course search.</p>
         </section>
       )}
 
-      {/* Note; Saved trips list for logged-in users */}
+      {/*Note; Saved trips section */}
       {isLoggedIn && (
         <section className="home__saved-trips container">
           {loading ? (
@@ -116,26 +114,17 @@ const Home: React.FC = () => {
         </section>
       )}
 
-      {/* Note; Bottom navigation shortcuts */}
+      {/*Note; Footer nav icons */}
       <nav className="home__bottom-nav">
-        <button
-          className="home__nav-item btn--circle"
-          onClick={() => navigate('/plan-trip')}
-        >
+        <button className="home__nav-item btn--circle" onClick={() => navigate('/routing')}>
           <FaMapMarkedAlt size={20} />
           <span>Map Routing</span>
         </button>
-        <button
-          className="home__nav-item btn--circle"
-          onClick={() => navigate('/courses')}
-        >
+        <button className="home__nav-item btn--circle" onClick={() => navigate('/courses')}>
           <FaFlag size={20} />
           <span>Course Finder</span>
         </button>
-        <button
-          className="home__nav-item btn--circle"
-          onClick={() => navigate('/weather')}
-        >
+        <button className="home__nav-item btn--circle" onClick={() => navigate('/weather')}>
           <FaCloudSun size={20} />
           <span>Weather</span>
         </button>

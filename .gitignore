@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # ————— Environment Files —————
 .env
 .env.local
@@ -9,22 +7,31 @@
 
 # ————— Dependencies —————
 **/node_modules/
-
-.pnp
+.pnp/
 .pnp.js
 
-# ————— Builds & Dist —————
+# ————— Build Output —————
 /build
 /client/dist/
 /server/dist/
 
+# ————— Vite & TS Cache —————
+.vite/
+*.tsbuildinfo
+
 # ————— Testing —————
 /coverage
+/.cache
+/temp
+/tmp
 
 # ————— Logs —————
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# ————— Miscellaneous —————
+# ————— System Files —————
 .DS_Store
+Thumbs.db

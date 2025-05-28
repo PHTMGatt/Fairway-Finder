@@ -1,26 +1,20 @@
 {
   "compilerOptions": {
-    /* Language and Environment */
     "target": "ES2020",
-
-    /* Modules */
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
 
-    /* Paths */
     "rootDir": "src",
     "outDir": "dist",
 
-    /* JavaScript Support */
     "allowJs": true,
     "checkJs": true,
 
-    /* Interop Constraints */
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
 
-    /* Type Checking */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -29,13 +23,8 @@
     "noImplicitReturns": true,
     "noImplicitOverride": true,
     "useUnknownInCatchVariables": true,
-    
-    /* Include type definitions for Vite’s globals */
+
     "types": []
   },
-  /* Ensure both your app code and vite-env file are included */
-  "include": [
-    "src",
-    "src/vite-env.d.ts"
-  ]
+  "include": ["src"]
 }

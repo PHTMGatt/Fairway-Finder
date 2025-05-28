@@ -1,26 +1,20 @@
 // server/src/seeds/seed.ts
 
-import { connectDatabase } from '../config/connection'; // Note; Named export for database connection
-import Profile from '../models/Profile';                // Note; Mongoose Profile model
-import profileSeeds from './profileData.json';          // Note; Raw profile data JSON
-import cleanDB from './cleanDB';                        // Note; Utility to clear all collections
+import { connectDatabase } from '../config/connection'; // Database connection
+import Profile from '../models/Profile';                // Mongoose model
+import profileSeeds from './profileData.json' assert { type: 'json' };
+import cleanDB from './cleanDB';                        // DB cleanup utility
 
-/**
- * Note; Main seed function
- * 1. Connect to MongoDB
- * 2. Clean existing data
- * 3. Insert profile seeds
- */
 const seedDatabase = async (): Promise<void> => {
   try {
     console.log('🌱 Connecting to database...');
-    await connectDatabase();                           // Note; connectDatabase()
+    await connectDatabase();
 
     console.log('🧹 Cleaning database...');
-    await cleanDB();                                   // Note; purge all collections
+    await cleanDB();
 
     console.log(`📦 Seeding ${profileSeeds.length} profiles...`);
-    await Profile.insertMany(profileSeeds);            // Note; pre-save hook hashes passwords
+    await Profile.insertMany(profileSeeds);
 
     console.log('✅ Seeding completed successfully!');
     process.exit(0);

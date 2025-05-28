@@ -1,78 +1,89 @@
-// src/pages/Routes/MapRouting.tsx
-
 import React, { useState, FormEvent } from 'react';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
 import './MapRouting.css';
 
-interface RouteParams {
-  origin: string;        // Note; Start location for your trip
-  destination: string;   // Note; End location for your trip
-  maxDistance: string;   // Note; Maximum distance filter for courses
-}
+const FILTERS = ['golf_course', 'restaurant', 'gas_station', 'rest_area'] as const;
+type FilterType = typeof FILTERS[number];
 
 const MapRouting: React.FC = () => {
-  // Note; Controlled form inputs
-  const [origin, setOrigin] = useState<string>('');
-  const [destination, setDestination] = useState<string>('');
-  const [maxDistance, setMaxDistance] = useState<string>('');
+  const [origin, setOrigin] = useState('');
+  const [destination, setDestination] = useState('');
+  const [filters, setFilters] = useState<FilterType[]>([]);
+  const [submitted, setSubmitted] = useState(false);
 
-  // Note; Consolidated params that drive the map drawing
-  const [routeParams, setRouteParams] = useState<RouteParams>({
-    origin: '',
-    destination: '',
-    maxDistance: '',
-  });
+  const toggleFilter = (type: FilterType) => {
+    setFilters((prev) =>
+      prev.includes(type) ? prev.filter((f) => f !== type) : [...prev, type]
+    );
+  };
 
-  // Note; Update routeParams when the form is submitted
-  const handleRouteSubmit = (e: FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setRouteParams({ origin, destination, maxDistance });
+    setSubmitted(true);
   };
 
   return (
     <main className="map-routing">
-      {/* Note; Page heading */}
       <h2 className="map-routing__title">Route Planner</h2>
 
-      {/* Note; User inputs for origin, destination, and max distance */}
-      <form className="map-routing__form" onSubmit={handleRouteSubmit}>
+      <form className="map-routing__form" onSubmit={handleSubmit}>
         <input
           className="map-routing__input"
           type="text"
           placeholder="Start Location"
           value={origin}
-          onChange={e => setOrigin(e.target.value)}
+          onChange={(e) => setOrigin(e.target.value)}
         />
         <input
           className="map-routing__input"
           type="text"
           placeholder="End Location"
           value={destination}
-          onChange={e => setDestination(e.target.value)}
+          onChange={(e) => setDestination(e.target.value)}
         />
-        <input
-          className="map-routing__input"
-          type="text"
-          placeholder="Max Distance (miles)"
-          value={maxDistance}
-          onChange={e => setMaxDistance(e.target.value)}
-        />
-        <button className="btn map-routing__btn" type="submit">
+        <button className="map-routing__btn" type="submit">
           Go
         </button>
       </form>
 
-      {/* Note; Map container with overlay instructions */}
+      {/* Note; Filter Toggle Buttons */}
+      <div className="map-routing__filters">
+        <button
+          onClick={() => toggleFilter('golf_course')}
+          className={`filter-btn ${filters.includes('golf_course') ? 'active' : ''}`}
+        >
+          ⛳ Golf
+        </button>
+        <button
+          onClick={() => toggleFilter('restaurant')}
+          className={`filter-btn ${filters.includes('restaurant') ? 'active' : ''}`}
+        >
+          🍔 Food
+        </button>
+        <button
+          onClick={() => toggleFilter('gas_station')}
+          className={`filter-btn ${filters.includes('gas_station') ? 'active' : ''}`}
+        >
+          ⛽ Gas
+        </button>
+        <button
+          onClick={() => toggleFilter('rest_area')}
+          className={`filter-btn ${filters.includes('rest_area') ? 'active' : ''}`}
+        >
+          💤 Rest
+        </button>
+      </div>
+
       <div className="map-routing__map">
-        <div className="map-overlay">
-          Drag the map to explore your route
-        </div>
-        <GoogleMapView
-          key={`${routeParams.origin}-${routeParams.destination}-${routeParams.maxDistance}`}
-          origin={routeParams.origin}
-          destination={routeParams.destination}
-          maxDistance={routeParams.maxDistance}
-        />
+        <div className="map-overlay">Drag the map to explore your route</div>
+        {submitted && (
+          <GoogleMapView
+            origin={origin}
+            destination={destination}
+            maxDistance="0"
+            filters={filters}
+          />
+        )}
       </div>
     </main>
   );
