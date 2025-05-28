@@ -93,7 +93,7 @@ async function startServer() {
         }));
         // Note; Serve React client in production mode
         if (process.env.NODE_ENV === 'production') {
-            const staticPath = path.join(__dirname, '../client/dist');
+            const staticPath = path.resolve(__dirname, '../../client/dist'); // 🛠 absolute path for Render
             app.use(express.static(staticPath));
             app.get('*', (_req, res) => {
                 res.sendFile(path.join(staticPath, 'index.html'));

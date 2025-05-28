@@ -1,3 +1,5 @@
+// server/routes/mapRoutes.ts
+
 import { Router, Request, Response } from 'express';
 import fetch from 'node-fetch';
 
@@ -12,7 +14,7 @@ if (!DIRECTIONS_API_KEY) {
 /**
  * @route   GET /api/map/directions
  * @query   origin, destination, mode? (default: driving)
- * @returns simplified route with overview polyline + summary
+ * @returns full route object with overview_polyline as returned by Google
  */
 router.get(
   '/map/directions',
@@ -47,9 +49,10 @@ router.get(
       }
       const data = await apiRes.json();
 
+      // Note; Return raw overview_polyline object so frontend can decode it
       const routes = Array.isArray(data.routes)
         ? data.routes.map((r: any) => ({
-            overviewPolyline: r.overview_polyline?.points || '',
+            overview_polyline: r.overview_polyline || {},
             summary: r.summary || '',
           }))
         : [];
@@ -121,6 +124,6 @@ export default router;
 
 // Type definitions
 interface RouteShape {
-  overviewPolyline: string;
+  overview_polyline: { points: string };
   summary: string;
 }

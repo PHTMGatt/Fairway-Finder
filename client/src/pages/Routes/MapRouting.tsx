@@ -1,14 +1,21 @@
-import React, { useState, FormEvent } from 'react';
+// src/pages/MapRouting.tsx
+
+import React, { useState, useEffect, FormEvent } from 'react';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
 import './MapRouting.css';
 
 type FilterType = 'golf_course' | 'restaurant' | 'gas_station' | 'rest_area';
 
 const MapRouting: React.FC = () => {
-  const [origin, setOrigin] = useState('');
-  const [destination, setDestination] = useState('');
+  const [origin, setOrigin] = useState('Detroit, MI'); // Note; Default origin on load
+  const [destination, setDestination] = useState('Ann Arbor, MI'); // Note; Default destination
   const [filters, setFilters] = useState<FilterType[]>([]);
   const [submitted, setSubmitted] = useState(false);
+
+  // Note; Auto-submit map load once default values are set
+  useEffect(() => {
+    setSubmitted(true);
+  }, []);
 
   const toggleFilter = (type: FilterType) => {
     setFilters((prev) =>
@@ -45,7 +52,6 @@ const MapRouting: React.FC = () => {
         </button>
       </form>
 
-      {/* Note; Filter Toggle Buttons */}
       <div className="map-routing__filters">
         <button
           onClick={() => toggleFilter('golf_course')}
