@@ -10,7 +10,7 @@ interface GoogleMapViewProps {
   filters: string[];
 }
 
-// ✅ Moved outside to prevent re-creating in every render (fixes warning)
+// Note; Moved outside to prevent re-creating in every render (fixes warning)
 const filterIcons: Record<string, string> = {
   golf_course: '⛳',
   restaurant: '🍔',
@@ -28,6 +28,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   const mapInstanceRef = useRef<any>(null);
   const coordDisplayRef = useRef<HTMLDivElement>(null);
 
+  // Note; Setup map once container is visible and Google Maps is ready
   const initializeMap = useCallback(() => {
     const container = mapContainerRef.current;
     if (!container) return;
@@ -48,16 +49,18 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
       });
     };
 
+    // Note; Use geolocation if allowed, fallback if denied
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => initWithCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
-        () => initWithCenter({ lat: 43.8313, lng: -83.8415 }) // fallback
+        () => initWithCenter({ lat: 43.8313, lng: -83.8415 }) // fallback location
       );
     } else {
       initWithCenter({ lat: 43.8313, lng: -83.8415 });
     }
   }, []);
 
+  // Note; Re-run map init when ready
   useEffect(() => {
     const container = mapContainerRef.current;
     const mapsReady = () => !!window.google?.maps?.Map && !!window.google.maps.geometry;
@@ -80,16 +83,25 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     };
   }, [initializeMap]);
 
+  // Note; Draw route + place markers after form submission
   const drawRouteAndCourses = useCallback(async () => {
     if (!origin || !destination || !mapInstanceRef.current) return;
 
-    const directionsResponse = await fetch(
-      `/api/map/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`
-    );
-    const directionsData = await directionsResponse.json();
-    const overviewPolyline = directionsData?.routes?.[0]?.overviewPolyline;
+    try {
+      // Note; Fetch directions from API
+      const res = await fetch(
+        `/api/map/directions?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`
+      );
+      const data = await res.json();
 
-    if (overviewPolyline) {
+      // Note; Extract and decode Google polyline correctly
+      const overviewPolyline = data?.routes?.[0]?.overview_polyline?.points;
+      if (!overviewPolyline) {
+        console.warn('No overview polyline returned from directions API');
+        return;
+      }
+
+      // Note; Decode polyline into path and draw
       const path = window.google.maps.geometry.encoding.decodePath(overviewPolyline);
       new window.google.maps.Polyline({
         path,
@@ -99,32 +111,41 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
         map: mapInstanceRef.current,
       });
 
+      // Note; Fit bounds around route
       const bounds = new window.google.maps.LatLngBounds();
       path.forEach((pt: any) => bounds.extend(pt));
       mapInstanceRef.current.fitBounds(bounds);
+    } catch (err) {
+      console.error('Failed to fetch directions:', err);
     }
 
+    // Note; Fetch and place POIs by type
     for (const type of filters) {
-      const city = origin.split(',')[0];
-      const res = await fetch(
-        `/api/poi?city=${encodeURIComponent(city)}&type=${type}&maxDistance=${maxDistance}`
-      );
-      const data = await res.json();
-      const pois = data.places || [];
+      try {
+        const city = origin.split(',')[0];
+        const res = await fetch(
+          `/api/map/places?city=${encodeURIComponent(city)}&type=${type}&maxDistance=${maxDistance}`
+        );
+        const data = await res.json();
+        const pois = data.places || [];
 
-      pois.forEach((poi: any) => {
-        if (poi.location) {
-          new window.google.maps.Marker({
-            position: { lat: poi.location.lat, lng: poi.location.lng },
-            map: mapInstanceRef.current,
-            title: `${filterIcons[type] || ''} ${poi.name}`,
-            label: filterIcons[type] || '',
-          });
-        }
-      });
+        pois.forEach((poi: any) => {
+          if (poi.location) {
+            new window.google.maps.Marker({
+              position: { lat: poi.location.lat, lng: poi.location.lng },
+              map: mapInstanceRef.current,
+              title: `${filterIcons[type] || ''} ${poi.name}`,
+              label: filterIcons[type] || '',
+            });
+          }
+        });
+      } catch (err) {
+        console.error(`Failed to load POIs for ${type}:`, err);
+      }
     }
   }, [origin, destination, maxDistance, filters]);
 
+  // Note; Wait for map + geometry then draw
   useEffect(() => {
     const interval = setInterval(() => {
       if (origin && destination && mapInstanceRef.current && window.google?.maps?.geometry) {

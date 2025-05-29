@@ -1,47 +1,79 @@
-// server/src/schemas/resolvers.ts
-
 import { IResolvers } from '@graphql-tools/utils';
-import Profile from '../models/Profile.js';      // ← note the “.js” suffix
-import Trip from '../models/Trip.js';            // ← note the “.js” suffix
+import Profile from '../models/Profile.js';      
+import Trip from '../models/Trip.js';            
 import { signToken } from '../utils/auth.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
-  _id: unknown;         // Note; _id comes in as unknown, so we’ll cast when used
+  _id: unknown;        
   name: string;
   email: string;
   password: string;
 }
 
 interface Context {
-  user?: ProfileType;   // Note; populated by authenticateToken middleware
+  user?: ProfileType;  
 }
 
 const resolvers: IResolvers<any, Context> = {
   Query: {
-    // Note; Fetch all profiles (with their trips)
+    // Fetch all profiles (with their trips)
     profiles: async () => Profile.find().populate('trips'),
 
-    // Note; Fetch one profile by ID
+    // Fetch one profile by ID
     profile: async (_p, { profileId }: { profileId: string }) =>
       Profile.findById(profileId).populate('trips'),
 
-    // Note; “me” query uses context.user
+    // “me” query uses context.user
     me: async (_p, _a, context) => {
       if (!context.user) throw new AuthenticationError('Not authenticated');
       const userId = context.user._id as string;
       return Profile.findById(userId).populate('trips');
     },
 
-    // Note; Fetch all trips
+    // Fetch all trips
     trips: async () => Trip.find(),
 
-    // Note; Fetch single trip by ID
-    trip: async (_p, { id }: { id: string }) => Trip.findById(id),
+    // Fetch single trip by ID and reshape scorecard
+    trip: async (_p, { id }: { id: string }) => {
+      const trip = await Trip.findById(id);
+      if (!trip) return null;
+
+      const transformedPlayers = trip.players.map((p) => {
+        // build ordered array 1–18
+        const ordered = Array.from({ length: 18 }, (_, idx) => {
+          const holeNum = idx + 1;
+          const found = p.scores.find((s) => s.hole === holeNum);
+          return { hole: holeNum, score: found?.score ?? 0 };
+        });
+
+        // build score object H1–H18 & tally total
+        const score: Record<string, number> = {};
+        let total = 0;
+        ordered.forEach(({ hole, score: s }) => {
+          score[`H${hole}`] = s;
+          total += s;
+        });
+
+        return {
+          name: p.name,
+          score,   // unified score object
+          total,   // server-computed total
+        };
+      });
+
+      return {
+        _id: trip._id,
+        name: trip.name,
+        date: trip.date,
+        courses: trip.courses,
+        players: transformedPlayers,
+      };
+    },
   },
 
   Mutation: {
-    // Note; Register a new profile
+    // Register a new profile
     addProfile: async (
       _p,
       { input }: { input: { name: string; email: string; password: string } }
@@ -58,7 +90,7 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    // Note; Login an existing profile
+    // Login an existing profile
     login: async (_p, { email, password }: { email: string; password: string }) => {
       const profile = await Profile.findOne({ email });
       if (!profile) throw new AuthenticationError('No profile found');
@@ -69,7 +101,7 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    // Note; Create a new trip for current user
+    // Create a new trip for current user
     addTrip: async (
       _p,
       { input }: { input: { name: string; date: string; courseName: string } },
@@ -88,7 +120,7 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Note; Delete a trip for current user
+    // Delete a trip for current user
     deleteTrip: async (
       _p,
       { tripId }: { tripId: string },
@@ -102,7 +134,7 @@ const resolvers: IResolvers<any, Context> = {
       return Trip.findByIdAndDelete(tripId);
     },
 
-    // Note; Add a course to a trip
+    // Add a course to a trip
     addCourseToTrip: async (
       _p,
       { tripId, courseName }: { tripId: string; courseName: string }
@@ -113,7 +145,7 @@ const resolvers: IResolvers<any, Context> = {
         { new: true, runValidators: true }
       ),
 
-    // Note; Remove a course from a trip
+    // Remove a course from a trip
     removeCourseFromTrip: async (
       _p,
       { courseName }: { courseName: string }
@@ -124,18 +156,23 @@ const resolvers: IResolvers<any, Context> = {
         { new: true }
       ),
 
-    // Note; Add a player to a trip
+    // Add a player with 18 zeroed scores
     addPlayer: async (
       _p,
       { tripId, name }: { tripId: string; name: string }
-    ) =>
-      Trip.findByIdAndUpdate(
+    ) => {
+      const fullScores = Array.from({ length: 18 }, (_, i) => ({
+        hole: i + 1,
+        score: 0,
+      }));
+      return Trip.findByIdAndUpdate(
         tripId,
-        { $addToSet: { players: { name, scores: [] } } },
+        { $push: { players: { name, scores: fullScores } } },
         { new: true, runValidators: true }
-      ),
+      );
+    },
 
-    // Note; Remove a player from a trip
+    // Remove a player
     removePlayer: async (
       _p,
       { tripId, name }: { tripId: string; name: string }
@@ -146,19 +183,25 @@ const resolvers: IResolvers<any, Context> = {
         { new: true }
       ),
 
-    // Note; Update (or add) a score entry for a player
+    // Update (or add) a score entry
     updateScore: async (
       _p,
-      { tripId, player, hole, score }: 
+      { tripId, player, hole, score }:
         { tripId: string; player: string; hole: number; score: number }
     ) => {
       const trip = await Trip.findById(tripId);
       if (!trip) throw new Error('Trip not found');
-      const playerObj = trip.players?.find((p) => p.name === player);
+
+      const playerObj = trip.players.find((p) => p.name === player);
       if (!playerObj) throw new Error('Player not found');
+
       const existing = playerObj.scores.find((s) => s.hole === hole);
-      if (existing) existing.score = score;
-      else playerObj.scores.push({ hole, score });
+      if (existing) {
+        existing.score = score;
+      } else {
+        playerObj.scores.push({ hole, score });
+      }
+
       await trip.save();
       return trip;
     },
