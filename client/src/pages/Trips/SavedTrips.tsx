@@ -34,7 +34,6 @@ const SavedTrips: React.FC = () => {
   return (
     <main className="saved-trips">
       <h2 className="saved-trips__title">Your Saved Trips</h2>
-      <button className="trip-list__delete-all">🗑️ Delete All Trips</button>
       <TripList trips={trips} title="" />
     </main>
   );

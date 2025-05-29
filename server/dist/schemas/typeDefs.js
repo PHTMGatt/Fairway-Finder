@@ -1,11 +1,12 @@
-// server/src/schemas/typeDefs.ts
 /**
  * GraphQL schema (SDL) as a plain string.
  * Apollo Server accepts string typeDefs directly, so no need for `gql` here.
  */
 const typeDefs = `
-  # --------- Profile & Authentication Types --------- #
+  # --------- Custom Scalar --------- #
+  scalar JSON
 
+  # --------- Profile & Authentication Types --------- #
   type Profile {
     _id: ID
     name: String
@@ -20,7 +21,6 @@ const typeDefs = `
   }
 
   # --------- Trip & Course Types --------- #
-
   type Course {
     _id: ID
     name: String
@@ -33,14 +33,11 @@ const typeDefs = `
     lng: Float
   }
 
-  type Score {
-    hole: Int
-    score: Int
-  }
-
+  # --------- Scorecard Types --------- #
   type Player {
     name: String
-    scores: [Score]
+    score: JSON    # map H1→score … H18→score
+    total: Int     # computed server-side
   }
 
   type Trip {
@@ -52,7 +49,6 @@ const typeDefs = `
   }
 
   # --------- Input Types --------- #
-
   input ProfileInput {
     name: String!
     email: String!
@@ -66,7 +62,6 @@ const typeDefs = `
   }
 
   # --------- Query Definitions --------- #
-
   type Query {
     me: Profile
     profiles: [Profile]
@@ -76,7 +71,6 @@ const typeDefs = `
   }
 
   # --------- Mutation Definitions --------- #
-
   type Mutation {
     addProfile(input: ProfileInput!): Auth
     login(email: String!, password: String!): Auth

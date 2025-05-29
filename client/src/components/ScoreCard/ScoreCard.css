@@ -1,3 +1,5 @@
+/* src/components/ScoreCard/ScoreCard.css */
+
 /* ===== Scorecard Layout ===== */
 .scorecard {
   margin-top: 2rem;
@@ -31,6 +33,11 @@
   justify-content: center;
 }
 
+/* small tweak to separate slider from toggle */
+.scorecard__slider {
+  margin: 0.5rem 0 1rem;
+}
+
 .scorecard__btn {
   background: #6dc2ff;
   color: #fff;
@@ -51,15 +58,22 @@
   cursor: not-allowed;
 }
 
+/* ===== Table Wrapper for Scroll ===== */
+.scorecard__table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
 /* ===== Table Styling ===== */
 .scorecard__table {
   width: 100%;
+  min-width: 650px;    /* ensures space for 9 holes */
   border-collapse: collapse;
   margin-bottom: 1.5rem;
   font-size: 0.95rem;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
-  overflow-x: auto;
+  /* remove internal overflow: wrapper handles it */
 }
 
 .scorecard__table th,
@@ -67,7 +81,7 @@
   padding: 0.5rem;
   text-align: center;
   border-bottom: 1px solid #d0ecfa;
-  min-width: 80px;
+  white-space: nowrap; /* prevent wrapping */
 }
 
 .scorecard__table th {
@@ -126,19 +140,12 @@
   background: #218838;
 }
 
-/* ===== Scrollable Table on Mobile ===== */
+/* ===== Responsive tweaks ===== */
 @media (max-width: 768px) {
-  .scorecard__table {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-
   .scorecard__header {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .scorecard__nav {
     justify-content: flex-start;
   }
