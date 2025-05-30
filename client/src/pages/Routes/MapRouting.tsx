@@ -1,4 +1,4 @@
-// src/pages/MapRouting.tsx
+// src/pages/'MapRouting.tsx'
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
@@ -7,22 +7,29 @@ import './MapRouting.css';
 type FilterType = 'golf_course' | 'restaurant' | 'gas_station' | 'rest_area';
 
 const MapRouting: React.FC = () => {
-  const [origin, setOrigin] = useState('Detroit, MI'); // Note; Default origin on load
-  const [destination, setDestination] = useState('Ann Arbor, MI'); // Note; Default destination
+  // Note; Default origin/destination
+  const [origin, setOrigin] = useState('Detroit, MI');
+  const [destination, setDestination] = useState('Ann Arbor, MI');
+
+  // Note; POI filters + submission control
   const [filters, setFilters] = useState<FilterType[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
-  // Note; Auto-submit map load once default values are set
+  // Note; Trigger map load on initial mount
   useEffect(() => {
     setSubmitted(true);
   }, []);
 
+  // Note; Toggle individual POI filter
   const toggleFilter = (type: FilterType) => {
     setFilters((prev) =>
-      prev.includes(type) ? prev.filter((f) => f !== type) : [...prev, type]
+      prev.includes(type)
+        ? prev.filter((f) => f !== type)
+        : [...prev, type]
     );
   };
 
+  // Note; Submit origin/destination form
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setSubmitted(true);

@@ -1,50 +1,48 @@
-// src/components/CourseForm/CourseForm.tsx
-
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+// client/src/components/CourseForm/'CourseForm.tsx'
+import React, { useState, useCallback, FormEvent, ChangeEvent, memo, useMemo } from 'react';
 import { useMutation } from '@apollo/client';
 import { Link } from 'react-router-dom';
 import Auth from '../../utils/auth';
 import { ADD_COURSE_TO_TRIP } from '../../utils/mutations';
 import './CourseForm.css';
 
-interface CourseFormProps {
-  tripId: string;
-}
-
-const CourseForm: React.FC<CourseFormProps> = ({ tripId }) => {
-  // Note; Local state for the course name input
+//Note; remastered CourseForm with memo, useMemo for auth check, lean markup
+const CourseForm: React.FC<{ tripId: string }> = memo(({ tripId }) => {
+  //Note; Local state for course name
   const [courseName, setCourseName] = useState<string>('');
+  //Note; GraphQL mutation hook
+  const [addCourseToTrip, { error }] = useMutation(ADD_COURSE_TO_TRIP);
+  //Note; auth check memoized
+  const isLoggedIn = useMemo(() => Auth.loggedIn(), []);
 
-  // Note; GraphQL mutation hook for adding a course to a trip
-  const [addCourseToTrip, { error: addCourseError }] = useMutation(ADD_COURSE_TO_TRIP);
-
-  // Note; Handler for input field changes
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //Note; input change handler
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setCourseName(e.target.value);
-  };
+  }, []);
 
-  // Note; Submit handler to execute the add-course mutation
-  const handleAddCourse = async (e: FormEvent) => {
-    e.preventDefault();
-    try {
-      await addCourseToTrip({
-        variables: { tripId, courseName }
-      });
-      setCourseName(''); // Note; clear the input on success
-    } catch {
-      // Note; mutation error is displayed below
-    }
-  };
+  //Note; submit handler
+  const handleAddCourse = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      if (!courseName.trim()) return;
+      try {
+        await addCourseToTrip({ variables: { tripId, courseName } });
+        setCourseName('');
+      } catch {
+        //Note; error displayed below
+      }
+    },
+    [addCourseToTrip, tripId, courseName]
+  );
 
   return (
     <div className="course-form">
-      {/* Note; Section header */}
-      <h4 className="course-form__title">Add a course to your trip:</h4>
+      {/*Note; header*/}
+      <h4 className="course-form__title">Add a course to your trip</h4>
 
-      {/* Note; Show form only when user is authenticated */}
-      {Auth.loggedIn() ? (
+      {isLoggedIn ? (
         <form className="course-form__form" onSubmit={handleAddCourse}>
-          {/* Note; Course name input */}
+          {/*Note; course name input*/}
           <input
             name="courseName"
             className="course-form__input"
@@ -52,31 +50,25 @@ const CourseForm: React.FC<CourseFormProps> = ({ tripId }) => {
             onChange={handleInputChange}
             placeholder="Enter golf course name..."
           />
-          {/* Note; Submit button */}
+          {/*Note; primary action button*/}
           <button
             type="submit"
-            className="btn course-form__btn"
+            className="course-form__btn"
             disabled={!courseName.trim()}
           >
             Add Course
           </button>
         </form>
       ) : (
-        /* Note; Prompt to login or signup if not authenticated */
+        //Note; login prompt
         <p className="course-form__prompt">
-          Please <Link to="/login">login</Link> or{' '}
-          <Link to="/signup">signup</Link> to add courses.
+          Please <Link to="/login">login</Link> or <Link to="/signup">signup</Link> to add courses.
         </p>
       )}
 
-      {/* Note; Display any error from the mutation */}
-      {addCourseError && (
-        <p className="course-form__error">
-          Error: {addCourseError.message}
-        </p>
-      )}
+      {error && <p className="course-form__error">Error: {error.message}</p>}
     </div>
   );
-};
+});
 
 export default CourseForm;

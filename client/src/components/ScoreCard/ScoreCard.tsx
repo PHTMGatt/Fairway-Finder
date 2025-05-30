@@ -1,19 +1,15 @@
-// src/components/ScoreCard/ScoreCard.tsx
-
+// src/components/ScoreCard/'ScoreCard.tsx'
 import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_TRIP } from '../../utils/queries';
-import {
-  ADD_PLAYER,
-  REMOVE_PLAYER,
-  UPDATE_SCORE,
-} from '../../utils/mutations';
+import { ADD_PLAYER, REMOVE_PLAYER, UPDATE_SCORE } from '../../utils/mutations';
 import './ScoreCard.css';
 
+//Note; remastered ScoreCard with stable structure, logic preserved
 interface PlayerSubdoc {
   name: string;
-  score: Record<string, number>;  // Note; now an object mapping "H1"→score … "H18"→score
-  total: number;                  // Note; total computed server-side
+  score: Record<string, number>;
+  total: number;
 }
 
 interface TripData {
@@ -28,13 +24,11 @@ interface ScoreCardProps {
 }
 
 const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
-  // Fetch trip (players now have score & total)
   const { loading, error, data } = useQuery<TripData>(QUERY_TRIP, {
     variables: { id: tripId },
     fetchPolicy: 'network-only',
   });
 
-  // Prepare mutations and refetch QUERY_TRIP on completion
   const [addPlayer] = useMutation(ADD_PLAYER, {
     refetchQueries: [{ query: QUERY_TRIP, variables: { id: tripId } }],
   });
@@ -45,14 +39,10 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     refetchQueries: [{ query: QUERY_TRIP, variables: { id: tripId } }],
   });
 
-  // Local UI state for new player, view mode, and 3-hole index
   const [newPlayerName, setNewPlayerName] = useState('');
-  const [viewMode, setViewMode] = useState<'front9' | 'back9' | 'threehole'>(
-    'front9'
-  );
+  const [viewMode, setViewMode] = useState<'front9' | 'back9' | 'threehole'>('front9');
   const [threeHoleIndex, setThreeHoleIndex] = useState(0);
 
-  // Derive which holes to show
   const getHoleNumbers = (): number[] => {
     if (viewMode === 'front9') return Array.from({ length: 9 }, (_, i) => i + 1);
     if (viewMode === 'back9') return Array.from({ length: 9 }, (_, i) => i + 10);
@@ -60,7 +50,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   };
   const holeNumbers = getHoleNumbers();
 
-  // Add player handler
   const handleAddPlayer = async () => {
     const trimmed = newPlayerName.trim();
     if (!trimmed) return;
@@ -68,12 +57,10 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     setNewPlayerName('');
   };
 
-  // Remove player handler
   const handleRemovePlayer = async (name: string) => {
     await removePlayer({ variables: { tripId, name } });
   };
 
-  // Update score handler
   const handleScoreChange = async (
     playerName: string,
     hole: number,
@@ -84,7 +71,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     });
   };
 
-  // Shift 3-hole view window
   const handleSlide = (direction: 'prev' | 'next') => {
     setThreeHoleIndex((prev) => {
       const next = direction === 'prev' ? prev - 1 : prev + 1;
@@ -92,7 +78,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     });
   };
 
-  // Loading & error states
   if (loading) return <p>Loading scorecard…</p>;
   if (error || !data?.trip) return <p>❌ Error loading scorecard</p>;
 
@@ -100,7 +85,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
 
   return (
     <div className="scorecard">
-      {/* Header & view-mode toggles */}
+      {/*Note; header and view toggles */}
       <div className="scorecard__header">
         <h4 className="scorecard__title">
           {viewMode === 'threehole'
@@ -108,28 +93,19 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
             : `Holes ${holeNumbers[0]}-${holeNumbers[holeNumbers.length - 1]}`}
         </h4>
         <div className="scorecard__nav">
-          <button
-            className="scorecard__btn"
-            onClick={() => setViewMode('front9')}
-          >
+          <button className="scorecard__btn" onClick={() => setViewMode('front9')}>
             Front 9
           </button>
-          <button
-            className="scorecard__btn"
-            onClick={() => setViewMode('back9')}
-          >
+          <button className="scorecard__btn" onClick={() => setViewMode('back9')}>
             Back 9
           </button>
-          <button
-            className="scorecard__btn"
-            onClick={() => setViewMode('threehole')}
-          >
+          <button className="scorecard__btn" onClick={() => setViewMode('threehole')}>
             3-Hole View
           </button>
         </div>
       </div>
 
-      {/* 3-hole slider */}
+      {/*Note; 3-hole nav buttons */}
       {viewMode === 'threehole' && (
         <div className="scorecard__nav scorecard__slider">
           <button
@@ -149,7 +125,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
         </div>
       )}
 
-      {/* Score table */}
+      {/*Note; score entry table */}
       <div className="scorecard__table-wrapper">
         <table className="scorecard__table">
           <thead>
@@ -168,7 +144,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
                 <td>{player.name}</td>
                 {holeNumbers.map((holeNum) => {
                   const key = `H${holeNum}`;
-                  const val = player.score[key] ?? 0;  // Note; read from score object
+                  const val = player.score[key] ?? 0;
                   return (
                     <td key={holeNum}>
                       <input
@@ -202,7 +178,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
         </table>
       </div>
 
-      {/* Add player */}
+      {/*Note; add player section */}
       <div className="scorecard__add-player">
         <input
           type="text"
@@ -211,10 +187,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
           value={newPlayerName}
           onChange={(e) => setNewPlayerName(e.target.value)}
         />
-        <button
-          className="scorecard__add-btn"
-          onClick={handleAddPlayer}
-        >
+        <button className="scorecard__add-btn" onClick={handleAddPlayer}>
           Add Player
         </button>
       </div>

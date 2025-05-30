@@ -1,5 +1,4 @@
 // server/src/models/Profile.ts
-
 import { Schema, model, Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 
@@ -10,43 +9,47 @@ export interface ProfileDoc extends Document {
   name: string;
   email: string;
   password: string;
-  trips: Types.ObjectId[];  
+  trips: Types.ObjectId[];
+  handicap?: number;           //Note; Handicap index (optional)
   isCorrectPassword(candidatePassword: string): Promise<boolean>;
 }
 
 /**
  * Note; Schema definition for user profiles.
- *       Includes name, email, hashed password, and referenced trips.
  */
 const profileSchema = new Schema<ProfileDoc>(
   {
     name: {
       type: String,
-      required: true,      // Note; Username is mandatory
-      unique: true,        // Note; Prevent duplicate usernames
-      trim: true,          // Note; Remove surrounding whitespace
+      required: true,
+      unique: true,
+      trim: true,
     },
     email: {
       type: String,
-      required: true,      // Note; Email is mandatory
-      unique: true,        // Note; Prevent duplicate emails
+      required: true,
+      unique: true,
       match: [/.+@.+\..+/, 'Must match a valid email address'],
     },
     password: {
       type: String,
-      required: true,      // Note; Password is mandatory
-      minlength: 5,        // Note; Enforce minimum length
+      required: true,
+      minlength: 5,
     },
     trips: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Trip',       // Note; References the Trip model
+        ref: 'Trip',
       },
     ],
+    handicap: {                  //Note; Add handicap field
+      type: Number,
+      default: null,
+    },
   },
   {
-    timestamps: true,      // Note; Adds createdAt and updatedAt fields
-    toJSON: {              // Note; Ensure virtuals and getters are applied in JSON
+    timestamps: true,
+    toJSON: {
       virtuals: false,
       getters: true,
     },
@@ -70,9 +73,6 @@ profileSchema.pre<ProfileDoc>('save', async function (next) {
 
 /**
  * Note; Instance method to verify a plaintext password against the stored hash.
- *
- * @param candidatePassword - Plaintext password to verify
- * @returns true if the password matches, false otherwise
  */
 profileSchema.methods.isCorrectPassword = function (
   candidatePassword: string
@@ -81,7 +81,7 @@ profileSchema.methods.isCorrectPassword = function (
 };
 
 /**
- * Note; Create and export the Profile model for use in resolvers and routes.
+ * Note; Create and export the Profile model.
  */
 const Profile = model<ProfileDoc>('Profile', profileSchema);
 export default Profile;

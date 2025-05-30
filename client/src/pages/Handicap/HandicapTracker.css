@@ -1,132 +1,203 @@
-.handicap-container {
-  max-width: 720px;
-  margin: 3rem auto;
-  padding: 2rem;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  font-family: 'Inter', sans-serif;
-  color: #333;
+/* client/src/pages/Handicap/HandicapTracker.css */
+
+/* Note; Global box-sizing reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 2rem;
+/* Note; Main container for setup + history cards */
+.handicap-container {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+  gap: 1.5rem;
+  padding: 0 1rem;
+}
+
+/* Note; Switch to row layout on medium+ screens */
+@media (min-width: 768px) {
+  .handicap-container {
+    flex-direction: row;
+  }
+  .setup-card,
+  .history-card {
+    flex: 1;
+  }
+}
+
+/* Note; Shared card styles */
+.setup-card,
+.history-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+}
+
+/* Note; Section title */
+.setup-card .title {
   text-align: center;
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
   color: #1e3a8a;
 }
 
-.round-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
-}
-
-.round-form .form-group {
+/* Note; Form field grouping */
+.form-group {
   display: flex;
   flex-direction: column;
+  margin-bottom: 1rem;
 }
 
 .form-group label {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   margin-bottom: 0.4rem;
   color: #444;
 }
 
+.form-group select,
 .form-group input {
-  padding: 0.6rem 0.8rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  font-size: 1rem;
-  transition: border 0.2s;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
 }
 
+/* Note; Highlight input on focus */
+.form-group select:focus,
 .form-group input:focus {
-  border-color: #1e3a8a;
+  border-color: #6dc2ff;
   outline: none;
 }
 
-.full-width {
-  grid-column: span 2;
+/* Note; Form layout: responsive column grid */
+.round-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
-.submit-btn {
-  background-color: #1e3a8a;
+/* Note; USGA lookup button styling */
+.lookup {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.lookup a {
+  font-size: 0.9rem;
+  color: #1e3a8a;
+  font-weight: 500;
+  text-decoration: none;
+  margin-top: 0.3rem;
+}
+
+.lookup a:hover {
+  text-decoration: underline;
+}
+
+/* Note; Save and Clear buttons container */
+.button-wrapper {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Note; Button base styling */
+.submit-btn,
+.clear-btn {
+  background: #6dc2ff;
   color: #fff;
   border: none;
-  padding: 0.75rem 1.2rem;
-  font-size: 1rem;
-  font-weight: 500;
+  padding: 0.7rem 1.2rem;
   border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 5px 15px rgba(109, 194, 255, 0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.submit-btn:hover {
-  background-color: #3b539c;
+.submit-btn:hover,
+.clear-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 20px rgba(109, 194, 255, 0.6);
 }
 
+/* Note; Handicap value display */
 .handicap-info {
   text-align: center;
   margin-top: 1.5rem;
-  margin-bottom: 2rem;
 }
 
 .handicap-info h2 {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 500;
+  margin-bottom: 0.5rem;
 }
 
 .handicap-value {
   font-size: 2.5rem;
   font-weight: 700;
-  color: #16a34a;
-  margin-top: 0.5rem;
+  color: #3d7a45;
 }
 
-.clear-btn {
-  margin-top: 1rem;
-  background-color: #ef4444;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.clear-btn:hover {
-  background-color: #dc2626;
-}
-
-.rounds-list {
-  margin-top: 2rem;
-}
-
-.rounds-list h3 {
-  font-size: 1.2rem;
-  font-weight: 600;
+/* Note; History card section title */
+.history-card h3 {
+  font-size: 1.4rem;
   margin-bottom: 1rem;
   color: #1e293b;
 }
 
+/* Note; Scrollable container for round cards */
+.history-card .rounds-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 0.5rem;
+}
+
+/* Note; Custom scrollbar */
+.history-card .rounds-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history-card .rounds-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+/* Note; Round summary card */
 .round-card {
   background: #f9fafb;
-  padding: 1rem 1.5rem;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
-  margin-bottom: 1rem;
-  transition: background 0.2s;
+  padding: 0.75rem 1rem;
 }
 
-.round-card:hover {
-  background-color: #f1f5f9;
+.round-card p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
 }
 
-.button-wrapper {
-  grid-column: span 2;
-  display: flex;
-  justify-content: center;
+/* Note; Enhanced focus outlines */
+input:focus,
+select:focus,
+button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(109, 194, 255, 0.5);
 }

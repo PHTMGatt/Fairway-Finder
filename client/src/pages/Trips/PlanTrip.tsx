@@ -12,14 +12,14 @@ interface Course {
   name: string;
   address: string;
   rating: number | null;
-  place_id: string;
+ place_id: string;
 }
 
 const PlanTrip: React.FC = () => {
-  const { isLoggedIn } = useAuth();        // Note; Auth hook (always called)
-  const navigate = useNavigate();          // Note; Router hook (always called)
+  const { isLoggedIn } = useAuth(); // Note; Check login status from context
+  const navigate = useNavigate();   // Note; Hook to navigate programmatically
 
-  // Note; All state & mutation hooks at top, before any returns:
+  // Note; Core state: input, API data, errors
   const [searchCity, setSearchCity] = useState<string>('');
   const [courseOptions, setCourseOptions] = useState<Course[]>([]);
   const [courseLoading, setCourseLoading] = useState<boolean>(false);
@@ -34,12 +34,12 @@ const PlanTrip: React.FC = () => {
     refetchQueries: [{ query: QUERY_TRIPS }],
   });
 
-  // Note; Redirect unauthorized users
+  // Note; If not logged in, send to login
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
-  // Handlers…
+  // Note; Fetch courses from backend
   const handleCourseSearch = async (e: FormEvent) => {
     e.preventDefault();
     setCourseOptions([]);
@@ -70,6 +70,7 @@ const PlanTrip: React.FC = () => {
     }
   };
 
+  // Note; Save trip w/ selected course & navigate
   const handleTripSave = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -92,7 +93,7 @@ const PlanTrip: React.FC = () => {
       const newId = data?.addTrip?._id;
       if (!newId) throw new Error('Trip creation failed.');
 
-      // Note; pass both date & city
+      // Note; Navigate to trip details with trip metadata
       navigate(`/trip/${newId}`, {
         state: { date: tripDate, city: searchCity.trim() }
       });
@@ -105,6 +106,7 @@ const PlanTrip: React.FC = () => {
     <main className="plan-trip">
       <h2 className="plan-trip__title">Plan a Trip</h2>
 
+      {/* Note; City search form */}
       <form className="plan-trip__form" onSubmit={handleCourseSearch}>
         <input
           className="plan-trip__input"
@@ -124,6 +126,7 @@ const PlanTrip: React.FC = () => {
       </form>
       {courseError && <p className="plan-trip__error">{courseError}</p>}
 
+      {/* Note; Course selection list */}
       {courseOptions.length > 0 && (
         <ul className="plan-trip__results">
           {courseOptions.map(c => (
@@ -148,6 +151,7 @@ const PlanTrip: React.FC = () => {
         </div>
       )}
 
+      {/* Note; Trip save form */}
       <form className="plan-trip__form" onSubmit={handleTripSave}>
         <input
           className="plan-trip__input"

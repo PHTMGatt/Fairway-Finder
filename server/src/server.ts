@@ -1,6 +1,9 @@
+// server/server.ts
+
+// Note; Core module imports and Apollo server dependencies
 import path from 'path';
 import { fileURLToPath } from 'url';
-import express from 'express';
+import express, { Response } from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import dotenv from 'dotenv';
@@ -8,14 +11,17 @@ import mongoose from 'mongoose';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 
-// Create __dirname for ES module compatibility
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-// Load env vars from server/.env
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+// Note; Load environment variables from the .env file
+dotenv.config({
+  path: path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../.env'
+  ),
+});
 
-// Destructure and validate critical env vars
+
+// Note; Destructure required configuration values
 const {
   MONGODB_URI,
   PORT = '3001',
@@ -25,11 +31,13 @@ const {
   NODE_ENV = 'development',
 } = process.env;
 
+// Note; Validate presence of critical environment variables
 if (!MONGODB_URI || !WEATHER_API_KEY || !PLACES_API_KEY || !JWT_SECRET_KEY) {
   console.error('❌ Missing required environment variables');
   process.exit(1);
 }
 
+// Note; Log configuration for development debugging
 if (NODE_ENV !== 'production') {
   console.log(`🔑 Environment loaded:
   • MongoDB URI: ${MONGODB_URI}
@@ -39,30 +47,29 @@ if (NODE_ENV !== 'production') {
   • JWT Secret: loaded`);
 }
 
-// Import DB connection
+
+// Note; Import application modules: database connection, schema, routes, models, auth util
 import { connectDatabase } from './config/connection.js';
-
-// Import GraphQL schema
 import { schema } from './schemas/index.js';
-
-// Import REST route handlers
 import courseRoutes from './routes/courseRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
 import mapRoutes from './routes/mapRoutes.js';
-
-// JWT auth middleware
+import Profile from './models/Profile.js';
 import { authenticateToken } from './utils/auth.js';
 
-// Profile model for dev route
-import Profile from './models/Profile.js';
 
+// Note; Main server startup function
 async function startServer() {
   try {
+    // Note; Connect to MongoDB
     await connectDatabase();
 
-    // Dev-only MongoDB test write
+    // Note; In development, perform a test write/read to confirm DB connectivity
     if (NODE_ENV !== 'production') {
-      const Ping = mongoose.model('Ping', new mongoose.Schema({ name: String }));
+      const Ping = mongoose.model(
+        'Ping',
+        new mongoose.Schema({ name: String })
+      );
       const existing = await Ping.findOne({ name: 'VSCodeCheck' });
       if (!existing) {
         const ping = await Ping.create({ name: 'VSCodeCheck' });
@@ -72,28 +79,33 @@ async function startServer() {
       }
     }
 
+    // Note; Initialize Apollo GraphQL server
     const apollo = new ApolloServer({
       typeDefs: schema.typeDefs,
       resolvers: schema.resolvers,
     });
     await apollo.start();
 
+    // Note; Initialize Express application
     const app = express();
-    app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-    app.use(express.json());
-    app.use(compression()); // 🔥 reduce static payload size
+    app.use(cors({ origin: 'http://localhost:3000', credentials: true })); // allow CORS from client
+    app.use(express.json());   // parse JSON bodies
+    app.use(compression());    // enable response compression
 
-    // REST API routes
+    // Note; Register REST API routes
     app.use('/api', courseRoutes);
     app.use('/api', weatherRoutes);
     app.use('/api', mapRoutes);
 
-    // Dev-only clear route
+    // Note; Development-only route to clear all user profiles
     if (NODE_ENV !== 'production') {
-      app.delete('/api/dev/clear-users', async (_req, res) => {
+      app.delete('/api/dev/clear-users', async (_req, res: Response) => {
         try {
           const result = await Profile.deleteMany({});
-          res.json({ message: 'All profiles deleted', deletedCount: result.deletedCount });
+          res.json({
+            message: 'All profiles deleted',
+            deletedCount: result.deletedCount,
+          });
         } catch (err) {
           console.error('[DEV] Failed to clear users:', err);
           res.status(500).json({ error: 'Failed to clear users' });
@@ -101,34 +113,44 @@ async function startServer() {
       });
     }
 
-    // Health check for Render
-    app.get('/health', (_req, res) => res.send('OK'));
+    // Note; Health check endpoint
+    app.get('/health', (_req, res: Response) => res.send('OK'));
 
-    // Mount GraphQL with auth
+    // Note; Mount GraphQL middleware with authentication context
     app.use(
       '/graphql',
       expressMiddleware(apollo, {
-        context: async ({ req }) => authenticateToken({ req }),
+        context: async ({ req, res }) => {
+          const r = req as any;
+          authenticateToken({ req: r, res });
+          return { user: r.user };
+        },
       })
     );
 
-    // Serve React client in production
+    // Note; Serve static React build in production mode
     if (NODE_ENV === 'production') {
-      const staticPath = path.resolve(__dirname, '../../client/dist');
+      const staticPath = path.resolve(
+        path.dirname(fileURLToPath(import.meta.url)),
+        '../../client/dist'
+      );
       app.use(express.static(staticPath));
-      app.get('*', (_req, res) => {
+      app.get('*', (_req, res: Response) => {
         res.sendFile(path.join(staticPath, 'index.html'));
       });
     }
 
+    // Note; Start listening on configured port
     const portNumber = parseInt(PORT, 10) || 3001;
     app.listen(portNumber, () => {
       console.log(`🚀 Server running at http://localhost:${portNumber}`);
     });
   } catch (err) {
+    // Note; Handle startup errors
     console.error('❌ Server startup failed:', err);
     process.exit(1);
   }
 }
 
+// Note; Invoke startup
 startServer();

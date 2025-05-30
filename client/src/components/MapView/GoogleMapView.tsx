@@ -1,4 +1,4 @@
-// src/components/MapView/GoogleMapView.tsx
+// src/components/MapView/'GoogleMapView.tsx'
 
 import React, { useEffect, useRef, useCallback } from 'react';
 import './GoogleMapView.css';

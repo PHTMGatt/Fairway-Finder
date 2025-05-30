@@ -1,6 +1,5 @@
-/* src/components/ScoreCard/ScoreCard.css */
-
-/* ===== Scorecard Layout ===== */
+/* src/components/ScoreCard/'ScoreCard.css' */
+/*Note; outer card wrapper with glass effect */
 .scorecard {
   margin-top: 2rem;
   padding: 2rem;
@@ -10,7 +9,7 @@
   backdrop-filter: blur(8px);
 }
 
-/* ===== Header & View Mode ===== */
+/*Note; header layout and title */
 .scorecard__header {
   display: flex;
   flex-wrap: wrap;
@@ -19,25 +18,22 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
-
 .scorecard__title {
   font-size: 1.25rem;
   color: #1f3b24;
   font-weight: 600;
 }
 
+/*Note; button nav */
 .scorecard__nav {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
 }
-
-/* small tweak to separate slider from toggle */
 .scorecard__slider {
   margin: 0.5rem 0 1rem;
 }
-
 .scorecard__btn {
   background: #6dc2ff;
   color: #fff;
@@ -48,48 +44,44 @@
   cursor: pointer;
   transition: background 0.2s ease-in-out;
 }
-
 .scorecard__btn:hover:not(:disabled) {
   background: #4eb6f5;
 }
-
 .scorecard__btn:disabled {
   background: #c5e8ff;
   cursor: not-allowed;
 }
 
-/* ===== Table Wrapper for Scroll ===== */
+/*Note; horizontal scroll wrapper for table */
 .scorecard__table-wrapper {
   width: 100%;
   overflow-x: auto;
 }
 
-/* ===== Table Styling ===== */
+/*Note; styled score table */
 .scorecard__table {
   width: 100%;
-  min-width: 650px;    /* ensures space for 9 holes */
+  min-width: 650px;
   border-collapse: collapse;
   margin-bottom: 1.5rem;
   font-size: 0.95rem;
   background: rgba(255, 255, 255, 0.5);
   border-radius: 10px;
-  /* remove internal overflow: wrapper handles it */
 }
-
 .scorecard__table th,
 .scorecard__table td {
   padding: 0.5rem;
   text-align: center;
   border-bottom: 1px solid #d0ecfa;
-  white-space: nowrap; /* prevent wrapping */
+  white-space: nowrap;
 }
-
 .scorecard__table th {
   background-color: #eafaff;
   color: #1f3b24;
   font-weight: 600;
 }
 
+/*Note; score inputs */
 .scorecard__input {
   width: 3rem;
   padding: 0.3rem;
@@ -99,7 +91,7 @@
   font-size: 1rem;
 }
 
-/* ===== Player Removal ===== */
+/*Note; remove player button */
 .scorecard__remove {
   background: transparent;
   border: none;
@@ -108,7 +100,7 @@
   font-size: 1.1rem;
 }
 
-/* ===== Add Player Area ===== */
+/*Note; player adder */
 .scorecard__add-player {
   display: flex;
   flex-wrap: wrap;
@@ -116,7 +108,6 @@
   align-items: center;
   margin-top: 1rem;
 }
-
 .scorecard__player-input {
   padding: 0.5rem;
   flex: 1 1 200px;
@@ -124,7 +115,6 @@
   border-radius: 6px;
   font-size: 1rem;
 }
-
 .scorecard__add-btn {
   background: #28a745;
   color: white;
@@ -135,12 +125,11 @@
   cursor: pointer;
   transition: background 0.2s ease-in-out;
 }
-
 .scorecard__add-btn:hover {
   background: #218838;
 }
 
-/* ===== Responsive tweaks ===== */
+/*Note; responsive tweaks */
 @media (max-width: 768px) {
   .scorecard__header {
     flex-direction: column;

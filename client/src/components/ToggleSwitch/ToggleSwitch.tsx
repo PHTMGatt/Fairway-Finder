@@ -1,31 +1,28 @@
-// src/components/ToggleSwitch/ToggleSwitch.tsx
-
+// src/components/ToggleSwitch/'ToggleSwitch.tsx'
 import React from 'react';
 import './ToggleSwitch.css';
 
+//Note; ToggleSwitch component for light/dark mode or feature toggles
 interface ToggleSwitchProps {
-  id: string;                    // Note; Unique identifier for the checkbox
-  checked: boolean;              // Note; Current on/off state
-  onChange: (newState: boolean) => void; // Note; Callback when toggled
-  label?: string;                // Note; Optional text label
+  id: string;
+  checked: boolean;
+  onChange: (newState: boolean) => void;
+  label?: string;
 }
 
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ id, checked, onChange, label }) => {
-  // Note; Internal change handler to pass the new checked state upstream
+  //Note; pass checked state to parent
   const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.checked);
   };
 
   return (
     <div className="toggle-switch">
-      {/* Note; Render optional label */}
       {label && (
         <label htmlFor={id} className="toggle-switch__label">
           {label}
         </label>
       )}
-
-      {/* Note; Hidden checkbox that drives the styled slider */}
       <input
         type="checkbox"
         id={id}
@@ -33,8 +30,6 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ id, checked, onChange, labe
         checked={checked}
         onChange={handleToggle}
       />
-
-      {/* Note; Visible slider track & knob */}
       <label htmlFor={id} className="toggle-switch__slider" />
     </div>
   );

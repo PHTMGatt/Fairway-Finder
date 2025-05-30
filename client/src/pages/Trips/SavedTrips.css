@@ -1,3 +1,5 @@
+/* src/pages/Trips/SavedTrips.css */
+
 /* ===== Saved Trips Page ===== */
 .saved-trips {
   max-width: 1000px;
@@ -45,6 +47,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
+  align-items: start;    /* Note; ensure cards align at top */
 }
 
 /* ===== Empty State ===== */

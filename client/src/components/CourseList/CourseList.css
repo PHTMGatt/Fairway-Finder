@@ -1,59 +1,59 @@
-/* src/components/CourseList/CourseList.css */
-
-/* Note; Container for the entire list */
+/* client/src/components/CourseList/'CourseList.css' */
+/*Note; glass-style white card container*/
 .course-list {
-  margin: 1rem 0;
+  max-width: 420px;
+  margin: 1rem auto;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
-/* Note; Each course entry block */
+/*Note; individual card*/
 .course-card {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 1rem;
+  border-radius: 1rem;
+  color: #333;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Note; Course name with optional remove button */
+/*Note; header row*/
 .course-card__name {
-  background: #00796b;
-  color: #fff;
   margin: 0;
-  padding: 0.5rem 0.75rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 500;
-}
-
-/* Note; Style for the remove button */
-.course-card__remove {
-  margin-left: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-radius: 4px;
-  background-color: #d32f2f;
-  color: #fff;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-/* Note; Hover state for remove button */
-.course-card__remove:hover {
-  background-color: #b71c1c;
-}
-
-/* Note; Fallback text for empty list */
-.course-list__empty {
   font-size: 1rem;
-  color: #555;
-  margin-top: 1rem;
 }
 
-/* Note; Mutation error styling */
+/*Note; remove button styled as primary*/
+.course-card__remove {
+  background: #6dc2ff;
+  color: #fff;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+/*Note; hover on remove*/
+.course-card__remove:hover {
+  transform: translateY(-2px);
+  opacity: 0.9;
+}
+
+/*Note; empty state*/
+.course-list__empty {
+  text-align: center;
+  color: #555;
+  font-size: 1rem;
+}
+
+/*Note; error message*/
 .course-list__error {
-  color: #b00020;
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  color: #ff6b6b;
+  text-align: center;
 }

@@ -126,3 +126,12 @@ export const UPDATE_SCORE = gql`
     }
   }
 `
+// Note; HANDICAP MUTATION
+export const UPDATE_HANDICAP = gql`
+  mutation UpdateTripHandicap($tripId: ID!, $handicap: Float!) {
+    updateTripHandicap(tripId: $tripId, handicap: $handicap) {
+      _id
+      handicap
+    }
+  }
+`;

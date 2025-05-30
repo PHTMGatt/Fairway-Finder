@@ -1,33 +1,20 @@
-
+/* client/src/components/Footer/'Footer.css' */
+/*Note; Body background gradient and reset*/
 body {
   margin: 0;
   padding: 0;
-  background: linear-gradient(to bottom, #cceeff, #e6f7ff); /* Light blue gradient */
+  background: linear-gradient(to bottom, #cceeff, #e6f7ff);
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   overflow-x: hidden;
 }
 
-/* Wrapper around footer and mower */
+/*Note; Wrapper around footer and mower to allow icon overflow*/
 .footer-wrapper {
   position: relative;
-  overflow: visible; /* let mower overflow outside footer */
+  overflow: visible;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to bottom, #cceeff, #e6f7ff); /* Light blue gradient */
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
-}
-
-/* Wrapper around footer and mower */
-.footer-wrapper {
-  position: relative;
-  overflow: visible; /* let mower overflow outside footer */
-}
-
-/* Footer styles */
+/*Note; Footer container with refreshed gradient*/
 .footer {
   background: linear-gradient(135deg, #b3d9ff, #66b2ff);
   padding: 1.5rem 1rem 1rem;
@@ -37,7 +24,7 @@ body {
   z-index: 1;
 }
 
-/* Inner container */
+/*Note; Inner flex container for back button and copy*/
 .footer__inner {
   display: flex;
   flex-direction: column;
@@ -45,58 +32,54 @@ body {
   gap: 0.75rem;
 }
 
-/* Back button */
+/*Note; Back button styling: white background, blue border/text, hover baby-blue fill*/
 .footer__back {
   background-color: #fff;
-  border: 2px solid #399ae9;
-  color: #00709c;
+  color: #1e3a8a;
+  border: 2px solid #1e3a8a;
   padding: 0.4rem 0.75rem;
   border-radius: 5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 .footer__back:hover {
-  background-color: #f0f0f0;
+  background-color: #6dc2ff;
+  color: #fff;
+  transform: translateY(-2px);
 }
 
-/* Footer text */
+/*Note; Footer copyright text styling*/
 .footer__copy {
-  color: #fff;
+  color: #ffffffcc;
   font-size: 0.9rem;
   margin: 0;
 }
 
-/* Lawn mower rolling above footer inside wrapper */
+/*Note; Mower link wrapper positioned just above footer, fully clickable*/
 .footer__mower-link {
   position: absolute;
-  bottom: calc(100% + 15px); /* Moves mower 15px above footer */
-  left: -150px;     /* start off container left */
+  bottom: calc(100% + 15px); /* 15px above footer */
+  left: 50%;
+  transform: translateX(-50%);
   width: 200px;
   height: 60px;
   z-index: 9999;
-  animation: mower-roll-footer 15s linear infinite; /* slower speed */
+  animation: mower-roll-footer 15s linear infinite;
   display: block;
   pointer-events: auto;
 }
 
-/* Mower image styling */
+/*Note; Mower image styling*/
 .footer__mower {
-  height: 90px;     /* scale */
+  height: 90px;
   filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
   user-select: none;
   pointer-events: none;
 }
 
-/* Animate mower rolling left to right across footer-wrapper */
+/*Note; Animate mower rolling left to right across the footer-wrapper*/
 @keyframes mower-roll-footer {
-  0% {
-    left: -150px;
-  }
-  100% {
-    left: calc(100% + 150px);
-  }
+  0% { left: -150px; }
+  100% { left: calc(100% + 150px); }
 }
-
-
-
