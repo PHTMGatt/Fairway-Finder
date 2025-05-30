@@ -15,6 +15,7 @@
   color: #064e3b;
 }
 
+/* Note; shared form styling */
 .plan-trip__form {
   display: flex;
   gap: 0.75rem;
@@ -47,6 +48,7 @@
   box-shadow: 0 4px 12px rgba(109, 194, 255, 0.4);
 }
 
+/* Note; course selection list */
 .plan-trip__results {
   list-style: none;
   padding-left: 1rem;
@@ -60,20 +62,24 @@
   border-radius: 6px;
   transition: background 0.2s;
 }
+
 .plan-trip__result-item:hover {
   background: #e0f4ff;
 }
+
 .plan-trip__result-item.selected {
   background: #c7eeff;
   font-weight: bold;
 }
 
+/* Note; selected course label */
 .plan-trip__confirmation {
   margin-bottom: 1rem;
   color: #064e3b;
   font-weight: 600;
 }
 
+/* Note; general error message */
 .plan-trip__error {
   color: #b00020;
   font-size: 0.95rem;
