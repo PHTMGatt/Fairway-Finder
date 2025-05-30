@@ -1,17 +1,28 @@
-/* src/components/Footer/Footer.css */
-
-/* Note; Main footer container with deep soft blue gradient */
-.footer {
-  margin-top: auto;
-  padding: 1.5rem 0;
-  background: linear-gradient(to top, #a8d8ff, #d7efff);
-  border-top: 4px solid #6dc2ff;
-  font-family: inherit;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
-  transition: background 0.3s ease;
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to bottom, #cceeff, #e6f7ff); /* Light blue gradient */
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
 }
 
-/* Note; Centered inner content with vertical spacing */
+/* Wrapper around footer and mower */
+.footer-wrapper {
+  position: relative;
+  overflow: visible; /* let mower overflow outside footer */
+}
+
+/* Footer styles */
+.footer {
+  background: linear-gradient(135deg, #b3d9ff, #66b2ff);
+  padding: 1.5rem 1rem 1rem;
+  border-top: 2px solid #01d9ff;
+  color: #fff;
+  position: relative;
+  z-index: 1;
+}
+
+/* Inner container */
 .footer__inner {
   display: flex;
   flex-direction: column;
@@ -19,30 +30,59 @@
   gap: 0.75rem;
 }
 
-/* Note; 'Go Back' button styling (non-sticky) */
+/* Back button */
 .footer__back {
-  background-color: #6dc2ff;
-  color: #fff;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 30px;
-  cursor: pointer;
+  background-color: #fff;
+  border: 2px solid #399ae9;
+  color: #00709c;
+  padding: 0.4rem 0.75rem;
+  border-radius: 5px;
   font-weight: 600;
-  font-size: 0.95rem;
-  box-shadow: 0 4px 8px rgba(109, 194, 255, 0.4);
-  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
-
 .footer__back:hover {
-  background-color: #4eb6f5;
-  box-shadow: 0 0 12px rgba(109, 194, 255, 0.6);
-  transform: scale(1.05);
+  background-color: #f0f0f0;
 }
 
-/* Note; Footer copyright text */
+/* Footer text */
 .footer__copy {
-  margin: 0;
+  color: #fff;
   font-size: 0.9rem;
-  color: #333;
-  opacity: 0.85;
+  margin: 0;
 }
+
+/* Lawn mower rolling above footer inside wrapper */
+.footer__mower-link {
+  position: absolute;
+  bottom: calc(100% + 15px); /* Moves mower 15px above footer */
+  left: -150px;
+  width: 200px;
+  height: 60px;
+  z-index: 9999;
+  animation: mower-roll-footer 20s linear infinite;
+  display: block;
+  pointer-events: auto;
+}
+
+
+/* Mower image styling */
+.footer__mower {
+  height: 90px;     /* scale */
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Animate mower rolling left to right across footer-wrapper */
+@keyframes mower-roll-footer {
+  0% {
+    left: -150px;
+  }
+  100% {
+    left: calc(100% + 150px);
+  }
+}
+
+
+
