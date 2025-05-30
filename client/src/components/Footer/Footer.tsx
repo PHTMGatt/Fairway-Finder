@@ -1,17 +1,12 @@
-// src/components/Footer/Footer.tsx
-
 import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
+import lawnmower from '../../assets/images/lawnmower.gif';
 import './Footer.css';
 
 const Footer: React.FC = () => {
-  // Note; Get current path to decide when to show “Go Back”
   const location = useLocation();
-
-  // Note; Hook for programmatic navigation
   const navigate = useNavigate();
 
-  // Note; Navigate back if history exists, otherwise go to home page
   const handleGoBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -21,25 +16,25 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="footer">
-      <div className="footer__inner container text-center">
-        {/* Note; Show Go Back button on all routes except the home page */}
-        {location.pathname !== '/' && (
-          <button
-            className="btn footer__back"
-            onClick={handleGoBack}
-          >
-            ← Go Back
-          </button>
-        )}
+    <div className="footer-wrapper">
+      {/* Mower rolling just above footer */}
+      <Link to="https://github.com/PHTMGatt/Fairway-Finder" className="footer__mower-link" aria-label="Home">
+        <img src={lawnmower} alt="Lawn mower rolling" className="footer__mower" />
+      </Link>
 
-        {/* Note; Copyright notice, dynamic year */}
-        <p className="footer__copy">
-          &copy; {new Date().getFullYear()} Fairway Finder Golf Co.
-        </p>
-      </div>
-    </footer>
+      <footer className="footer">
+        <div className="footer__inner container text-center">
+          {location.pathname !== '/' && (
+            <button className="btn footer__back" onClick={handleGoBack}>
+              ← Go Back
+            </button>
+          )}
+          <p className="footer__copy">&copy; {new Date().getFullYear()} Fairway Finder Golf Co.</p>
+        </div>
+      </footer>
+    </div>
   );
 };
 
 export default Footer;
+

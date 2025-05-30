@@ -1,107 +1,71 @@
-/* src/components/Header/Header.css */
-
-/* Note; Main header container with grid layout and sticky positioning */
-.header {
-  display: grid;
-  align-items: center;
-  height: 100px;
-  padding: 0 1rem;
-  background: repeating-linear-gradient(
-    to bottom,
-    #2f5d34 0,
-    #2f5d34 33.33%,
-    #3e7a49 33.33%,
-    #3e7a49 66.66%,
-    #2f5d34 66.66%,
-    #2f5d34 100%
-  );
-  border-bottom: 2px solid #1f3b24;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-  grid-template-columns:
-    minmax(200px, auto) /* Logo section */
-    repeat(6, 36px)     /* Six golf-hole icons */
-    1fr                 /* Spacer */
-    auto auto;          /* Auth buttons */
-  column-gap: 0.75rem;
-  position: sticky;    /* Note; Keeps header visible on scroll */
-  top: 0;
-  z-index: 100;
-}
-
-/* Note; Logo cell with divider */
-.header__logo-cell {
-  border-right: 2px solid #1f3b24;
-  padding-right: 1rem;
-}
-
-/* Note; Logo text styling */
 .header__logo {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #ffffff;
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  transform: translateX(-50%);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   text-decoration: none;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  transition: transform 0.3s ease;
+  z-index: 20;
+}
+.header__logo:hover {
+  transform: translateX(-50%) scale(1.08);
 }
 
-/* Note; Decorative golf-hole icons */
-.header__holes {
-  display: contents;
-}
-.header__hole {
-  width: 36px;
-  height: 36px;
-  background: #e6f4ea;
-  border-radius: 4px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.8),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+.header__gif-icon {
+  height: 85px;
+  margin-right: 1rem;
+  filter: brightness(1.1);
+  transition: transform 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
 }
 
-/* Note; Invisible spacer for grid layout */
-.header__spacer {}
+.header__gif-icon:hover {
+  transform: scale(1.25);
+  filter: brightness(1.4);
+}
 
-/* Note; Container for auth buttons */
+
+.header__spacer {
+  flex-grow: 1;
+}
+
 .header__actions {
   display: flex;
-  align-items: center;
   gap: 0.5rem;
-  border-left: 2px solid #1f3b24;
-  padding-left: 1rem;
+  z-index: 10;
 }
 
-/* Note; Button/link styling */
 .header__btn {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  padding: 0.4rem 0.8rem;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(31, 59, 36, 0.6);
+  padding: 0.4rem 0.75rem;
+  background: #fff;
+  border: 2px solid #1f3b24;
   border-radius: 4px;
   color: #1f3b24;
   text-decoration: none;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .header__btn:hover {
-  background: #ffffff;
+  background: #f0f0f0;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .header__btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: none;
 }
 
 .header__btn:focus {
-  box-shadow: 0 0 0 3px rgba(31, 59, 36, 0.5);
-}
-
-/* Note; Active page button highlight (if needed) */
-.header__btn.active {
-  background: #d7f7e6;
-  border-color: #3e7a49;
-  box-shadow: 0 0 6px rgba(50, 150, 80, 0.4);
+  box-shadow: 0 0 0 2px rgba(31, 59, 36, 0.3);
+  outline: none;
 }

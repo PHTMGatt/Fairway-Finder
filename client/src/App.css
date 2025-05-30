@@ -149,3 +149,10 @@ header, footer {
 .min-100-vh {
   min-height: 100vh;
 }
+
+/* Prevent horizontal scrollbar caused by animated footer GIF */
+body {
+  margin: 0; /* reset default margin if not already set */
+  overflow-x: hidden;
+}
+
