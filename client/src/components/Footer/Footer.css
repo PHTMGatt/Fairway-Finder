@@ -1,3 +1,18 @@
+
+body {
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(to bottom, #cceeff, #e6f7ff); /* Light blue gradient */
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Wrapper around footer and mower */
+.footer-wrapper {
+  position: relative;
+  overflow: visible; /* let mower overflow outside footer */
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -56,15 +71,14 @@ body {
 .footer__mower-link {
   position: absolute;
   bottom: calc(100% + 15px); /* Moves mower 15px above footer */
-  left: -150px;
+  left: -150px;     /* start off container left */
   width: 200px;
   height: 60px;
   z-index: 9999;
-  animation: mower-roll-footer 20s linear infinite;
+  animation: mower-roll-footer 15s linear infinite; /* slower speed */
   display: block;
   pointer-events: auto;
 }
-
 
 /* Mower image styling */
 .footer__mower {

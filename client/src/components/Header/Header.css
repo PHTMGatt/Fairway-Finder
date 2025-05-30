@@ -1,33 +1,7 @@
-.header {
-  position: relative;
-  height: 120px;
-  padding: 0 2rem;
-  border-bottom: 3px solid #1f3b24;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  display: flex;
-  align-items: center;
-  background-repeat: repeat;
-  background-size: auto, auto;
-  z-index: 1;
-}
-
-/* Golf guy gif icon */
-.header__icon-link img.header__gif-icon {
-  height: 100px;
-  width: auto;
-  margin-right: 1rem;
-  transition: transform 0.2s ease;
-}
-.header__icon-link img.header__gif-icon:hover {
-  transform: scale(1.07);
-}
-
-/* Centered FAIRWAY FINDER title */
 .header__logo {
   position: absolute;
   left: 50%;
-  top: 30px;
+  top: 28px;
   transform: translateX(-50%);
   font-size: 2.5rem;
   font-weight: 800;
@@ -36,24 +10,31 @@
   text-transform: uppercase;
   text-decoration: none;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-  white-space: nowrap;
-  pointer-events: auto;
-  z-index: 2;
-  transition: transform 0.3s ease, color 0.3s ease;
+  transition: transform 0.3s ease;
+  z-index: 20;
+}
+.header__logo:hover {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.header__gif-icon {
+  height: 85px;
+  margin-right: 1rem;
+  filter: brightness(1.1);
+  transition: transform 0.3s ease, filter 0.3s ease;
   cursor: pointer;
 }
 
-.header__logo:hover {
-  transform: translateX(-50%) scale(1.07);
-  color: #e0ffe0; /* Optional: slight color glow */
+.header__gif-icon:hover {
+  transform: scale(1.25);
+  filter: brightness(1.4);
 }
 
-/* Spacer pushes right content to edge */
+
 .header__spacer {
   flex-grow: 1;
 }
 
-/* Auth buttons */
 .header__actions {
   display: flex;
   gap: 0.5rem;
@@ -72,15 +53,18 @@
   transition: all 0.2s ease;
   cursor: pointer;
 }
+
 .header__btn:hover {
   background: #f0f0f0;
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
+
 .header__btn:active {
   transform: translateY(0);
   box-shadow: none;
 }
+
 .header__btn:focus {
   box-shadow: 0 0 0 2px rgba(31, 59, 36, 0.3);
   outline: none;
