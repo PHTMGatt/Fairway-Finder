@@ -16,6 +16,7 @@ import PlanTrip from './pages/Trips/PlanTrip';
 import SavedTrips from './pages/Trips/SavedTrips';
 import TripDetails from './pages/Trips/TripDetails';
 import Weather from './pages/Weather/Weather';
+import Handicap from './pages/Handicap/HandicapTracker';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: 'routing', element: <MapRouting /> },
       { path: 'weather', element: <Weather /> },
       { path: 'trip/:tripId', element: <TripDetails /> },
+      { path: 'handicap', element: <Handicap /> }
     ],
   },
 ]);

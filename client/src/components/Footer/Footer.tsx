@@ -18,7 +18,7 @@ const Footer: React.FC = () => {
   return (
     <div className="footer-wrapper">
       {/* Mower rolling just above footer */}
-      <Link to="https://github.com/PHTMGatt/Fairway-Finder" className="footer__mower-link" aria-label="Home">
+      <Link to="/handicap" className="footer__mower-link" aria-label="Handicap Tracker">
         <img src={lawnmower} alt="Lawn mower rolling" className="footer__mower" />
       </Link>
 
