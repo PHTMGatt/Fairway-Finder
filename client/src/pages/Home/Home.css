@@ -9,7 +9,7 @@
   background: #eafaff;
 }
 
-/* — Hero Section — */
+/* ===== Hero Section ===== */
 .home__hero {
   text-align: center;
   margin-bottom: 2rem;
@@ -49,7 +49,7 @@
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
 }
 
-/* — Search Form — */
+/* ===== Search Form ===== */
 .home__search {
   display: flex;
   flex-wrap: wrap;
@@ -95,11 +95,11 @@
   box-shadow: 0 0 12px rgba(109, 194, 255, 0.5);
 }
 
-/* — Map Section — */
+/* ===== Map Section ===== */
 .home__map {
   width: 100%;
   max-width: 800px;
-  height: 300px; /* explicit height so child can fill */
+  height: 300px;
   margin-bottom: 2rem;
   border-radius: 6px;
   overflow: hidden;
@@ -116,14 +116,14 @@
   height: 100%;
 }
 
-/* — Saved Trips — */
+/* ===== Saved Trips Section ===== */
 .home__saved-trips {
   width: 100%;
   max-width: 800px;
   margin: 2rem auto;
 }
 
-/* — Bottom Navigation — */
+/* ===== Bottom Navigation ===== */
 .home__bottom-nav {
   display: flex;
   justify-content: space-around;
@@ -168,7 +168,7 @@
   color: #ffffff;
 }
 
-/* — Responsive Fixes — */
+/* ===== Responsive Fixes ===== */
 @media (max-width: 600px) {
   .home__input,
   .home__find-btn {
