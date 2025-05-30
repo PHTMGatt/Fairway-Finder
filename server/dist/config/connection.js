@@ -3,21 +3,18 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 // Load environment variables from server/.env
 dotenv.config();
-// ✅ Cast after null check to satisfy TypeScript
-const uri = process.env.MONGODB_URI;
-if (!uri) {
+// Grab MONGODB_URI and ensure it’s defined
+const rawUri = process.env.MONGODB_URI;
+if (!rawUri) {
     throw new Error('❌ Missing MONGODB_URI in environment');
 }
-/**
- * ✅ Establishes a connection to MongoDB using Mongoose.
- */
+// Now that we’ve thrown if undefined, cast to string
+const uri = rawUri;
 export async function connectDatabase() {
     try {
         console.log(`🔗 Connecting to MongoDB at ${uri}`);
-        await mongoose.connect(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        // No more deprecated options, and uri is guaranteed string
+        await mongoose.connect(uri);
         console.log('✅ MongoDB connected (Fairway-Finder)');
         return mongoose.connection;
     }

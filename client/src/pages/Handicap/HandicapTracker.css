@@ -1,0 +1,132 @@
+.handicap-container {
+  max-width: 720px;
+  margin: 3rem auto;
+  padding: 2rem;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  font-family: 'Inter', sans-serif;
+  color: #333;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: #1e3a8a;
+}
+
+.round-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.round-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.95rem;
+  margin-bottom: 0.4rem;
+  color: #444;
+}
+
+.form-group input {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border 0.2s;
+}
+
+.form-group input:focus {
+  border-color: #1e3a8a;
+  outline: none;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.submit-btn {
+  background-color: #1e3a8a;
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #3b539c;
+}
+
+.handicap-info {
+  text-align: center;
+  margin-top: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.handicap-info h2 {
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+
+.handicap-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #16a34a;
+  margin-top: 0.5rem;
+}
+
+.clear-btn {
+  margin-top: 1rem;
+  background-color: #ef4444;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.clear-btn:hover {
+  background-color: #dc2626;
+}
+
+.rounds-list {
+  margin-top: 2rem;
+}
+
+.rounds-list h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.round-card {
+  background: #f9fafb;
+  padding: 1rem 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  transition: background 0.2s;
+}
+
+.round-card:hover {
+  background-color: #f1f5f9;
+}
+
+.button-wrapper {
+  grid-column: span 2;
+  display: flex;
+  justify-content: center;
+}
