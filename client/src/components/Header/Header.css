@@ -1,3 +1,5 @@
+/* client/src/components/Header/'Header.css' */
+/*Note; main logo centered absolute */
 .header__logo {
   position: absolute;
   left: 50%;
@@ -17,6 +19,7 @@
   transform: translateX(-50%) scale(1.08);
 }
 
+/*Note; golf gif icon left side */
 .header__gif-icon {
   height: 85px;
   margin-right: 1rem;
@@ -24,23 +27,24 @@
   transition: transform 0.3s ease, filter 0.3s ease;
   cursor: pointer;
 }
-
 .header__gif-icon:hover {
   transform: scale(1.25);
   filter: brightness(1.4);
 }
 
-
+/*Note; spacer pushes auth buttons */
 .header__spacer {
   flex-grow: 1;
 }
 
+/*Note; right-side button container */
 .header__actions {
   display: flex;
   gap: 0.5rem;
   z-index: 10;
 }
 
+/*Note; reusable button style */
 .header__btn {
   font-size: 0.9rem;
   font-weight: 600;
@@ -53,18 +57,15 @@
   transition: all 0.2s ease;
   cursor: pointer;
 }
-
 .header__btn:hover {
   background: #f0f0f0;
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
-
 .header__btn:active {
   transform: translateY(0);
   box-shadow: none;
 }
-
 .header__btn:focus {
   box-shadow: 0 0 0 2px rgba(31, 59, 36, 0.3);
   outline: none;
