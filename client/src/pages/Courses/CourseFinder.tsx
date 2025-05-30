@@ -1,4 +1,4 @@
-// src/pages/Courses/CourseFinder.tsx
+// src/pages/Courses/'CourseFinder.tsx'
 
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import './CourseFinder.css';
