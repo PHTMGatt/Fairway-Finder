@@ -1,60 +1,98 @@
+// server/utils/auth.ts
+
 import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
+import express from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Note; Structure of the user data stored inside the JWT
 interface UserPayload {
   username: string;
   email: string;
   _id: string;
 }
 
-// Note; Middleware for GraphQL context to extract and verify JWT from request
-export const authenticateToken = ({ req }: { req: any }) => {
-  // Note; Try to get token from body, query, or headers
-  let token = req.body?.token || req.query?.token || req.headers?.authorization;
+const SECRET = process.env.JWT_SECRET_KEY || '';
 
-  // Note; If header is of form "Bearer <token>", extract the token part
-  if (req.headers?.authorization) {
-    token = (token as string).split(' ').pop()?.trim();
+/**
+ * Extend Express’s Request type so `req.user` and `req.newToken` exist.
+ */
+declare module 'express-serve-static-core' {
+  interface Request {
+    user?: UserPayload;
+    newToken?: string;
   }
+}
 
-  // Note; If no token, return request as-is (unauthenticated)
-  if (!token) {
-    return req;
+/**
+ * Attach req.user and—if the token was expired—issue a fresh 8-hour JWT
+ * via the `x-access-token` response header.
+ */
+export const authenticateToken = ({
+  req,
+  res,
+}: {
+  req: express.Request;
+  res?: express.Response;
+}) => {
+  let token = req.body?.token
+    || req.query?.token
+    || req.headers.authorization;
+
+  if (typeof token === 'string' && token.startsWith('Bearer ')) {
+    token = token.slice(7).trim();
   }
+  if (!token) return req;
 
   try {
-    // Note; Verify token using JWT_SECRET_KEY, enforce max age
-    const secret = process.env.JWT_SECRET_KEY || '';
-    const { data } = jwt.verify(token as string, secret, { maxAge: '2h' }) as { data: UserPayload };
-    // Note; Attach decoded user payload to request
+    const { data } = jwt.verify(token, SECRET) as { data: UserPayload };
     req.user = data;
-  } catch (err) {
-    // Note; Log verification failures (token expired or invalid)
+  } catch (err: any) {
     console.warn('Token verification failed:', err);
+
+    if (err instanceof (jwt as any).TokenExpiredError) {
+      // decode without verifying signature to get payload
+      const decoded = jwt.decode(token) as { data?: UserPayload } | null;
+      if (decoded?.data) {
+        req.user = decoded.data;
+
+        // issue a fresh 8-hour token
+        const fresh = signToken(
+          decoded.data.username,
+          decoded.data.email,
+          decoded.data._id
+        );
+        if (res && !res.headersSent) {
+          res.setHeader('x-access-token', fresh);
+        }
+      }
+    }
+    // otherwise leave req.user undefined
   }
 
   return req;
 };
 
-// Note; Utility to sign a JWT for a given user payload
-export const signToken = (username: string, email: string, _id: string) => {
+/**
+ * Sign a JWT carrying { data: UserPayload } that expires in 8 hours.
+ */
+export const signToken = (
+  username: string,
+  email: string,
+  _id: string
+): string => {
   const payload: UserPayload = { username, email, _id };
-  const secret = process.env.JWT_SECRET_KEY || '';
-  // Note; Return signed token with 'data' field and 2-hour expiry
-  return jwt.sign({ data: payload }, secret, { expiresIn: '12h' });
+  return jwt.sign({ data: payload }, SECRET, {
+    expiresIn: '8h',
+  });
 };
 
-// Note; Custom error for authentication failures in GraphQL
+/**
+ * GraphQL error to throw when auth is missing/invalid.
+ */
 export class AuthenticationError extends GraphQLError {
   constructor(message = 'You must be logged in.') {
-    super(message, {
-      extensions: {
-        code: 'UNAUTHENTICATED',
-      },
-    });
+    super(message, { extensions: { code: 'UNAUTHENTICATED' } });
     Object.defineProperty(this, 'name', { value: 'AuthenticationError' });
   }
 }
