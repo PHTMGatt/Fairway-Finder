@@ -1,38 +1,38 @@
-// src/components/CourseList/CourseList.tsx
-
-import React from 'react';
+// client/src/components/CourseList/'CourseList.tsx'
+import React, { useCallback, memo, useMemo } from 'react';
 import { useMutation } from '@apollo/client';
 import { REMOVE_COURSE_FROM_TRIP } from '../../utils/mutations';
 import { QUERY_MY_TRIPS } from '../../utils/queries';
 import './CourseList.css';
 
+//Note; remastered CourseList with memo, useMemo for login check
 interface CourseListProps {
-  courses?: string[];          // Note; Optional array of course names
-  isLoggedInUser: boolean;     // Note; Controls visibility of remove buttons
+  courses?: string[];
+  isLoggedInUser: boolean;
 }
 
-const CourseList: React.FC<CourseListProps> = ({
-  courses = [],
-  isLoggedInUser,
-}) => {
-  // Note; GraphQL mutation hook for removing a course, refetching trips after
+const CourseList: React.FC<CourseListProps> = memo(({ courses = [], isLoggedInUser }) => {
+  //Note; auth check memoized (if needed elsewhere)
+  const showRemove = useMemo(() => isLoggedInUser, [isLoggedInUser]);
+
+  //Note; GraphQL remove mutation with refetch
   const [removeCourseFromTrip, { error: removeCourseError }] = useMutation(
     REMOVE_COURSE_FROM_TRIP,
-    {
-      refetchQueries: [{ query: QUERY_MY_TRIPS }],
-    }
+    { refetchQueries: [{ query: QUERY_MY_TRIPS }] }
   );
 
-  // Note; Handler invoked when clicking “Remove”
-  const handleCourseRemove = async (courseName: string) => {
-    try {
-      await removeCourseFromTrip({ variables: { courseName } });
-    } catch {
-      // Note; any error displayed below
-    }
-  };
+  //Note; remove handler
+  const handleCourseRemove = useCallback(
+    async (courseName: string) => {
+      try {
+        await removeCourseFromTrip({ variables: { courseName } });
+      } catch {
+        //Note; error displayed below
+      }
+    },
+    [removeCourseFromTrip]
+  );
 
-  // Note; Fallback when no courses have been added
   if (courses.length === 0) {
     return <h3 className="course-list__empty">No Courses Added Yet</h3>;
   }
@@ -43,8 +43,8 @@ const CourseList: React.FC<CourseListProps> = ({
         <div key={course} className="course-card">
           <h4 className="course-card__name">
             {course}
-            {/* Note; Only show Remove if this user owns the trip */}
-            {isLoggedInUser && (
+            {showRemove && (
+              //Note; removal button styled as primary-action
               <button
                 className="course-card__remove"
                 onClick={() => handleCourseRemove(course)}
@@ -55,15 +55,11 @@ const CourseList: React.FC<CourseListProps> = ({
           </h4>
         </div>
       ))}
-
-      {/* Note; Display any mutation error here */}
       {removeCourseError && (
-        <p className="course-list__error">
-          Error: {removeCourseError.message}
-        </p>
+        <p className="course-list__error">Error: {removeCourseError.message}</p>
       )}
     </div>
   );
-};
+});
 
 export default CourseList;
