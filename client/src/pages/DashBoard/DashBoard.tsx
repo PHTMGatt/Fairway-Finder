@@ -1,4 +1,4 @@
-// src/pages/Dashboard/Dashboard.tsx
+// src/pages/Dashboard/'Dashboard.tsx'
 
 import React from 'react';
 import { useQuery } from '@apollo/client';
