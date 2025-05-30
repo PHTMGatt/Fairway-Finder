@@ -1,33 +1,35 @@
-/* src/components/ToggleSwitch/ToggleSwitch.css */
-
+/* src/components/ToggleSwitch/'ToggleSwitch.css' */
+/*Note; toggle wrapper layout */
 .toggle-switch {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
+/*Note; label text */
 .toggle-switch__label {
   font-size: 0.9rem;
   color: #1f3b24;
 }
 
+/*Note; hide checkbox input */
 .toggle-switch__checkbox {
   display: none;
 }
 
-/* The track */
+/*Note; visual track */
 .toggle-switch__slider {
   position: relative;
   width: 46px;
   height: 24px;
-  background: rgba(255,255,255,0.6);
+  background: rgba(255, 255, 255, 0.6);
   border-radius: 12px;
   cursor: pointer;
   transition: background 0.3s;
-  border: 1px solid rgba(31,59,36,0.5);
+  border: 1px solid rgba(31, 59, 36, 0.5);
 }
 
-/* The knob */
+/*Note; knob */
 .toggle-switch__slider::after {
   content: '';
   position: absolute;
@@ -37,15 +39,14 @@
   height: 20px;
   background: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   transition: transform 0.3s;
 }
 
-/* Note; Checked state styling */
+/*Note; active track & knob position */
 .toggle-switch__checkbox:checked + .toggle-switch__slider {
-  background: rgba(31,59,36,0.8);
+  background: rgba(31, 59, 36, 0.8);
 }
-
 .toggle-switch__checkbox:checked + .toggle-switch__slider::after {
   transform: translateX(22px);
 }
