@@ -1,19 +1,23 @@
+/* src/pages/Trips/TripDetails.css */
+
+/* ===== Container ===== */
 .trip-details {
   max-width: 900px;
-  margin: 2rem auto;
-  padding: 2rem;
+  margin: 3rem auto;
+  padding: 3rem 2rem;
   background: rgba(255,255,255,0.6);
   backdrop-filter: blur(8px);
   border-radius: 16px;
   box-shadow: 0 12px 32px rgba(109,194,255,0.2);
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 3rem;
 }
 
+/* ===== Title & Label ===== */
 .trip-details__title {
   text-align: center;
-  font-size: 2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   color: #064e3b;
   margin: 0;
@@ -22,26 +26,28 @@
 .trip-details__label {
   text-align: center;
   color: #475569;
-  margin: 0.25rem 0 1.5rem;
+  margin: 0.5rem 0 2rem;
 }
 
-/* Weather input */
+/* ===== Weather Form ===== */
 .trip-details__weather-form {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 1rem;
+  display: grid;
+  grid:
+    "input button" auto
+    / minmax(220px, 1fr) auto;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .trip-details__weather-input {
-  padding: 0.5rem;
+  padding: 0.75rem;
   border: 1px solid #ccc;
   border-radius: 6px;
-  width: 200px;
+  width: 100%;
 }
 
 .trip-details__weather-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   background: linear-gradient(to right, #4eb6f5, #6dc2ff);
   color: #fff;
   border: none;
@@ -50,17 +56,19 @@
   font-weight: 600;
 }
 
-/* Top cards layout */
+/* ===== Top Cards Grid ===== */
 .trip-details__top {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px,1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: stretch;               /* stretch cards to same height */
+  gap: 2.5rem;
 }
 
+/* ===== Trip Card ===== */
 .trip-card {
-  display: flex;
+  display: flex;                      /* flex column layout */
   flex-direction: column;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(to bottom right, #e0f7fa, #f5fcff);
   box-shadow: 0 6px 12px rgba(109,194,255,0.2);
@@ -68,61 +76,55 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.trip-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 18px rgba(109,194,255,0.35);
-}
-
+/* ===== Card Header ===== */
 .trip-card__header {
+  flex: 0 0 auto;                     /* fixed header height */
   background: linear-gradient(to right, #81c784, #66bb6a);
   color: #fff;
   padding: 0.75rem 1rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
 }
 
+/* ===== Card Body ===== */
 .trip-card__body {
-  padding: 1rem;
-  color: #334155;
+  flex: 1 1 auto;                     /* grow to fill remaining space */
+  padding: 1.5rem;
+  display: flex;                      
+  flex-direction: column;
+  justify-content: flex-start;        /* keep content at top */
+  line-height: 1.6;
+  overflow-y: auto;                   /* scroll if overflow */
 }
 
-.trip-card__course-name {
-  margin: 0 0 0.5rem;
-  font-size: 1.25rem;
-  color: #064e3b;
+/* space out paragraphs and icons */
+.trip-card__body p {
+  margin: 0 0 0.75rem;
+}
+.trip-card__body svg {
+  vertical-align: middle;
+  margin-right: 0.5rem;
 }
 
-.trip-card__link {
-  display: inline-block;
-  margin-top: 0.75rem;
-  color: #2494dc;
-  text-decoration: none;
-  font-weight: 500;
-}
-
-.trip-card__link:hover {
-  text-decoration: underline;
-}
-
-/* Scorecard section */
+/* ===== Scorecard Section ===== */
 .trip-details__scorecard {
-  background: rgba(255,255,255,0.75);
+  background: rgba(255,255,255,0.8);
   border: 1px solid rgba(109,194,255,0.3);
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 2rem;
   box-shadow: 0 6px 18px rgba(109,194,255,0.15);
 }
 
 .trip-details__scorecard h3 {
-  margin: 0 0 1rem;
-  font-size: 1.5rem;
+  margin: 0 0 1.5rem;
+  font-size: 1.75rem;
   color: #064e3b;
 }
 
-/* Back button */
+/* ===== Back Button ===== */
 .trip-details__back-btn {
   align-self: center;
-  padding: 0.6rem 1.4rem;
+  padding: 0.75rem 1.5rem;
   background: #daf5e3;
   color: #065f46;
   border: 1px solid #b4ebca;
@@ -137,6 +139,7 @@
   transform: translateY(-1px);
 }
 
+/* ===== Responsive ===== */
 @media (max-width: 600px) {
   .trip-details__top {
     grid-template-columns: 1fr;
