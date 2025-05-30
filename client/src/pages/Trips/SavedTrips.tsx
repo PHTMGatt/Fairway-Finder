@@ -1,3 +1,5 @@
+// src/pages/Trips/SavedTrips.tsx
+
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useQuery } from '@apollo/client';
@@ -7,20 +9,23 @@ import { QUERY_TRIPS } from '../../utils/queries';
 import './SavedTrips.css';
 
 const SavedTrips: React.FC = () => {
-  const isLoggedIn = Auth.loggedIn();  // Note; auth check (always called)
+  const isLoggedIn = Auth.loggedIn();  // Note; Check user authentication status
 
-  // Note; fetch trips unconditionally, but skip if not logged in
+  // Note; Fetch trips but skip GraphQL call if not authenticated
   const { loading, error, data } = useQuery(QUERY_TRIPS, {
-    skip: !isLoggedIn
+    skip: !isLoggedIn,
   });
 
+  // Note; Redirect to login if not authenticated
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
+  // Note; Show loading state
   if (loading) {
     return <p className="saved-trips__status">Loading saved trips…</p>;
   }
+  // Note; Show error state
   if (error) {
     return (
       <p className="saved-trips__status">
@@ -29,8 +34,9 @@ const SavedTrips: React.FC = () => {
     );
   }
 
-  const trips = data?.trips || [];
+  const trips = data?.trips || [];     // Note; Default to empty array
 
+  // Note; Render the list of saved trips
   return (
     <main className="saved-trips">
       <h2 className="saved-trips__title">Your Saved Trips</h2>
