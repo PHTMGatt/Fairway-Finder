@@ -1,5 +1,4 @@
-// src/pages/Auth/Login.tsx
-
+// src/pages/Auth/'Login.tsx'
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
@@ -8,28 +7,22 @@ import { LOGIN_USER } from '../../utils/mutations';
 import { useAuth } from './AuthContext';
 import './Login.css';
 
+//Note; remastered Login page with preserved flow and error handling
 const Login: React.FC = () => {
-  // Note; Track email/password inputs and any error message
-  const [credentials, setCredentials] = useState({
-    email: '',
-    password: '',
-  });
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Note; Apollo mutation for logging in
   const [loginUser, { loading }] = useMutation(LOGIN_USER);
-
-  // Note; Refresh auth context after successful login
   const { refreshAuth } = useAuth();
 
-  // Note; Update form state on each keystroke
+  //Note; handle input changes
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
     setErrorMessage(null);
   };
 
-  // Note; Submit the login mutation
+  //Note; handle form submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -44,8 +37,8 @@ const Login: React.FC = () => {
       const { data } = await loginUser({ variables: { email, password } });
       const token = data?.login?.token;
       if (token) {
-        Auth.login(token);     // Note; Save token to localStorage
-        refreshAuth();         // Note; Trigger context update
+        Auth.login(token);
+        refreshAuth();
       } else {
         setErrorMessage('Invalid credentials.');
       }
@@ -56,7 +49,7 @@ const Login: React.FC = () => {
     }
   };
 
-  // Note; If already authenticated, redirect to saved trips
+  //Note; redirect if already logged in
   if (Auth.loggedIn()) {
     return <Navigate to="/saved-trips" replace />;
   }
@@ -97,7 +90,7 @@ const Login: React.FC = () => {
         </div>
       </div>
     </main>
-);
-}
+  );
+};
 
 export default Login;
