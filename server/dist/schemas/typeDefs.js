@@ -1,4 +1,4 @@
-// server/schemas/typeDefs.ts
+// server/schemas/'typeDefs.ts'
 export default `  
   scalar JSON
 
@@ -29,8 +29,8 @@ export default `
     name: String
     address: String
     location: Location
-    rating: Float    # cached courseRating for handicap calc
-    slope: Int       # cached slopeRating for handicap calc
+    rating: Float       # cached courseRating for handicap calc
+    slope: Int          # cached slopeRating for handicap calc
   }
 
   """
@@ -42,12 +42,13 @@ export default `
   }
 
   """
-  A player on a trip, with per-hole scores and total.
+  A player on a trip, with per-hole scores, total, and individual handicap index.
   """
   type Player {
     name: String
     score: JSON
     total: Int
+    handicap: Float     # ✅ New: individual player handicap
   }
 
   """
@@ -59,7 +60,7 @@ export default `
     date: String
     courses: [Course]
     players: [Player]
-    handicap: Float  # stored handicap index for this trip
+    handicap: Float     # stored trip-wide handicap index
   }
 
   """
@@ -72,7 +73,7 @@ export default `
   }
 
   """
-  Input for creating a new trip.  
+  Input for creating a new trip.
   The server will look up the course by name and cache its rating+slope.
   """
   input TripInput {
@@ -158,5 +159,10 @@ export default `
     Recalculate and store the trip's handicap index.
     """
     updateTripHandicap(tripId: ID!, handicap: Float!): Trip
+
+    """
+    ✅ NEW: Update a specific player's handicap value.
+    """
+    updatePlayerHandicap(tripId: ID!, name: String!, handicap: Float!): Trip
   }
 `;
