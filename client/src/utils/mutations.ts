@@ -1,5 +1,3 @@
-// client/src/utils/mutations.ts
-
 import { gql } from '@apollo/client';
 
 /** ——— AUTH & PROFILE MUTATIONS ——— **/
@@ -15,7 +13,7 @@ export const ADD_PROFILE = gql`
       }
     }
   }
-`
+`;
 
 // Note; Logs in an existing user and returns auth token & basic profile info
 export const LOGIN_USER = gql`
@@ -28,7 +26,7 @@ export const LOGIN_USER = gql`
       }
     }
   }
-`
+`;
 
 /** ——— TRIP MANAGEMENT MUTATIONS ——— **/
 
@@ -45,7 +43,7 @@ export const ADD_TRIP = gql`
       }
     }
   }
-`
+`;
 
 // Note; Adds a course to an existing trip by name
 export const ADD_COURSE_TO_TRIP = gql`
@@ -59,7 +57,7 @@ export const ADD_COURSE_TO_TRIP = gql`
       }
     }
   }
-`
+`;
 
 // Note; Removes a course from all trips that include it
 export const REMOVE_COURSE_FROM_TRIP = gql`
@@ -73,7 +71,7 @@ export const REMOVE_COURSE_FROM_TRIP = gql`
       }
     }
   }
-`
+`;
 
 // Note; Deletes an entire trip by its ID
 export const DELETE_TRIP = gql`
@@ -83,7 +81,7 @@ export const DELETE_TRIP = gql`
       name
     }
   }
-`
+`;
 
 /** ——— SCORECARD MANAGEMENT MUTATIONS ——— **/
 
@@ -95,7 +93,7 @@ export const ADD_PLAYER = gql`
       name
     }
   }
-`
+`;
 
 // Note; Removes a player from a trip’s scorecard
 export const REMOVE_PLAYER = gql`
@@ -105,33 +103,40 @@ export const REMOVE_PLAYER = gql`
       name
     }
   }
-`
+`;
 
 // Note; Updates a single player’s score on a specific hole
 export const UPDATE_SCORE = gql`
-  mutation UpdateScore(
-    $tripId: ID!
-    $player: String!
-    $hole: Int!
-    $score: Int!
-  ) {
-    updateScore(
-      tripId: $tripId
-      player: $player
-      hole: $hole
-      score: $score
-    ) {
+  mutation UpdateScore($tripId: ID!, $player: String!, $hole: Int!, $score: Int!) {
+    updateScore(tripId: $tripId, player: $player, hole: $hole, score: $score) {
       _id
       name
     }
   }
-`
-// Note; HANDICAP MUTATION
+`;
+
+/** ——— HANDICAP MUTATIONS ——— **/
+
+// Note; Updates the trip-wide handicap index (legacy, optional use)
 export const UPDATE_HANDICAP = gql`
   mutation UpdateTripHandicap($tripId: ID!, $handicap: Float!) {
     updateTripHandicap(tripId: $tripId, handicap: $handicap) {
       _id
       handicap
+    }
+  }
+`;
+
+// ✅ Note; Updates a specific player’s individual handicap inside a trip
+export const UPDATE_PLAYER_HANDICAP = gql`
+  mutation UpdatePlayerHandicap($tripId: ID!, $name: String!, $handicap: Float!) {
+    updatePlayerHandicap(tripId: $tripId, name: $name, handicap: $handicap) {
+      _id
+      name
+      players {
+        name
+        handicap
+      }
     }
   }
 `;

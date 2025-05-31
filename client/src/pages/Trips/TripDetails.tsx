@@ -1,5 +1,5 @@
 // src/pages/Trips/TripDetails.tsx
-import React, { useEffect, useState, ChangeEvent, FormEvent } from 'react';
+import React, { useEffect, useState, ChangeEvent, FormEvent, useCallback } from 'react';
 import { useQuery } from '@apollo/client';
 import { useParams, useNavigate } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
@@ -17,20 +17,43 @@ interface WeatherData {
   snow?: { '1h': number };
 }
 
+interface GolfCourseAPIResponse {
+  id: number;
+  club_name: string;
+  course_name: string;
+  tees: {
+    male: {
+      tee_name: string;
+      course_rating: number;
+      slope_rating: number;
+    }[];
+    female: {
+      tee_name: string;
+      course_rating: number;
+      slope_rating: number;
+    }[];
+  };
+}
+
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
 
-  const [tripDate, setTripDate] = useState<string>(
-    () => localStorage.getItem(`tripDate-${tripId}`) || ''
+  // Note; localStorage cache for trip date + city
+  const [tripDate, setTripDate] = useState<string>(() =>
+    localStorage.getItem(`tripDate-${tripId}`) || ''
   );
-  const [weatherCity, setWeatherCity] = useState<string>(
-    () => localStorage.getItem(`weatherCity-${tripId}`) || ''
+  const [weatherCity, setWeatherCity] = useState<string>(() =>
+    localStorage.getItem(`weatherCity-${tripId}`) || ''
   );
+
+  // Note; Weather + API error states
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
   const [weatherError, setWeatherError] = useState<string>('');
+  const [golfApiError, setGolfApiError] = useState<string>('');
 
+  // Note; Load state from navigation if present
   useEffect(() => {
     const nav = window.history.state?.usr;
     if (nav?.date) {
@@ -43,12 +66,15 @@ const TripDetails: React.FC = () => {
     }
   }, [tripId]);
 
+  // Note; Query trip data from server
   const { loading, error, data } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
     skip: !tripId,
   });
   const trip = data?.trip;
+  const courseName = trip?.courses?.[0]?.name;
 
+  // Note; Fetch weather from backend endpoint
   const fetchWeather = (city: string) => {
     setWeatherLoading(true);
     setWeatherError('');
@@ -62,10 +88,56 @@ const TripDetails: React.FC = () => {
       .finally(() => setWeatherLoading(false));
   };
 
+  // ✅ Note; Fetch slope/rating and store in localStorage — now using useCallback
+  const fetchSlopeAndRating = useCallback(async () => {
+    if (!courseName) return;
+    try {
+      setGolfApiError('');
+      const search = await fetch(
+        `https://api.golfcourseapi.com/v1/search?search_query=${encodeURIComponent(courseName)}`,
+        {
+          headers: {
+            Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
+          },
+        }
+      );
+      const searchJson = await search.json();
+      const firstResult = searchJson.courses?.[0];
+      if (!firstResult) throw new Error('No course match found');
+
+      const details = await fetch(
+        `https://api.golfcourseapi.com/v1/courses/${firstResult.id}`,
+        {
+          headers: {
+            Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
+          },
+        }
+      );
+      const fullData: GolfCourseAPIResponse = await details.json();
+
+      const firstTee = fullData.tees.male?.[0];
+      if (!firstTee) throw new Error('No tee data found');
+
+      localStorage.setItem(`slopeRating-${tripId}`, String(firstTee.slope_rating));
+      localStorage.setItem(`courseRating-${tripId}`, String(firstTee.course_rating));
+    } catch (err: any) {
+      setGolfApiError(err.message || 'Error loading slope/rating');
+    }
+  }, [courseName, tripId]);
+
+  // Note; Call weather API on mount if saved city exists
   useEffect(() => {
     if (weatherCity) fetchWeather(weatherCity);
   }, [weatherCity]);
 
+  // ✅ Note; Call slope/rating logic when trip loads
+  useEffect(() => {
+    if (courseName) {
+      fetchSlopeAndRating();
+    }
+  }, [courseName, fetchSlopeAndRating]);
+
+  // Note; Submit handler for city
   const handleCitySubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!weatherCity.trim()) return;
@@ -73,6 +145,7 @@ const TripDetails: React.FC = () => {
     fetchWeather(weatherCity);
   };
 
+  // Note; Status / error renders
   if (!tripId)
     return <p className="trip-details__status">❌ No trip ID provided.</p>;
   if (loading)
@@ -94,10 +167,8 @@ const TripDetails: React.FC = () => {
         Date: <strong>{tripDate || 'N/A'}</strong>
       </p>
 
-      <form
-        className="trip-details__weather-form"
-        onSubmit={handleCitySubmit}
-      >
+      {/* Note; Weather form */}
+      <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
         <input
           type="text"
           className="trip-details__weather-input"
@@ -115,10 +186,12 @@ const TripDetails: React.FC = () => {
           {weatherLoading ? 'Loading…' : 'Get Weather'}
         </button>
       </form>
-      {weatherError && (
-        <p className="trip-details__status">❌ {weatherError}</p>
-      )}
 
+      {/* Note; Error displays */}
+      {weatherError && <p className="trip-details__status">❌ {weatherError}</p>}
+      {golfApiError && <p className="trip-details__status">❌ {golfApiError}</p>}
+
+      {/* Note; Course + weather cards */}
       <section className="trip-details__top">
         <div className="trip-card">
           <div className="trip-card__header">Course Info</div>
@@ -154,14 +227,11 @@ const TripDetails: React.FC = () => {
                 </p>
                 <p>{weatherData.weather[0].description}</p>
                 <p>
-                  <strong>
-                    {Math.round(weatherData.main.temp)}°F
-                  </strong>
+                  <strong>{Math.round(weatherData.main.temp)}°F</strong>
                 </p>
                 <p>
                   <WiRain /> {precip} mm &nbsp;
-                  <WiRaindrops /> {weatherData.main.humidity}%
-                  &nbsp;
+                  <WiRaindrops /> {weatherData.main.humidity}% &nbsp;
                   <WiStrongWind /> {weatherData.wind.speed} mph
                 </p>
               </>
@@ -172,11 +242,13 @@ const TripDetails: React.FC = () => {
         </div>
       </section>
 
+      {/* Note; Scorecard section */}
       <section className="trip-details__scorecard">
         <h3>Scorecard</h3>
         <ScoreCard tripId={tripId} />
       </section>
 
+      {/* Note; Back navigation */}
       <button
         className="trip-details__back-btn"
         onClick={() => navigate(-1)}
