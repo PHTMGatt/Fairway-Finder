@@ -1,4 +1,4 @@
-// server/src/resolvers/index.ts
+// server/src/schemas/'resolvers.ts'
 
 import { IResolvers } from '@graphql-tools/utils';
 import Profile from '../models/Profile.js';
@@ -18,33 +18,33 @@ interface Context {
 }
 
 const resolvers: IResolvers<any, Context> = {
+  /** ——— QUERIES ——— **/
   Query: {
-    //Note; Fetch all profiles (with their trips)
+    // Note; Fetch all user profiles with their trips (dev)
     profiles: async () => Profile.find().populate('trips'),
 
-    //Note; Fetch one profile by ID
+    // Note; Fetch a single user profile by ID
     profile: async (_p, { profileId }: { profileId: string }) =>
       Profile.findById(profileId).populate('trips'),
 
-    //Note; “me” query uses context.user
+    // Note; Fetch current user based on JWT token
     me: async (_p, _a, context) => {
       if (!context.user) throw new AuthenticationError('Not authenticated');
       return Profile.findById(context.user._id).populate('trips');
     },
 
-    //Note; Fetch all trips
+    // Note; Fetch all trips (dev)
     trips: async () => Trip.find(),
 
-    //Note; Fetch single trip by ID and reshape scorecard + include handicap
+    // Note; Fetch a single trip and transform player scores
     trip: async (_p, { id }: { id: string }) => {
       const trip = await Trip.findById(id);
       if (!trip) return null;
 
-      // reshape players
-      const transformedPlayers = trip.players.map((p) => {
+      const transformedPlayers = trip.players.map((p: any) => {
         const ordered = Array.from({ length: 18 }, (_, idx) => {
           const holeNum = idx + 1;
-          const found = p.scores.find((s) => s.hole === holeNum);
+          const found = p.scores.find((s: any) => s.hole === holeNum);
           return { hole: holeNum, score: found?.score ?? 0 };
         });
         let total = 0;
@@ -53,7 +53,12 @@ const resolvers: IResolvers<any, Context> = {
           scoreObj[`H${hole}`] = score;
           total += score;
         });
-        return { name: p.name, score: scoreObj, total };
+        return {
+          name: p.name,
+          score: scoreObj,
+          total,
+          handicap: p.handicap ?? null, // ✅ include individual handicap
+        };
       });
 
       return {
@@ -62,17 +67,15 @@ const resolvers: IResolvers<any, Context> = {
         date: trip.date,
         courses: trip.courses,
         players: transformedPlayers,
-        handicap: trip.handicap, //Note; return stored index
+        handicap: trip.handicap, // Note; legacy trip-wide index
       };
     },
   },
 
+  /** ——— MUTATIONS ——— **/
   Mutation: {
-    //Note; Register a new profile
-    addProfile: async (
-      _p,
-      { input }: { input: { name: string; email: string; password: string } }
-    ) => {
+    // Note; Register a new user
+    addProfile: async (_p, { input }) => {
       const existing = await Profile.findOne({ email: input.email });
       if (existing) {
         throw new UserInputError('Email already in use', {
@@ -84,8 +87,8 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    //Note; Login an existing profile
-    login: async (_p, { email, password }: { email: string; password: string }) => {
+    // Note; Authenticate existing user
+    login: async (_p, { email, password }) => {
       const profile = await Profile.findOne({ email });
       if (!profile) throw new AuthenticationError('No profile found');
       const valid = await profile.isCorrectPassword(password);
@@ -94,12 +97,8 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    //Note; Create a new trip for current user
-    addTrip: async (
-      _p,
-      { input }: { input: { name: string; date: string; courseName: string } },
-      context
-    ) => {
+    // Note; Create a new trip for current user
+    addTrip: async (_p, { input }, context) => {
       if (!context.user) throw new AuthenticationError('Not authenticated');
       const userId = context.user._id as string;
       const trip = await Trip.create({
@@ -107,53 +106,36 @@ const resolvers: IResolvers<any, Context> = {
         date: input.date,
         courses: [{ name: input.courseName }],
       });
-      await Profile.findByIdAndUpdate(userId, {
-        $push: { trips: trip._id },
-      });
+      await Profile.findByIdAndUpdate(userId, { $push: { trips: trip._id } });
       return trip;
     },
 
-    //Note; Delete a trip for current user
-    deleteTrip: async (
-      _p,
-      { tripId }: { tripId: string },
-      context
-    ) => {
+    // Note; Delete a trip and remove it from user's profile
+    deleteTrip: async (_p, { tripId }, context) => {
       if (!context.user) throw new AuthenticationError('Not authenticated');
       const userId = context.user._id as string;
-      await Profile.findByIdAndUpdate(userId, {
-        $pull: { trips: tripId },
-      });
+      await Profile.findByIdAndUpdate(userId, { $pull: { trips: tripId } });
       return Trip.findByIdAndDelete(tripId);
     },
 
-    //Note; Add a course to a trip
-    addCourseToTrip: async (
-      _p,
-      { tripId, courseName }: { tripId: string; courseName: string }
-    ) =>
+    // Note; Add a course to a trip
+    addCourseToTrip: async (_p, { tripId, courseName }) =>
       Trip.findByIdAndUpdate(
         tripId,
         { $push: { courses: { name: courseName } } },
         { new: true, runValidators: true }
       ),
 
-    //Note; Remove a course from a trip
-    removeCourseFromTrip: async (
-      _p,
-      { courseName }: { courseName: string }
-    ) =>
+    // Note; Remove a course by name
+    removeCourseFromTrip: async (_p, { courseName }) =>
       Trip.findOneAndUpdate(
         { 'courses.name': courseName },
         { $pull: { courses: { name: courseName } } },
         { new: true }
       ),
 
-    //Note; Add a player with 18 zeroed scores
-    addPlayer: async (
-      _p,
-      { tripId, name }: { tripId: string; name: string }
-    ) => {
+    // Note; Add a player with 18 empty hole scores
+    addPlayer: async (_p, { tripId, name }) => {
       const fullScores = Array.from({ length: 18 }, (_, i) => ({
         hole: i + 1,
         score: 0,
@@ -165,27 +147,16 @@ const resolvers: IResolvers<any, Context> = {
       );
     },
 
-    //Note; Remove a player
-    removePlayer: async (
-      _p,
-      { tripId, name }: { tripId: string; name: string }
-    ) =>
+    // Note; Remove a player from a trip
+    removePlayer: async (_p, { tripId, name }) =>
       Trip.findByIdAndUpdate(
         tripId,
         { $pull: { players: { name } } },
         { new: true }
       ),
 
-    //Note; Update (or add) a score entry
-    updateScore: async (
-      _p,
-      {
-        tripId,
-        player,
-        hole,
-        score,
-      }: { tripId: string; player: string; hole: number; score: number }
-    ) => {
+    // Note; Update or insert a player's hole score
+    updateScore: async (_p, { tripId, player, hole, score }) => {
       const trip = await Trip.findById(tripId);
       if (!trip) throw new UserInputError('Trip not found');
 
@@ -203,14 +174,9 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    //Note; New mutation to persist computed handicap
-    updateTripHandicap: async (
-      _p,
-      { tripId, handicap }: { tripId: string; handicap: number },
-      context
-    ) => {
+    // Note; Update overall trip-wide handicap (legacy support)
+    updateTripHandicap: async (_p, { tripId, handicap }, context) => {
       if (!context.user) throw new AuthenticationError('Not authenticated');
-      //Note; ensure user owns this trip
       const profile = await Profile.findById(context.user._id);
       if (!profile?.trips.includes(tripId as any)) {
         throw new AuthenticationError('Not your trip');
@@ -222,6 +188,26 @@ const resolvers: IResolvers<any, Context> = {
       );
       if (!updated) throw new UserInputError('Trip not found');
       return updated;
+    },
+
+    // ✅ NEW: Update a specific player's handicap within a trip
+    updatePlayerHandicap: async (
+      _p,
+      { tripId, name, handicap }: { tripId: string; name: string; handicap: number },
+      context
+    ) => {
+      if (!context.user) throw new AuthenticationError('Not authenticated');
+
+      const trip = await Trip.findById(tripId);
+      if (!trip) throw new UserInputError('Trip not found');
+
+      const player = trip.players.find((p) => p.name === name);
+      if (!player) throw new UserInputError('Player not found');
+
+      player.handicap = handicap;
+
+      await trip.save();
+      return trip;
     },
   },
 };
