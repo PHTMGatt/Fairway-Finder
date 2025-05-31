@@ -1,13 +1,15 @@
-// client/src/utils/auth.ts
+// 'client/src/utils/auth.ts'
 
 import { jwtDecode, JwtPayload } from 'jwt-decode';
 
+// Note; Shape of the user data embedded in our token
 interface UserData {
   _id: string;
   username: string;
   email: string;
 }
 
+// Note; JWT payload format includes user data under `data`
 interface AuthTokenPayload extends JwtPayload {
   data: UserData;
 }
@@ -84,4 +86,12 @@ class AuthService {
   }
 }
 
-export default new AuthService();
+const Auth = new AuthService();
+
+/**
+ * Note; useAuth hook allows React components to interact with AuthService
+ *        usage: const auth = useAuth(); if (auth.loggedIn()) { ... }
+ */
+export const useAuth = () => Auth;
+
+export default Auth;
