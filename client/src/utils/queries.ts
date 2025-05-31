@@ -4,7 +4,7 @@ import { gql } from '@apollo/client';
 
 /** ——— USER PROFILE QUERIES ——— **/
 
-// Note; Fetch the currently authenticated user's profile, including their trips.
+// Note; Fetch the currently authenticated user's profile, including their trips and players
 export const QUERY_ME = gql`
   query Me {
     me {
@@ -19,12 +19,15 @@ export const QUERY_ME = gql`
           _id
           name
         }
+        players {
+          name
+        }
       }
     }
   }
 `;
 
-// Note; Fetch all user profiles (for admin or listing purposes).
+// Note; Fetch all user profiles (for admin or listing purposes)
 export const QUERY_PROFILES = gql`
   query Profiles {
     profiles {
@@ -35,7 +38,7 @@ export const QUERY_PROFILES = gql`
   }
 `;
 
-// Note; Fetch a single profile by its ID.
+// Note; Fetch a single profile by its ID
 export const QUERY_SINGLE_PROFILE = gql`
   query Profile($profileId: ID!) {
     profile(profileId: $profileId) {
@@ -48,7 +51,7 @@ export const QUERY_SINGLE_PROFILE = gql`
 
 /** ——— TRIP QUERIES ——— **/
 
-// Note; Fetch every trip in the system.
+// Note; Fetch every trip in the system
 export const QUERY_TRIPS = gql`
   query Trips {
     trips {
@@ -59,11 +62,15 @@ export const QUERY_TRIPS = gql`
         _id
         name
       }
+      players {
+        name
+      }
+      handicap
     }
   }
 `;
 
-// Note; Fetch only the logged-in user's trips.
+// ✅ Note; Updated to include players so Handicap Tracker works
 export const QUERY_MY_TRIPS = gql`
   query MyTrips {
     me {
@@ -77,12 +84,16 @@ export const QUERY_MY_TRIPS = gql`
           _id
           name
         }
+        players {
+          name
+        }
+        handicap
       }
     }
   }
 `;
 
-// Note; Fetch details (including courses and scorecard) for one specific trip.
+// Note; Fetch full trip including scorecard and handicap
 export const QUERY_TRIP = gql`
   query Trip($id: ID!) {
     trip(id: $id) {
@@ -95,14 +106,15 @@ export const QUERY_TRIP = gql`
       }
       players {
         name
-        score    # unified JSON object H1…H18
-        total    # server-computed total
+        score
+        total
       }
+      handicap
     }
   }
 `;
 
-// Note; Alternative query alias if you only need the scorecard data from a trip.
+// Note; Scorecard only
 export const QUERY_SCORECARD = gql`
   query TripScorecard($id: ID!) {
     trip(id: $id) {

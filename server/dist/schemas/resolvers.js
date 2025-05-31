@@ -1,28 +1,28 @@
-// server/src/resolvers/index.ts
+// server/src/schemas/'resolvers.ts'
 import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { signToken } from '../utils/auth.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 const resolvers = {
+    /** ——— QUERIES ——— **/
     Query: {
-        //Note; Fetch all profiles (with their trips)
+        // Note; Fetch all user profiles with their trips (dev)
         profiles: async () => Profile.find().populate('trips'),
-        //Note; Fetch one profile by ID
+        // Note; Fetch a single user profile by ID
         profile: async (_p, { profileId }) => Profile.findById(profileId).populate('trips'),
-        //Note; “me” query uses context.user
+        // Note; Fetch current user based on JWT token
         me: async (_p, _a, context) => {
             if (!context.user)
                 throw new AuthenticationError('Not authenticated');
             return Profile.findById(context.user._id).populate('trips');
         },
-        //Note; Fetch all trips
+        // Note; Fetch all trips (dev)
         trips: async () => Trip.find(),
-        //Note; Fetch single trip by ID and reshape scorecard + include handicap
+        // Note; Fetch a single trip and transform player scores
         trip: async (_p, { id }) => {
             const trip = await Trip.findById(id);
             if (!trip)
                 return null;
-            // reshape players
             const transformedPlayers = trip.players.map((p) => {
                 const ordered = Array.from({ length: 18 }, (_, idx) => {
                     const holeNum = idx + 1;
@@ -35,7 +35,12 @@ const resolvers = {
                     scoreObj[`H${hole}`] = score;
                     total += score;
                 });
-                return { name: p.name, score: scoreObj, total };
+                return {
+                    name: p.name,
+                    score: scoreObj,
+                    total,
+                    handicap: p.handicap ?? null, // ✅ include individual handicap
+                };
             });
             return {
                 _id: trip._id,
@@ -43,12 +48,13 @@ const resolvers = {
                 date: trip.date,
                 courses: trip.courses,
                 players: transformedPlayers,
-                handicap: trip.handicap, //Note; return stored index
+                handicap: trip.handicap, // Note; legacy trip-wide index
             };
         },
     },
+    /** ——— MUTATIONS ——— **/
     Mutation: {
-        //Note; Register a new profile
+        // Note; Register a new user
         addProfile: async (_p, { input }) => {
             const existing = await Profile.findOne({ email: input.email });
             if (existing) {
@@ -60,7 +66,7 @@ const resolvers = {
             const token = signToken(profile.name, profile.email, profile._id);
             return { token, profile };
         },
-        //Note; Login an existing profile
+        // Note; Authenticate existing user
         login: async (_p, { email, password }) => {
             const profile = await Profile.findOne({ email });
             if (!profile)
@@ -71,7 +77,7 @@ const resolvers = {
             const token = signToken(profile.name, profile.email, profile._id);
             return { token, profile };
         },
-        //Note; Create a new trip for current user
+        // Note; Create a new trip for current user
         addTrip: async (_p, { input }, context) => {
             if (!context.user)
                 throw new AuthenticationError('Not authenticated');
@@ -81,26 +87,22 @@ const resolvers = {
                 date: input.date,
                 courses: [{ name: input.courseName }],
             });
-            await Profile.findByIdAndUpdate(userId, {
-                $push: { trips: trip._id },
-            });
+            await Profile.findByIdAndUpdate(userId, { $push: { trips: trip._id } });
             return trip;
         },
-        //Note; Delete a trip for current user
+        // Note; Delete a trip and remove it from user's profile
         deleteTrip: async (_p, { tripId }, context) => {
             if (!context.user)
                 throw new AuthenticationError('Not authenticated');
             const userId = context.user._id;
-            await Profile.findByIdAndUpdate(userId, {
-                $pull: { trips: tripId },
-            });
+            await Profile.findByIdAndUpdate(userId, { $pull: { trips: tripId } });
             return Trip.findByIdAndDelete(tripId);
         },
-        //Note; Add a course to a trip
+        // Note; Add a course to a trip
         addCourseToTrip: async (_p, { tripId, courseName }) => Trip.findByIdAndUpdate(tripId, { $push: { courses: { name: courseName } } }, { new: true, runValidators: true }),
-        //Note; Remove a course from a trip
+        // Note; Remove a course by name
         removeCourseFromTrip: async (_p, { courseName }) => Trip.findOneAndUpdate({ 'courses.name': courseName }, { $pull: { courses: { name: courseName } } }, { new: true }),
-        //Note; Add a player with 18 zeroed scores
+        // Note; Add a player with 18 empty hole scores
         addPlayer: async (_p, { tripId, name }) => {
             const fullScores = Array.from({ length: 18 }, (_, i) => ({
                 hole: i + 1,
@@ -108,10 +110,10 @@ const resolvers = {
             }));
             return Trip.findByIdAndUpdate(tripId, { $push: { players: { name, scores: fullScores } } }, { new: true, runValidators: true });
         },
-        //Note; Remove a player
+        // Note; Remove a player from a trip
         removePlayer: async (_p, { tripId, name }) => Trip.findByIdAndUpdate(tripId, { $pull: { players: { name } } }, { new: true }),
-        //Note; Update (or add) a score entry
-        updateScore: async (_p, { tripId, player, hole, score, }) => {
+        // Note; Update or insert a player's hole score
+        updateScore: async (_p, { tripId, player, hole, score }) => {
             const trip = await Trip.findById(tripId);
             if (!trip)
                 throw new UserInputError('Trip not found');
@@ -128,11 +130,10 @@ const resolvers = {
             await trip.save();
             return trip;
         },
-        //Note; New mutation to persist computed handicap
+        // Note; Update overall trip-wide handicap (legacy support)
         updateTripHandicap: async (_p, { tripId, handicap }, context) => {
             if (!context.user)
                 throw new AuthenticationError('Not authenticated');
-            //Note; ensure user owns this trip
             const profile = await Profile.findById(context.user._id);
             if (!profile?.trips.includes(tripId)) {
                 throw new AuthenticationError('Not your trip');
@@ -141,6 +142,20 @@ const resolvers = {
             if (!updated)
                 throw new UserInputError('Trip not found');
             return updated;
+        },
+        // ✅ NEW: Update a specific player's handicap within a trip
+        updatePlayerHandicap: async (_p, { tripId, name, handicap }, context) => {
+            if (!context.user)
+                throw new AuthenticationError('Not authenticated');
+            const trip = await Trip.findById(tripId);
+            if (!trip)
+                throw new UserInputError('Trip not found');
+            const player = trip.players.find((p) => p.name === name);
+            if (!player)
+                throw new UserInputError('Player not found');
+            player.handicap = handicap;
+            await trip.save();
+            return trip;
         },
     },
 };
