@@ -17,6 +17,7 @@ import SavedTrips from './pages/Trips/SavedTrips';
 import TripDetails from './pages/Trips/TripDetails';
 import Weather from './pages/Weather/Weather';
 import Handicap from './pages/Handicap/HandicapTracker';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const router = createBrowserRouter([
   {

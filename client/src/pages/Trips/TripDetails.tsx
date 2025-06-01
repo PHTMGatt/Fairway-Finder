@@ -1,11 +1,18 @@
-// src/pages/Trips/TripDetails.tsx
+// client/src/pages/Trips/TripDetails.tsx
 
-import React, { useEffect, useState, ChangeEvent, FormEvent, useCallback } from 'react';
+import React, {
+  useEffect,
+  useState,
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+} from 'react';
 import { useQuery } from '@apollo/client';
 import { useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import { FaMapMarkerAlt } from 'react-icons/fa';
+import { Alert } from 'react-bootstrap';         // ← Bootstrap Alert import
 import ScoreCard from '../../components/ScoreCard/ScoreCard';
 import './TripDetails.css';
 
@@ -53,6 +60,9 @@ const TripDetails: React.FC = () => {
   const [weatherError, setWeatherError] = useState<string>('');
   const [golfApiError, setGolfApiError] = useState<string>('');
 
+  // Alert state for missing city
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+
   // Load state from navigation if present
   useEffect(() => {
     const nav = window.history.state?.usr;
@@ -95,7 +105,9 @@ const TripDetails: React.FC = () => {
       try {
         setGolfApiError('');
         const search = await fetch(
-          `https://api.golfcourseapi.com/v1/search?search_query=${encodeURIComponent(name)}`,
+          `https://api.golfcourseapi.com/v1/search?search_query=${encodeURIComponent(
+            name
+          )}`,
           {
             headers: {
               Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
@@ -119,8 +131,14 @@ const TripDetails: React.FC = () => {
         const firstTee = fullData.tees.male?.[0];
         if (!firstTee) throw new Error('No tee data found');
 
-        localStorage.setItem(`slopeRating-${tripId}`, String(firstTee.slope_rating));
-        localStorage.setItem(`courseRating-${tripId}`, String(firstTee.course_rating));
+        localStorage.setItem(
+          `slopeRating-${tripId}`,
+          String(firstTee.slope_rating)
+        );
+        localStorage.setItem(
+          `courseRating-${tripId}`,
+          String(firstTee.course_rating)
+        );
       } catch (err: any) {
         setGolfApiError(err.message || 'Error loading slope/rating');
       }
@@ -145,7 +163,13 @@ const TripDetails: React.FC = () => {
   // Submit handler for city
   const handleCitySubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!weatherCity.trim()) return;
+
+    // Show only the Bootstrap Alert if city is empty
+    if (!weatherCity.trim()) {
+      setShowAlert(true);
+      return;
+    }
+    setShowAlert(false);
     localStorage.setItem(`weatherCity-${tripId}`, weatherCity);
     fetchWeather(weatherCity);
   };
@@ -165,7 +189,8 @@ const TripDetails: React.FC = () => {
     );
   }
 
-  const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
+  const precip =
+    weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
 
   return (
     <div className="trip-details">
@@ -174,27 +199,48 @@ const TripDetails: React.FC = () => {
         Date: <strong>{tripDate || 'N/A'}</strong>
       </p>
 
+      {/* ← Here is the Bootstrap Alert—no <p> tags for “Please enter a city name.” */}
+      {showAlert && (
+        <Alert
+          variant="danger"
+          onClose={() => setShowAlert(false)}
+          dismissible
+          className="trip-details__alert"
+        >
+          Please enter a city name.
+        </Alert>
+      )}
+
       {/* Weather form */}
-      <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
+      <form
+        className="trip-details__weather-form"
+        onSubmit={handleCitySubmit}
+      >
         <input
           type="text"
           className="trip-details__weather-input"
-          placeholder="Enter city for weather…"
+          placeholder="Search city for courses..."
           value={weatherCity}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setWeatherCity(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setWeatherCity(e.target.value)
+          }
         />
         <button
           type="submit"
           className="trip-details__weather-btn"
           disabled={weatherLoading}
         >
-          {weatherLoading ? 'Loading…' : 'Get Weather'}
+          {weatherLoading ? 'Loading…' : 'Find Courses'}
         </button>
       </form>
 
-      {/* Error displays */}
-      {weatherError && <p className="trip-details__status">❌ {weatherError}</p>}
-      {golfApiError && <p className="trip-details__status">❌ {golfApiError}</p>}
+      {/* These two remain for API errors (weatherError and golfApiError) */}
+      {weatherError && (
+        <p className="trip-details__status">❌ {weatherError}</p>
+      )}
+      {golfApiError && (
+        <p className="trip-details__status">❌ {golfApiError}</p>
+      )}
 
       {/* Course + weather cards */}
       <section className="trip-details__top">
@@ -204,7 +250,10 @@ const TripDetails: React.FC = () => {
             <h3 className="trip-card__course-name">
               {trip.courses?.[0]?.name ?? 'No course selected'}
             </h3>
-            <p>{trip.courses?.[0]?.address ?? 'No address available'}</p>
+            <p>
+              {trip.courses?.[0]?.address ??
+                'No address available'}
+            </p>
             {trip.courses?.[0]?.name && (
               <a
                 className="trip-card__link"
@@ -232,7 +281,9 @@ const TripDetails: React.FC = () => {
                 </p>
                 <p>{weatherData.weather[0].description}</p>
                 <p>
-                  <strong>{Math.round(weatherData.main.temp)}°F</strong>
+                  <strong>
+                    {Math.round(weatherData.main.temp)}°F
+                  </strong>
                 </p>
                 <p>
                   <WiRain /> {precip} mm &nbsp;

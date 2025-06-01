@@ -1,4 +1,4 @@
-/* src/pages/Trips/TripDetails.css */
+/* client/src/pages/Trips/TripDetails.css */
 
 /* ===== Container ===== */
 .trip-details {
@@ -27,6 +27,11 @@
   text-align: center;
   color: #475569;
   margin: 0.5rem 0 2rem;
+}
+
+/* ===== Bootstrap Alert Positioning ===== */
+.trip-details__alert {
+  margin-bottom: 1.5rem;
 }
 
 /* ===== Weather Form ===== */
@@ -126,4 +131,12 @@
   .trip-details__top {
     grid-template-columns: 1fr;
   }
+}
+
+/* ===== Status/Error Text ===== */
+.trip-details__status {
+  text-align: center;
+  color: #b00020;
+  margin: 1rem 0;
+  font-weight: bold;
 }
