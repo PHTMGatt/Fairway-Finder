@@ -34,20 +34,27 @@ body {
 
 /*Note; Back button styling: white background, blue border/text, hover baby-blue fill*/
 .footer__back {
-  background-color: #fff;
-  color: #1e3a8a;
-  border: 2px solid #1e3a8a;
-  padding: 0.4rem 0.75rem;
-  border-radius: 5px;
+  background: linear-gradient(to right, #10b981, #22c55e);
+  color: #ffffff;
+  padding: 0.6rem 1.4rem;
+  border-radius: 999px;
+  font-size: 1rem;
   font-weight: 600;
+  border: 2px solid #0bd696;
+  outline: 2px solid #ffffffbb;
+  outline-offset: 2px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.2s;
+  transition: all 0.2s ease;
+  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.6);
+  z-index: 10;
 }
+
 .footer__back:hover {
-  background-color: #6dc2ff;
-  color: #fff;
-  transform: translateY(-2px);
+  background: linear-gradient(to right, #059669, #16a34a);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgba(16, 185, 129, 0.75);
 }
+
 
 /*Note; Footer copyright text styling*/
 .footer__copy {

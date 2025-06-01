@@ -1,11 +1,10 @@
-// src/components/TripList/'TripList.tsx'
+// src/components/TripList/TripList.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { DELETE_TRIP } from '../../utils/mutations';
 import './TripList.css';
 
-//Note; TripList displays saved trips with delete functionality
 interface Trip {
   _id: string;
   name: string;
@@ -21,7 +20,6 @@ const TripList: React.FC<TripListProps> = ({
   trips = [],
   title = 'Saved Trips',
 }) => {
-  //Note; deleteTrip mutation with Apollo cache update
   const [deleteTrip] = useMutation(DELETE_TRIP, {
     update(cache, { data: { deleteTrip } }) {
       cache.modify({
@@ -36,16 +34,14 @@ const TripList: React.FC<TripListProps> = ({
     },
   });
 
-  //Note; delete one trip
   const handleDeleteTrip = async (tripId: string) => {
     try {
       await deleteTrip({ variables: { tripId } });
     } catch {
-      //Note; errors are silent
+      // Silent fail
     }
   };
 
-  //Note; delete all trips
   const handleDeleteAllTrips = async () => {
     for (const trip of trips) {
       await handleDeleteTrip(trip._id);
@@ -58,40 +54,31 @@ const TripList: React.FC<TripListProps> = ({
 
   return (
     <div className="trip-list">
-      {/*Note; section title */}
       <h3 className="trip-list__title">{title}</h3>
-
-      {/*Note; delete all button */}
       <button className="trip-list__delete-all" onClick={handleDeleteAllTrips}>
         🗑️ Delete All Trips
       </button>
 
-      {/*Note; grid of trips */}
       <div className="trip-list__grid">
         {trips.map((trip) => (
           <div key={trip._id} className="trip-card">
-            {/*Note; trip header */}
-            <h4 className="trip-card__header">
+            <div className="trip-header">
               <span>{trip.name}</span>
-              <span>
-                <span className="trip-card__count">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span className="course-count">
                   {trip.courses?.length ?? 0} course
                   {trip.courses?.length !== 1 ? 's' : ''}
                 </span>
                 <button
-                  className="trip-card__delete"
+                  className="delete-btn"
                   onClick={() => handleDeleteTrip(trip._id)}
                 >
                   ❌
                 </button>
               </span>
-            </h4>
+            </div>
 
-            {/*Note; view trip button */}
-            <Link
-              to={`/trip/${trip._id}`}
-              className="btn btn--light trip-card__btn"
-            >
+            <Link to={`/trip/${trip._id}`} className="trip-footer">
               View Trip Details
             </Link>
           </div>

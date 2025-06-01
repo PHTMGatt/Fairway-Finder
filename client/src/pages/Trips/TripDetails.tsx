@@ -1,7 +1,8 @@
 // src/pages/Trips/TripDetails.tsx
+
 import React, { useEffect, useState, ChangeEvent, FormEvent, useCallback } from 'react';
 import { useQuery } from '@apollo/client';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import { FaMapMarkerAlt } from 'react-icons/fa';
@@ -37,9 +38,8 @@ interface GolfCourseAPIResponse {
 
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
-  const navigate = useNavigate();
 
-  // Note; localStorage cache for trip date + city
+  // localStorage cache for trip date + city
   const [tripDate, setTripDate] = useState<string>(() =>
     localStorage.getItem(`tripDate-${tripId}`) || ''
   );
@@ -47,13 +47,13 @@ const TripDetails: React.FC = () => {
     localStorage.getItem(`weatherCity-${tripId}`) || ''
   );
 
-  // Note; Weather + API error states
+  // Weather + API error states
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
   const [weatherError, setWeatherError] = useState<string>('');
   const [golfApiError, setGolfApiError] = useState<string>('');
 
-  // Note; Load state from navigation if present
+  // Load state from navigation if present
   useEffect(() => {
     const nav = window.history.state?.usr;
     if (nav?.date) {
@@ -66,7 +66,7 @@ const TripDetails: React.FC = () => {
     }
   }, [tripId]);
 
-  // Note; Query trip data from server
+  // Query trip data from server
   const { loading, error, data } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
     skip: !tripId,
@@ -74,7 +74,7 @@ const TripDetails: React.FC = () => {
   const trip = data?.trip;
   const courseName = trip?.courses?.[0]?.name;
 
-  // Note; Fetch weather from backend endpoint
+  // Fetch weather from backend endpoint
   const fetchWeather = (city: string) => {
     setWeatherLoading(true);
     setWeatherError('');
@@ -88,56 +88,61 @@ const TripDetails: React.FC = () => {
       .finally(() => setWeatherLoading(false));
   };
 
-  // ✅ Note; Fetch slope/rating and store in localStorage — now using useCallback
-  const fetchSlopeAndRating = useCallback(async () => {
-    if (!courseName) return;
-    try {
-      setGolfApiError('');
-      const search = await fetch(
-        `https://api.golfcourseapi.com/v1/search?search_query=${encodeURIComponent(courseName)}`,
-        {
-          headers: {
-            Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
-          },
-        }
-      );
-      const searchJson = await search.json();
-      const firstResult = searchJson.courses?.[0];
-      if (!firstResult) throw new Error('No course match found');
+  // Fetch slope/rating and store in localStorage
+  const fetchSlopeAndRating = useCallback(
+    async (name: string) => {
+      if (!name) return;
+      try {
+        setGolfApiError('');
+        const search = await fetch(
+          `https://api.golfcourseapi.com/v1/search?search_query=${encodeURIComponent(name)}`,
+          {
+            headers: {
+              Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
+            },
+          }
+        );
+        const searchJson = await search.json();
+        const firstResult = searchJson.courses?.[0];
+        if (!firstResult) return;
 
-      const details = await fetch(
-        `https://api.golfcourseapi.com/v1/courses/${firstResult.id}`,
-        {
-          headers: {
-            Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
-          },
-        }
-      );
-      const fullData: GolfCourseAPIResponse = await details.json();
+        const details = await fetch(
+          `https://api.golfcourseapi.com/v1/courses/${firstResult.id}`,
+          {
+            headers: {
+              Authorization: 'Key GLZ24EEJI7CXSIICUB6HPVLEFM',
+            },
+          }
+        );
+        const fullData: GolfCourseAPIResponse = await details.json();
 
-      const firstTee = fullData.tees.male?.[0];
-      if (!firstTee) throw new Error('No tee data found');
+        const firstTee = fullData.tees.male?.[0];
+        if (!firstTee) throw new Error('No tee data found');
 
-      localStorage.setItem(`slopeRating-${tripId}`, String(firstTee.slope_rating));
-      localStorage.setItem(`courseRating-${tripId}`, String(firstTee.course_rating));
-    } catch (err: any) {
-      setGolfApiError(err.message || 'Error loading slope/rating');
-    }
-  }, [courseName, tripId]);
+        localStorage.setItem(`slopeRating-${tripId}`, String(firstTee.slope_rating));
+        localStorage.setItem(`courseRating-${tripId}`, String(firstTee.course_rating));
+      } catch (err: any) {
+        setGolfApiError(err.message || 'Error loading slope/rating');
+      }
+    },
+    [tripId]
+  );
 
-  // Note; Call weather API on mount if saved city exists
+  // Call weather API on mount if saved city exists
   useEffect(() => {
-    if (weatherCity) fetchWeather(weatherCity);
+    if (weatherCity) {
+      fetchWeather(weatherCity);
+    }
   }, [weatherCity]);
 
-  // ✅ Note; Call slope/rating logic when trip loads
+  // Call slope/rating logic when courseName (and tripId) change
   useEffect(() => {
     if (courseName) {
-      fetchSlopeAndRating();
+      fetchSlopeAndRating(courseName);
     }
   }, [courseName, fetchSlopeAndRating]);
 
-  // Note; Submit handler for city
+  // Submit handler for city
   const handleCitySubmit = (e: FormEvent) => {
     e.preventDefault();
     if (!weatherCity.trim()) return;
@@ -145,20 +150,22 @@ const TripDetails: React.FC = () => {
     fetchWeather(weatherCity);
   };
 
-  // Note; Status / error renders
-  if (!tripId)
+  // Status / error renders
+  if (!tripId) {
     return <p className="trip-details__status">❌ No trip ID provided.</p>;
-  if (loading)
+  }
+  if (loading) {
     return <p className="trip-details__status">Loading trip details…</p>;
-  if (error || !trip)
+  }
+  if (error || !trip) {
     return (
       <p className="trip-details__status">
         ❌ Error loading trip: {error?.message}
       </p>
     );
+  }
 
-  const precip =
-    weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
+  const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
 
   return (
     <div className="trip-details">
@@ -167,16 +174,14 @@ const TripDetails: React.FC = () => {
         Date: <strong>{tripDate || 'N/A'}</strong>
       </p>
 
-      {/* Note; Weather form */}
+      {/* Weather form */}
       <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
         <input
           type="text"
           className="trip-details__weather-input"
           placeholder="Enter city for weather…"
           value={weatherCity}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setWeatherCity(e.target.value)
-          }
+          onChange={(e: ChangeEvent<HTMLInputElement>) => setWeatherCity(e.target.value)}
         />
         <button
           type="submit"
@@ -187,11 +192,11 @@ const TripDetails: React.FC = () => {
         </button>
       </form>
 
-      {/* Note; Error displays */}
+      {/* Error displays */}
       {weatherError && <p className="trip-details__status">❌ {weatherError}</p>}
       {golfApiError && <p className="trip-details__status">❌ {golfApiError}</p>}
 
-      {/* Note; Course + weather cards */}
+      {/* Course + weather cards */}
       <section className="trip-details__top">
         <div className="trip-card">
           <div className="trip-card__header">Course Info</div>
@@ -242,19 +247,11 @@ const TripDetails: React.FC = () => {
         </div>
       </section>
 
-      {/* Note; Scorecard section */}
+      {/* Scorecard section */}
       <section className="trip-details__scorecard">
         <h3>Scorecard</h3>
         <ScoreCard tripId={tripId} />
       </section>
-
-      {/* Note; Back navigation */}
-      <button
-        className="trip-details__back-btn"
-        onClick={() => navigate(-1)}
-      >
-        ← Go Back
-      </button>
     </div>
   );
 };

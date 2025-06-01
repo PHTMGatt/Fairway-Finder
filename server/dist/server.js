@@ -1,4 +1,4 @@
-// server/server.ts
+//server\server.ts
 // Note; Core module imports and Apollo server dependencies
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -35,6 +35,7 @@ import { schema } from './schemas/index.js';
 import courseRoutes from './routes/courseRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
 import mapRoutes from './routes/mapRoutes.js';
+import golfRoutes from './routes/golfRoutes.js';
 import Profile from './models/Profile.js';
 import { authenticateToken } from './utils/auth.js';
 // Note; Main server startup function
@@ -62,13 +63,14 @@ async function startServer() {
         await apollo.start();
         // Note; Initialize Express application
         const app = express();
-        app.use(cors({ origin: 'http://localhost:3000', credentials: true })); // allow CORS from client
-        app.use(express.json()); // parse JSON bodies
-        app.use(compression()); // enable response compression
+        app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+        app.use(express.json());
+        app.use(compression());
         // Note; Register REST API routes
         app.use('/api', courseRoutes);
         app.use('/api', weatherRoutes);
         app.use('/api', mapRoutes);
+        app.use('/api', golfRoutes); // ✅ Register new GolfCourseAPI proxy route
         // Note; Development-only route to clear all user profiles
         if (NODE_ENV !== 'production') {
             app.delete('/api/dev/clear-users', async (_req, res) => {
@@ -110,7 +112,6 @@ async function startServer() {
         });
     }
     catch (err) {
-        // Note; Handle startup errors
         console.error('❌ Server startup failed:', err);
         process.exit(1);
     }

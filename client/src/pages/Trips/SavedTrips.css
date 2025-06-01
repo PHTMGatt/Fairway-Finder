@@ -4,11 +4,11 @@
 .saved-trips {
   max-width: 1000px;
   margin: 2rem auto;
-  padding: 2rem;
-  background: rgba(234, 250, 255, 0.6);
-  backdrop-filter: blur(8px);
+  padding: 1.5rem;
+  background: rgba(234, 250, 255, 0.7);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
-  box-shadow: 0 12px 32px rgba(109, 194, 255, 0.2);
+  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.15);
 }
 
 /* ===== Header ===== */
@@ -16,20 +16,21 @@
   font-size: 2rem;
   font-weight: 700;
   color: #064e3b;
-  margin: 0 0 1rem;
+  margin-bottom: 1.25rem;
 }
+
 .saved-trips__status {
   text-align: center;
   color: #b00020;
-  margin: 2rem 0;
+  margin: 1.5rem 0;
 }
 
 /* ===== TripList Delete All Button Override ===== */
 .trip-list__delete-all {
   display: inline-block;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
   background-color: #d32f2f;
-  color: #fff;
+  color: white;
   padding: 0.6rem 1.2rem;
   font-size: 0.95rem;
   border: none;
@@ -37,6 +38,7 @@
   cursor: pointer;
   transition: background 0.2s ease, transform 0.1s ease;
 }
+
 .trip-list__delete-all:hover {
   background-color: #b71c1c;
   transform: translateY(-1px);
@@ -46,8 +48,45 @@
 .trip-list__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1.5rem;
-  align-items: start;    /* Note; ensure cards align at top */
+  gap: 1rem;
+  align-items: start;
+}
+
+/* ===== Trip Card Styling ===== */
+.trip-card {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden; /* This removes space between blocks */
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===== Fix button spacing ===== */
+.trip-card .trip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #4caf50;
+  color: white;
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+}
+
+.trip-card .trip-footer {
+  background: #38bdf8;
+  text-align: center;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.trip-card .trip-footer:hover {
+  background: #0ea5e9;
 }
 
 /* ===== Empty State ===== */

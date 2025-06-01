@@ -121,24 +121,6 @@
   color: #064e3b;
 }
 
-/* ===== Back Button ===== */
-.trip-details__back-btn {
-  align-self: center;
-  padding: 0.75rem 1.5rem;
-  background: #daf5e3;
-  color: #065f46;
-  border: 1px solid #b4ebca;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-}
-
-.trip-details__back-btn:hover {
-  background: #c1edd2;
-  transform: translateY(-1px);
-}
-
 /* ===== Responsive ===== */
 @media (max-width: 600px) {
   .trip-details__top {
