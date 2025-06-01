@@ -62,7 +62,7 @@ body {
   outline: none;
 }
 
-/* Note; Two-column layout for gender + color */
+/* Note; Two-column layout rows */
 .flex-row {
   display: flex;
   gap: 1rem;
@@ -72,6 +72,46 @@ body {
 .flex-row .form-group {
   flex: 1;
   margin-bottom: 0;
+}
+
+/* Note; Search box styling inside form-group */
+.form-group form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Note; Styled search input */
+.search-input {
+  flex: 1;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #00b4d8;
+  outline: none;
+}
+
+/* Note; Styled search button */
+.search-btn {
+  padding: 0.65rem 1.2rem;
+  background-color: #1d4ed8;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.search-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-1px);
 }
 
 /* Note; Submit/Clear button alignment */

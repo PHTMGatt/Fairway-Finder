@@ -1,4 +1,4 @@
-// server/server.ts
+//server\server.ts
 
 // Note; Core module imports and Apollo server dependencies
 import path from 'path';
@@ -11,7 +11,6 @@ import mongoose from 'mongoose';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 
-
 // Note; Load environment variables from the .env file
 dotenv.config({
   path: path.resolve(
@@ -19,7 +18,6 @@ dotenv.config({
     '../.env'
   ),
 });
-
 
 // Note; Destructure required configuration values
 const {
@@ -47,16 +45,15 @@ if (NODE_ENV !== 'production') {
   • JWT Secret: loaded`);
 }
 
-
 // Note; Import application modules: database connection, schema, routes, models, auth util
 import { connectDatabase } from './config/connection.js';
 import { schema } from './schemas/index.js';
 import courseRoutes from './routes/courseRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
 import mapRoutes from './routes/mapRoutes.js';
+import golfRoutes from './routes/golfRoutes.js';
 import Profile from './models/Profile.js';
 import { authenticateToken } from './utils/auth.js';
-
 
 // Note; Main server startup function
 async function startServer() {
@@ -88,14 +85,15 @@ async function startServer() {
 
     // Note; Initialize Express application
     const app = express();
-    app.use(cors({ origin: 'http://localhost:3000', credentials: true })); // allow CORS from client
-    app.use(express.json());   // parse JSON bodies
-    app.use(compression());    // enable response compression
+    app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+    app.use(express.json());
+    app.use(compression());
 
     // Note; Register REST API routes
     app.use('/api', courseRoutes);
     app.use('/api', weatherRoutes);
     app.use('/api', mapRoutes);
+    app.use('/api', golfRoutes); // ✅ Register new GolfCourseAPI proxy route
 
     // Note; Development-only route to clear all user profiles
     if (NODE_ENV !== 'production') {
@@ -146,7 +144,6 @@ async function startServer() {
       console.log(`🚀 Server running at http://localhost:${portNumber}`);
     });
   } catch (err) {
-    // Note; Handle startup errors
     console.error('❌ Server startup failed:', err);
     process.exit(1);
   }
