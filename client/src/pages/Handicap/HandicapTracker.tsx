@@ -39,44 +39,15 @@ const HandicapTracker: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [availableTees, setAvailableTees] = useState<string[]>([]);
 
-  // 1) When the trips load, default to the first trip in the list
-  useEffect(() => {
-    if (!loading && data?.me.trips.length) {
-      setTripId(data.me.trips[0]._id);
-    }
-  }, [loading, data]);
-
-  // 2) When the selected trip changes:
-  //    • Auto‐select first player (if none chosen yet)
-  //    • Grab that trip’s “raw” course name, pick just the first two words
-  //    • Populate searchQuery and immediately call handleCourseSearch()
-  useEffect(() => {
-    const trip = data?.me.trips.find((t) => t._id === tripId);
-    if (!trip) return;
-
-    // Auto‐select first player if not set
-    if (trip.players.length && !player) {
-      setPlayer(trip.players[0].name);
-    }
-
-    // Take the trip’s course name (e.g. “Chemung Hills Country Club”),
-    // strip off anything after “&” (if present), then take only the first two words:
-    const rawName = trip.courses[0]?.name || '';
-    const splitAmpersand = rawName.split('&')[0].trim();
-    const firstTwoWords = splitAmpersand.split(/\s+/).slice(0, 2).join(' ');
-    setSearchQuery(firstTwoWords);
-
-    // Immediately run a search for “Chemung Hills” (for example):
-    handleCourseSearch(firstTwoWords);
-  }, [tripId, data, player, handleCourseSearch]);
-
   /**
    * Normalize a search term & call the API. Once we get back at least one CourseSummary,
    * we fetch details for the FIRST match (to populate availableTees).
    */
   const handleCourseSearch = useCallback(
     async (manualQuery?: string) => {
+      // Determine raw input
       const raw = manualQuery !== undefined ? manualQuery : searchQuery;
+      // Strip out non-alphanumeric characters and trim
       const cleaned = raw.toLowerCase().replace(/[^a-z0-9\s]/gi, '').trim();
       if (!cleaned) {
         console.warn('handleCourseSearch called with empty search term.');
@@ -131,6 +102,37 @@ const HandicapTracker: React.FC = () => {
     },
     [searchQuery, gender]
   );
+
+  // 1) When the trips load, default to the first trip in the list
+  useEffect(() => {
+    if (!loading && data?.me.trips.length) {
+      setTripId(data.me.trips[0]._id);
+    }
+  }, [loading, data]);
+
+  // 2) When the selected trip changes:
+  //    • Auto‐select first player (if none chosen yet)
+  //    • Grab that trip’s “raw” course name, pick just the first two words
+  //    • Populate searchQuery and immediately call handleCourseSearch()
+  useEffect(() => {
+    const trip = data?.me.trips.find((t) => t._id === tripId);
+    if (!trip) return;
+
+    // Auto‐select first player if not set
+    if (trip.players.length && !player) {
+      setPlayer(trip.players[0].name);
+    }
+
+    // Take the trip’s course name (e.g. “Chemung Hills Country Club”),
+    // strip off anything after “&” (if present), then take only the first two words:
+    const rawName = trip.courses[0]?.name || '';
+    const splitAmpersand = rawName.split('&')[0].trim();
+    const firstTwoWords = splitAmpersand.split(/\s+/).slice(0, 2).join(' ');
+    setSearchQuery(firstTwoWords);
+
+    // Immediately run a search for “Chemung Hills” (for example):
+    handleCourseSearch(firstTwoWords);
+  }, [tripId, data, player, handleCourseSearch]);
 
   // Handicap calculation formula
   const calculateHandicap = (grossScore: number, rating: number, slope: number) =>
