@@ -1,16 +1,26 @@
+/* 'src/pages/MapRouting.css' */
+
+/* ===== Container ===== */
 .map-routing {
   padding: 2rem;
-  background: #e9faff;
+  background: linear-gradient(to bottom right, #e9faff, #f0faff);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* ===== Title ===== */
 .map-routing__title {
-  font-size: 1.75rem;
+  font-size: 2rem;
   text-align: center;
   margin-bottom: 1.5rem;
   color: #114b8b;
+  font-weight: 700;
+  position: relative;
 }
 
+/* ===== Origin/Destination Form ===== */
 .map-routing__form {
   display: flex;
   justify-content: center;
@@ -20,47 +30,83 @@
 }
 
 .map-routing__input {
-  padding: 0.5rem;
+  padding: 0.75rem;
   font-size: 1rem;
-  width: 200px;
-  border: 1px solid #bbb;
-  border-radius: 6px;
-  transition: border-color 0.2s;
+  width: 220px;
+  border: 2px solid #bbb;
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .map-routing__input:focus {
   border-color: #3a79d8;
+  box-shadow: 0 0 8px rgba(58, 121, 216, 0.3);
   outline: none;
 }
 
 .map-routing__btn {
-  padding: 0.5rem 1rem;
-  background: #3a79d8;
+  background: linear-gradient(to right, #3a79d8, #5a9df7);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s, transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .map-routing__btn:hover {
-  background-color: #265fa8;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(58, 121, 216, 0.4);
+  background: linear-gradient(to right, #5a9df7, #3a79d8);
+}
+
+/* ===== POI Filter Buttons ===== */
+.map-routing__filters {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.filter-btn:hover {
+  background: #e0f2ff;
   transform: translateY(-2px);
 }
 
+.filter-btn.active {
+  background: #4eb6f5;
+  color: #fff;
+  border-color: #4eb6f5;
+}
+
+/* ===== Map Container ===== */
 .map-routing__map {
   position: relative;
   width: 100%;
   max-width: 800px;
-  margin: 0 auto;
   height: 450px;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  overscroll-behavior: contain;
+  margin-bottom: 2rem;
+  opacity: 1;
 }
 
+/* ===== Map Overlay ===== */
 .map-overlay {
   position: absolute;
   top: 16px;
@@ -81,30 +127,58 @@
   opacity: 0;
 }
 
-/* Note; Filter buttons */
-.map-routing__filters {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+/* ===== RESPONSIVE ===== */
+
+/* Adjust form and title on medium screens */
+@media (max-width: 768px) {
+  .map-routing__title {
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+  }
+  .map-routing__form {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .map-routing__input {
+    width: 100%;
+    max-width: 300px;
+  }
+  .map-routing__btn {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;
+  }
+  .map-routing__filters {
+    gap: 0.4rem;
+  }
+  .filter-btn {
+    font-size: 0.9rem;
+    padding: 0.45rem 0.9rem;
+  }
+  .map-routing__map {
+    height: 350px;
+  }
 }
 
-.filter-btn {
-  padding: 0.4rem 0.9rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #f0f0f0;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.filter-btn:hover {
-  background: #e0f2ff;
-}
-
-.filter-btn.active {
-  background: #4eb6f5;
-  color: white;
-  border-color: #4eb6f5;
+/* Further shrink on small screens */
+@media (max-width: 480px) {
+  .map-routing__title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .map-routing__input {
+    font-size: 0.95rem;
+    padding: 0.65rem;
+  }
+  .map-routing__btn {
+    font-size: 0.95rem;
+    padding: 0.65rem 1.2rem;
+  }
+  .filter-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+  .map-routing__map {
+    height: 300px;
+  }
 }

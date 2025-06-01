@@ -1,16 +1,5 @@
-/* src/pages/Auth/'Login.css' */
-/*Note; full-page layout wrapper */
-.auth-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 2rem 1rem;
-  background: #eafaff;
-  min-height: calc(100vh - 100px - 60px);
-}
-
-/*Note; form card container */
-.auth-card {
+/* Scope all Login styles under .auth-page to prevent overrides */
+.auth-page .auth-card {
   background: linear-gradient(to bottom right, #6dc2ff, #eafaff);
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(109, 194, 255, 0.25);
@@ -19,8 +8,8 @@
   overflow: hidden;
 }
 
-/*Note; header styling */
-.auth-header {
+/* Header styling */
+.auth-page .auth-header {
   background: rgba(255, 255, 255, 0.2);
   color: #003344;
   padding: 1rem;
@@ -30,37 +19,37 @@
   border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-/*Note; form body layout */
-.auth-body {
+/* Body layout */
+.auth-page .auth-body {
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/*Note; form structure */
-.auth-form {
+/* Form layout */
+.auth-page .auth-form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-/*Note; input styling */
-.auth-input {
+/* Input styling */
+.auth-page .auth-input {
   padding: 0.75rem 1rem;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.auth-input:focus {
+.auth-page .auth-input:focus {
   border-color: #6dc2ff;
   box-shadow: 0 0 6px #6dc2ff;
   outline: none;
 }
 
-/*Note; login button */
-.auth-btn {
+/* Submit button */
+.auth-page .auth-btn {
   padding: 0.75rem 1rem;
   font-size: 1rem;
   font-weight: 600;
@@ -71,20 +60,30 @@
   cursor: pointer;
   transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
 }
-.auth-btn:hover {
+.auth-page .auth-btn:hover {
   background: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
-.auth-btn:active {
+.auth-page .auth-btn:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
-/*Note; error message */
-.auth-error {
+/* Error message */
+.auth-page .auth-error {
   color: #b00020;
   font-size: 0.9rem;
   text-align: center;
   font-weight: bold;
+}
+
+/* Full-page wrapper */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 1rem;
+  background: #eafaff;
+  min-height: calc(100vh - 100px - 60px);
 }

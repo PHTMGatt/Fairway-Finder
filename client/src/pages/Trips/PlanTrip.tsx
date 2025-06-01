@@ -1,25 +1,25 @@
-// src/pages/Trips/PlanTrip.tsx
-
+// 'src/pages/Trips/PlanTrip.tsx'
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import { useMutation } from '@apollo/client';
 import { ADD_TRIP } from '../../utils/mutations';
 import { QUERY_TRIPS } from '../../utils/queries';
+import { Alert } from 'react-bootstrap';
+import { FaFlagCheckered } from 'react-icons/fa';   // Added icon import
 import './PlanTrip.css';
 
 interface Course {
   name: string;
   address: string;
   rating: number | null;
- place_id: string;
+  place_id: string;
 }
 
 const PlanTrip: React.FC = () => {
-  const { isLoggedIn } = useAuth(); // Note; Check login status from context
-  const navigate = useNavigate();   // Note; Hook to navigate programmatically
+  const { isLoggedIn } = useAuth(); 
+  const navigate = useNavigate();
 
-  // Note; Core state: input, API data, errors
   const [searchCity, setSearchCity] = useState<string>('');
   const [courseOptions, setCourseOptions] = useState<Course[]>([]);
   const [courseLoading, setCourseLoading] = useState<boolean>(false);
@@ -34,12 +34,10 @@ const PlanTrip: React.FC = () => {
     refetchQueries: [{ query: QUERY_TRIPS }],
   });
 
-  // Note; If not logged in, send to login
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;
   }
 
-  // Note; Fetch courses from backend
   const handleCourseSearch = async (e: FormEvent) => {
     e.preventDefault();
     setCourseOptions([]);
@@ -70,7 +68,6 @@ const PlanTrip: React.FC = () => {
     }
   };
 
-  // Note; Save trip w/ selected course & navigate
   const handleTripSave = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitError('');
@@ -87,15 +84,14 @@ const PlanTrip: React.FC = () => {
             name: tripName.trim(),
             date: tripDate,
             courseName: selectedCourse.name,
-          }
-        }
+          },
+        },
       });
       const newId = data?.addTrip?._id;
       if (!newId) throw new Error('Trip creation failed.');
 
-      // Note; Navigate to trip details with trip metadata
       navigate(`/trip/${newId}`, {
-        state: { date: tripDate, city: searchCity.trim() }
+        state: { date: tripDate, city: searchCity.trim() },
       });
     } catch (err: any) {
       setSubmitError(err.message || 'Something went wrong.');
@@ -104,9 +100,12 @@ const PlanTrip: React.FC = () => {
 
   return (
     <main className="plan-trip">
-      <h2 className="plan-trip__title">Plan a Trip</h2>
+      {/* Animated Title with icon */}
+      <h2 className="plan-trip__title">
+        <FaFlagCheckered className="plan-trip__icon" /> Plan a Trip
+      </h2>
 
-      {/* Note; City search form */}
+      {/* City search form */}
       <form className="plan-trip__form" onSubmit={handleCourseSearch}>
         <input
           className="plan-trip__input"
@@ -116,20 +115,27 @@ const PlanTrip: React.FC = () => {
           onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchCity(e.target.value)}
           disabled={courseLoading}
         />
-        <button
-          className="plan-trip__btn"
-          type="submit"
-          disabled={courseLoading}
-        >
+        <button className="plan-trip__btn" type="submit" disabled={courseLoading}>
           {courseLoading ? 'Searching…' : 'Find Courses'}
         </button>
       </form>
-      {courseError && <p className="plan-trip__error">{courseError}</p>}
 
-      {/* Note; Course selection list */}
+      {/* Bootstrap Alert for courseError */}
+      {courseError && (
+        <Alert
+          variant="danger"
+          onClose={() => setCourseError('')}
+          dismissible
+          className="plan-trip__alert"
+        >
+          {courseError}
+        </Alert>
+      )}
+
+      {/* Course selection list */}
       {courseOptions.length > 0 && (
         <ul className="plan-trip__results">
-          {courseOptions.map(c => (
+          {courseOptions.map((c) => (
             <li
               key={c.place_id}
               className={
@@ -138,7 +144,8 @@ const PlanTrip: React.FC = () => {
               }
               onClick={() => setSelectedCourse(c)}
             >
-              <strong>{c.name}</strong><br />
+              <strong>{c.name}</strong>
+              <br />
               <small>{c.address}</small>
             </li>
           ))}
@@ -151,7 +158,7 @@ const PlanTrip: React.FC = () => {
         </div>
       )}
 
-      {/* Note; Trip save form */}
+      {/* Trip save form */}
       <form className="plan-trip__form" onSubmit={handleTripSave}>
         <input
           className="plan-trip__input"
@@ -166,15 +173,22 @@ const PlanTrip: React.FC = () => {
           value={tripDate}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setTripDate(e.target.value)}
         />
-        <button
-          className="plan-trip__btn"
-          type="submit"
-          disabled={savingTrip}
-        >
+        <button className="plan-trip__btn" type="submit" disabled={savingTrip}>
           {savingTrip ? 'Saving…' : 'Save Trip'}
         </button>
       </form>
-      {submitError && <p className="plan-trip__error">{submitError}</p>}
+
+      {/* Bootstrap Alert for submitError */}
+      {submitError && (
+        <Alert
+          variant="danger"
+          onClose={() => setSubmitError('')}
+          dismissible
+          className="plan-trip__alert"
+        >
+          {submitError}
+        </Alert>
+      )}
     </main>
   );
 };

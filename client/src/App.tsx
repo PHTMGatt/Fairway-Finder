@@ -1,5 +1,6 @@
 // client/src/App.tsx
 
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import './App.css';
 import {
@@ -14,6 +15,8 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 
+// (No need to import AuthProvider here, since main.tsx already wraps)
+ 
 // Note; Pull Google Maps API key from environment (handled on server in production)
 const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 if (!MAP_KEY) {

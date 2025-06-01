@@ -62,15 +62,16 @@ const TripList: React.FC<TripListProps> = ({
       <div className="trip-list__grid">
         {trips.map((trip) => (
           <div key={trip._id} className="trip-card">
-            <div className="trip-header">
+            {/* Note; card header with name and delete button */}
+            <div className="trip-card__header">
               <span>{trip.name}</span>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span className="course-count">
+                <span className="trip-card__count">
                   {trip.courses?.length ?? 0} course
                   {trip.courses?.length !== 1 ? 's' : ''}
                 </span>
                 <button
-                  className="delete-btn"
+                  className="trip-card__delete"
                   onClick={() => handleDeleteTrip(trip._id)}
                 >
                   ❌
@@ -78,7 +79,8 @@ const TripList: React.FC<TripListProps> = ({
               </span>
             </div>
 
-            <Link to={`/trip/${trip._id}`} className="trip-footer">
+            {/* Note; view trip details CTA */}
+            <Link to={`/trip/${trip._id}`} className="trip-card__btn">
               View Trip Details
             </Link>
           </div>

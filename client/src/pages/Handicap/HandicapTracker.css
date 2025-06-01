@@ -1,130 +1,171 @@
-/* client/src/pages/Handicap/HandicapTracker.css */
-
-/* Note; Full-page background gradient */
-body {
+/* ===== Scope the background to only the Handicap page ===== */
+.handicap-page {
   background: linear-gradient(to bottom right, #d3f3f7, #c2f0e9);
   min-height: 100vh;
-}
-
-/* Note; Main container centered on page */
-.handicap-container {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   padding: 4rem 1rem;
+  animation: fadeInBg 1s ease-in-out;
 }
 
-/* Note; Card wrapper */
-.setup-card {
-  background: #fff;
-  padding: 2rem 3rem;
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ===== Auth / Loading Card (reused inside Handicap page) ===== */
+.handicap-page .auth-card {
+  background: #ffffff;
   border-radius: 18px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-  max-width: 800px;
+  padding: 2rem;
+  max-width: 420px;
   width: 100%;
+  text-align: center;
+  animation: fadeInCard 0.8s ease-in-out 0.2s forwards;
+  opacity: 0;
 }
 
-/* Note; Section title */
-.title {
+@keyframes fadeInCard {
+  to {
+    opacity: 1;
+  }
+}
+
+.handicap-page .title {
   font-size: 2rem;
   font-weight: 700;
-  text-align: center;
-  margin-bottom: 2rem;
   color: #065f46;
+  margin-bottom: 1rem;
 }
 
-/* Note; Individual form group spacing */
-.form-group {
+.handicap-page .handicap-message {
+  font-size: 1rem;
+  color: #333333;
+}
+
+/* ===== Main Setup Card ===== */
+.handicap-page .setup-card {
+  background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 2rem 3rem;
+  max-width: 800px;
+  width: 100%;
+  animation: fadeInCard 0.8s ease-in-out 0.4s forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* ===== Section Title ===== */
+.handicap-page .title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #065f46;
+  margin-bottom: 2rem;
+  letter-spacing: 1px;
+}
+
+/* ===== Form Group ===== */
+.handicap-page .form-group {
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
 }
 
-.form-group label {
+.handicap-page .form-group label {
   font-size: 0.95rem;
   font-weight: 500;
   margin-bottom: 0.4rem;
   color: #333;
 }
 
-.form-group select,
-.form-group input {
+.handicap-page .form-group select,
+.handicap-page .form-group input {
   padding: 0.65rem 1rem;
   font-size: 1rem;
   border-radius: 8px;
   border: 1px solid #ccc;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-/* Note; Highlight on focus */
-.form-group select:focus,
-.form-group input:focus {
+.handicap-page .form-group select:focus,
+.handicap-page .form-group input:focus {
   border-color: #00b4d8;
+  box-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
   outline: none;
 }
 
-/* Note; Two-column layout rows */
-.flex-row {
+/* ===== Flex Row for Paired Fields ===== */
+.handicap-page .flex-row {
   display: flex;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
-.flex-row .form-group {
+.handicap-page .flex-row .form-group {
   flex: 1;
   margin-bottom: 0;
 }
 
-/* Note; Search box styling inside form-group */
-.form-group form {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+.handicap-page .search-row {
+  flex: 2 1 0%;
 }
 
-/* Note; Styled search input */
-.search-input {
+/* ===== Search Controls ===== */
+.handicap-page .search-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.handicap-page .search-input {
   flex: 1;
   padding: 0.65rem 1rem;
   font-size: 1rem;
-  border-radius: 8px;
+  border-radius: 8px 0 0 8px;
   border: 1px solid #ccc;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.search-input:focus {
+.handicap-page .search-input:focus {
   border-color: #00b4d8;
+  box-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
   outline: none;
 }
 
-/* Note; Styled search button */
-.search-btn {
+.handicap-page .search-btn {
   padding: 0.65rem 1.2rem;
   background-color: #1d4ed8;
   color: #fff;
   border: none;
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.2s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.search-btn:hover {
+.handicap-page .search-btn:hover {
   background-color: #2563eb;
   transform: translateY(-1px);
 }
 
-/* Note; Submit/Clear button alignment */
-.button-wrapper {
+/* ===== Round Form Buttons ===== */
+.handicap-page .round-form .form-group {
+  width: 100%;
+}
+
+.handicap-page .button-wrapper {
   display: flex;
   justify-content: center;
   gap: 1rem;
   margin-top: 1.5rem;
 }
 
-/* Note; Styled buttons */
-.submit-btn,
-.clear-btn {
+.handicap-page .submit-btn,
+.handicap-page .clear-btn {
   padding: 0.75rem 1.6rem;
   font-size: 1rem;
   font-weight: 600;
@@ -133,49 +174,102 @@ body {
   border-radius: 10px;
   cursor: pointer;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
 }
 
-.submit-btn {
+.handicap-page .submit-btn {
   background-color: #10b981;
 }
 
-.clear-btn {
+.handicap-page .clear-btn {
   background-color: #ef4444;
 }
 
-.submit-btn:hover,
-.clear-btn:hover {
+.handicap-page .submit-btn:hover,
+.handicap-page .clear-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 }
 
-/* Note; Handicap output */
-.handicap-info {
+.handicap-page .submit-btn:hover { background-color: #34d399; }
+.handicap-page .clear-btn:hover { background-color: #f87171; }
+
+/* ===== Handicap Display ===== */
+.handicap-page .handicap-info {
   text-align: center;
   margin-top: 2rem;
 }
 
-.handicap-info h2 {
+.handicap-page .handicap-info h2 {
   font-size: 1.2rem;
   color: #334155;
   margin-bottom: 0.5rem;
 }
 
-.handicap-value {
+.handicap-page .handicap-value {
   font-size: 2.8rem;
   font-weight: 800;
   color: #2563eb;
   letter-spacing: 1px;
 }
 
-/* Note; Responsive tweaks */
+/* ===== Responsive Tweaks ===== */
 @media (max-width: 768px) {
-  .setup-card {
+  .handicap-page .setup-card {
     padding: 1.5rem 1.5rem;
   }
-
-  .flex-row {
+  .handicap-page .flex-row {
     flex-direction: column;
   }
+  .handicap-page .search-controls {
+    flex-direction: column;
+  }
+  .handicap-page .search-input,
+  .handicap-page .search-btn {
+    width: 100%;
+    border-radius: 8px;
+  }
+  .handicap-page .search-btn {
+    margin-top: 0.5rem;
+  }
+  .handicap-page .button-wrapper {
+    flex-direction: column;
+  }
+  .handicap-page .submit-btn,
+  .handicap-page .clear-btn {
+    width: 100%;
+    max-width: 240px;
+    margin: 0 auto;
+  }
+  .handicap-page .title {
+    font-size: 1.75rem;
+  }
 }
+
+@media (max-width: 480px) {
+  .handicap-page .setup-card {
+    padding: 1rem 1rem;
+  }
+  .handicap-page .title {
+    font-size: 1.5rem;
+  }
+  .handicap-page .form-label {
+    font-size: 0.95rem;
+  }
+  .handicap-page .form-select,
+  .handicap-page .form-input,
+  .handicap-page .search-input {
+    font-size: 0.95rem;
+    padding: 0.6rem 1rem;
+  }
+  .handicap-page .search-btn,
+  .handicap-page .submit-btn,
+  .handicap-page .clear-btn {
+    font-size: 0.95rem;
+    padding: 0.6rem 1.2rem;
+  }
+  .handicap-page .handicap-value {
+    font-size: 2rem;
+  }
+}
+

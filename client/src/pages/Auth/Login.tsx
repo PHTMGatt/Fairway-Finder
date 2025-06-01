@@ -1,4 +1,3 @@
-// src/pages/Auth/'Login.tsx'
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
@@ -78,7 +77,7 @@ const Login: React.FC = () => {
             />
             <button
               type="submit"
-              className="btn auth-btn"
+              className="auth-btn"
               disabled={loading}
             >
               {loading ? 'Logging in…' : 'Submit'}

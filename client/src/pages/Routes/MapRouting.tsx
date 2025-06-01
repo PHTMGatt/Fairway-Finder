@@ -1,4 +1,4 @@
-// src/pages/'MapRouting.tsx'
+// 'src/pages/MapRouting.tsx'
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
@@ -23,9 +23,7 @@ const MapRouting: React.FC = () => {
   // Note; Toggle individual POI filter
   const toggleFilter = (type: FilterType) => {
     setFilters((prev) =>
-      prev.includes(type)
-        ? prev.filter((f) => f !== type)
-        : [...prev, type]
+      prev.includes(type) ? prev.filter((f) => f !== type) : [...prev, type]
     );
   };
 
@@ -37,8 +35,10 @@ const MapRouting: React.FC = () => {
 
   return (
     <main className="map-routing">
+      {/* Note; Animated title */}
       <h2 className="map-routing__title">Route Planner</h2>
 
+      {/* Note; Origin/Destination form */}
       <form className="map-routing__form" onSubmit={handleSubmit}>
         <input
           className="map-routing__input"
@@ -59,6 +59,7 @@ const MapRouting: React.FC = () => {
         </button>
       </form>
 
+      {/* Note; POI Filter Buttons */}
       <div className="map-routing__filters">
         <button
           onClick={() => toggleFilter('golf_course')}
@@ -86,6 +87,7 @@ const MapRouting: React.FC = () => {
         </button>
       </div>
 
+      {/* Note; Map container with overlay prompt */}
       <div className="map-routing__map">
         <div className="map-overlay">Drag the map to explore your route</div>
         {submitted && (
