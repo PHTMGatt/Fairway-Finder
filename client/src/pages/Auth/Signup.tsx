@@ -1,5 +1,3 @@
-// src/pages/Auth/'Signup.tsx'
-
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
@@ -95,7 +93,7 @@ const Signup: React.FC = () => {
             />
             <button
               type="submit"
-              className="btn auth-btn"
+              className="auth-btn"
               disabled={loading}
             >
               {loading ? 'Creating…' : 'Submit'}
@@ -107,7 +105,7 @@ const Signup: React.FC = () => {
 
           {/* Note; Dev-only: clear all user profiles */}
           <button
-            className="btn auth-btn clear-session-btn"
+            className="auth-btn clear-session-btn"
             onClick={async () => {
               await fetch('/api/dev/clear-users', { method: 'DELETE' });
               Auth.logout();
@@ -119,7 +117,7 @@ const Signup: React.FC = () => {
         </div>
       </div>
     </main>
-);
-}
+  );
+};
 
 export default Signup;
