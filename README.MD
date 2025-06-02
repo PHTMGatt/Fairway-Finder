@@ -1,6 +1,6 @@
 # 🏌️‍♂️ Fairway Finder
 
-A modern, full-stack golf trip planner built by **Bryen “BryGuy” Gatt**. Search and save courses, plan driving routes, check tee-off weather, and calculate handicaps—all with instant, secure authentication and a polished, responsive interface.
+A modern, full-stack golf trip planner. Search and save courses, plan driving routes, check tee-off weather, and calculate handicaps—all with instant, secure authentication and a polished, responsive interface.
 
 ---
 
