@@ -68,7 +68,8 @@ Planning a golf trip often means juggling multiple tools—course details, direc
 ## 🚀 Live Demo & Repository
 
 - **Live Site:** [https://fairway-finder.onrender.com](https://fairway-finder.onrender.com)  
-- **GitHub:** [https://github.com/PHTMGatt/Fairway-Finder](https://github.com/PHTMGatt)
+- **MVP Site:** [https://fairway-finder-mvp.onrender.com](https://fairway-finder-mvp.onrender.com)  
+- **GitHub:** [https://github.com/PHTMGatt/Fairway-Finder](https://github.com/PHTMGatt/Fairway-Finder)
 
 ---
 
