@@ -5,6 +5,10 @@ A modern, full-stack golf trip planner. Search and save courses, plan driving ro
 
 ---
 
+[![GitHub stars](https://img.shields.io/github/stars/PHTMGatt/Fairway-Finder?style=social)](https://github.com/PHTMGatt/Fairway-Finder/stargazers)
+
+---
+
 ## 📸 Screenshot
 
 <p align="center">
