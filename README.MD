@@ -1,11 +1,7 @@
 # 🏌️‍♂️ Fairway Finder
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)   [![GitHub stars](https://img.shields.io/github/stars/PHTMGatt/Fairway-Finder?style=social)](https://github.com/PHTMGatt/Fairway-Finder/stargazers)
 
 A modern, full-stack golf trip planner. Search and save courses, plan driving routes, check tee-off weather, and calculate handicaps—all with instant, secure authentication and a polished, responsive interface.
-
----
-
-[![GitHub stars](https://img.shields.io/github/stars/PHTMGatt/Fairway-Finder?style=social)](https://github.com/PHTMGatt/Fairway-Finder/stargazers)
 
 ---
 
