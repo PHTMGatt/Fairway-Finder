@@ -83,7 +83,7 @@ Planning a golf trip often means juggling multiple tools—course details, direc
 
 ## 🧠 Credits
 
-- **Primary Developer:** [Bryen “BryGuy” Gatt](https://github.com/PHTMGatt)  
+- **Primary Developer:** [Bryen Gatt](https://github.com/PHTMGatt)  
 - **Contributors:**  
   • [Jarred Hampton](https://github.com/Jarred13D)  
   • [Jared Owens](https://github.com/jaredowens)  
