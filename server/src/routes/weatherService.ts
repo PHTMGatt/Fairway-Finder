@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const router = express.Router();
 
-// Helper to get lat/lon from city name via Nominatim
+// Note; Helper to get lat/lon from city name via Nominatim
 async function getCoords(city: string) {
   const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
   const response = await axios.get(url);
