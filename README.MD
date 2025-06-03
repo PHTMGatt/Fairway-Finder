@@ -1,4 +1,5 @@
 # 🏌️‍♂️ Fairway Finder
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A modern, full-stack golf trip planner. Search and save courses, plan driving routes, check tee-off weather, and calculate handicaps—all with instant, secure authentication and a polished, responsive interface.
 
@@ -91,5 +92,11 @@ Planning a golf trip often means juggling multiple tools—course details, direc
   • [Nicholas Dear](https://github.com/n6dd)
 
 ---
+
+## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+This project is licensed under the [MIT License](LICENSE).
 
 © 2025 Fairway Finder. All rights reserved.
