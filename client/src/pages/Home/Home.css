@@ -7,6 +7,7 @@
   align-items: center;
   padding: 1rem;
   background: #eafaff;
+  min-height: 100vh;
 }
 
 /* ===== Hero Section ===== */
@@ -123,14 +124,22 @@
   margin: 2rem auto;
 }
 
+/* hide entirely when empty */
+.home__saved-trips:empty {
+  display: none;
+}
+
 /* ===== Bottom Navigation ===== */
 .home__bottom-nav {
   display: flex;
   justify-content: space-around;
+  align-items: center;
   width: 100%;
   max-width: 700px;
   border-top: 1px solid #ddd;
   padding: 1.5rem 0 2rem;
+  margin-top: auto;
+  /* no change here; core row layout */
 }
 
 .home__nav-item {
@@ -170,14 +179,25 @@
 
 /* ===== Responsive Fixes ===== */
 @media (max-width: 600px) {
+  /* keep inputs full-width */
   .home__input,
   .home__find-btn {
     flex: 1 1 100%;
   }
 
+  /* bottom nav stays row */
   .home__bottom-nav {
-    flex-direction: column;
-    gap: 1.25rem;
-    align-items: center;
+    flex-direction: row;
+    gap: 0.5rem;
+    overflow-x: auto;     /* scroll if absolutely needed */
+    padding: 1rem 0;
+  }
+
+  .home__nav-item {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    font-size: 0.65rem;
+    margin: 0 0.25rem;
   }
 }

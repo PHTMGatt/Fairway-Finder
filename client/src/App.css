@@ -1,48 +1,56 @@
-/* ===== App.css ===== */
-
-/* — Global Base Styles — */
-body, html {
+/* ===========================================
+   Global Resets & Base Styles
+   =========================================== */
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow-x: hidden;  /* no horizontal scroll */
 }
+
 #root {
   height: 100%;
 }
 
 body {
   background: linear-gradient(to bottom right, #eafaff, #ffffff);
-  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+               Roboto, Helvetica, Arial, sans-serif;
   color: #1a3d7c;
+  line-height: 1.5;
 }
 
-/* — App Layout — */
+/* ===========================================
+   App Layout
+   =========================================== */
 .app-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;           /* fill viewport */
+  min-height: 100vh;  /* always fill viewport */
 }
+
 .app-content {
-  flex: 1;                 /* grow to fill between header + footer */
+  flex: 1;            /* expand between header & footer */
   display: flex;
   flex-direction: column;
+  overflow-y: auto;   /* scroll content only */
 }
 
-/* — Header & Footer remain sticky — */
-header, footer {
+/* ===========================================
+   Header
+   =========================================== */
+header {
   flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-/* — Main content container (map will fill this) — */
-.app-content > * {
-  flex: 1;
-}
-
-/* ===== Header “Score-Card” Styling ===== */
 .header {
   background: repeating-linear-gradient(
     to bottom,
-    #1a3d7c 0,
+    #1a3d7c 0%,
     #1a3d7c 33.33%,
     #3052a4 33.33%,
     #3052a4 66.66%,
@@ -52,20 +60,17 @@ header, footer {
   border-bottom: 2px solid #1a3d7c;
   padding: 1rem 0;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
 }
 
 .header__inner {
+  max-width: 960px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  max-width: 960px;
-  margin: 0 auto;
 }
 
-/* ===== Header Title & Toggles ===== */
+/* Title */
 .header__title {
   margin: 0;
   font-size: 1.5rem;
@@ -76,12 +81,14 @@ header, footer {
   color: #53bfff;
 }
 
+/* Toggle Buttons */
 .header__toggle {
   display: flex;
   gap: 0.5rem;
   align-items: center;
 }
-.header__toggle .toggle-btn {
+
+.toggle-btn {
   width: 2rem;
   height: 2rem;
   background: #ffffff;
@@ -89,9 +96,11 @@ header, footer {
   border-radius: 50%;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+  transition: background 0.2s, border-color 0.2s,
+              transform 0.15s, box-shadow 0.2s;
 }
-.header__toggle .toggle-btn:hover {
+
+.toggle-btn:hover {
   background: linear-gradient(135deg, #53bfff, #1f9eff);
   border-color: #1f9eff;
   transform: scale(1.2);
@@ -101,7 +110,7 @@ header, footer {
     0 6px 16px rgba(0,0,0,0.3);
 }
 
-/* ===== Header Action Buttons ===== */
+/* Header Actions */
 .header__actions .header__btn {
   background: #ffffff !important;
   color: #1a3d7c !important;
@@ -109,8 +118,11 @@ header, footer {
   padding: 0.5rem 1rem !important;
   border-radius: 6px !important;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s !important;
+  transition: background 0.2s, color 0.2s,
+              border-color 0.2s, transform 0.1s,
+              box-shadow 0.2s !important;
 }
+
 .header__actions .header__btn:hover {
   background: linear-gradient(135deg, #53bfff, #1f9eff) !important;
   color: #fff !important;
@@ -118,41 +130,72 @@ header, footer {
   transform: translateY(-2px) !important;
   box-shadow: 0 6px 18px rgba(0,0,0,0.3) !important;
 }
+
 .header__actions .header__btn:active {
   transform: translateY(0) !important;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
 }
 
-/* ===== Footer Styling ===== */
-.footer {
+/* ===========================================
+   Footer
+   =========================================== */
+footer {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 0;
   background: #f0f8ff;
   border-top: 2px solid #1a3d7c;
   padding: 1rem 0;
   box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-  position: sticky;
-  bottom: 0;
 }
+
 .footer__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   max-width: 960px;
   margin: 0 auto;
+  text-align: center;
 }
+
 .footer__copy {
   margin: 0;
   font-size: 0.85rem;
   color: #555;
 }
 
-/* ===== Utility Helpers ===== */
+/* ===========================================
+   Utility
+   =========================================== */
 .min-100-vh {
   min-height: 100vh;
 }
 
-/* Prevent horizontal scrollbar caused by animated footer GIF */
-body {
-  margin: 0; /* reset default margin if not already set */
-  overflow-x: hidden;
-}
+/* ===========================================
+   Mobile Overrides (≤ 600px)
+   =========================================== */
+@media (max-width: 600px) {
+  .header__inner,
+  .footer__inner {
+    padding: 0 1rem;
+  }
 
+  .header__title {
+    font-size: 1.25rem;
+  }
+
+  .header__toggle {
+    gap: 0.25rem;
+  }
+
+  .toggle-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .header__actions .header__btn {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.9rem !important;
+  }
+
+  .min-100-vh {
+    min-height: auto;
+  }
+}
