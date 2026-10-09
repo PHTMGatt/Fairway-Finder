@@ -1,6 +1,7 @@
-// src/pages/Courses/'CourseFinder.tsx'
+// src/pages/Courses/CourseFinder.tsx
 
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { FormEvent, useState } from 'react';
+import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
 import './CourseFinder.css';
 
 interface Course {
@@ -11,20 +12,11 @@ interface Course {
 }
 
 const CourseFinder: React.FC = () => {
-  // Note; Controlled input for city search
   const [city, setCity] = useState<string>('');
-  // Note; List of courses returned from the API
   const [courses, setCourses] = useState<Course[]>([]);
-  // Note; Loading and error states for UX feedback
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  // Note; Update city as user types
-  const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setCity(e.target.value);
-  };
-
-  // Note; Submit handler to fetch courses from our server proxy
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
     const trimmed = city.trim();
@@ -46,7 +38,7 @@ const CourseFinder: React.FC = () => {
 
       setCourses(data);
       if (data.length === 0) {
-        setError(`No courses found for “${trimmed}.”`);
+        setError(`No courses found near “${trimmed}.”`);
       }
     } catch {
       setError('Could not load courses.');
@@ -57,7 +49,6 @@ const CourseFinder: React.FC = () => {
 
   return (
     <main className="course-finder">
-      {/* Note; Banner header */}
       <div className="course-finder__banner">
         <h2 className="course-finder__title">Find the Best Golf Courses</h2>
         <p className="course-finder__subtitle">
@@ -65,15 +56,14 @@ const CourseFinder: React.FC = () => {
         </p>
       </div>
 
-      {/* Note; Search form */}
       <form className="course-finder__search" onSubmit={handleSearch}>
-        <input
-          className="course-finder__input"
-          type="text"
-          placeholder="Enter city"
+        <LocationAutocomplete
           value={city}
-          onChange={handleCityChange}
+          onChange={setCity}
+          placeholder="Enter city"
+          inputClassName="course-finder__input"
           disabled={loading}
+          ariaLabel="Course search city"
         />
         <button
           className="course-finder__btn"
@@ -84,25 +74,31 @@ const CourseFinder: React.FC = () => {
         </button>
       </form>
 
-      {/* Note; Loading & error messages */}
       {loading && <p className="course-finder__loading">Loading courses…</p>}
       {error && <p className="course-finder__error">{error}</p>}
 
-      {/* Note; Results grid */}
       <ul className="course-finder__results">
         {courses.map((course) => {
-          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            course.name
-          )}&query_place_id=${course.place_id}`;
+          const hasGooglePlaceId =
+            !course.place_id.startsWith('osm-') &&
+            !course.place_id.startsWith('golfcourseapi-');
+          const query = [course.name, course.address]
+            .filter(Boolean)
+            .join(' ');
+          const mapsUrl = hasGooglePlaceId
+            ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                query
+              )}&query_place_id=${encodeURIComponent(course.place_id)}`
+            : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                query
+              )}`;
 
           return (
             <li key={course.place_id} className="course-card">
-              {/* Note; Card header */}
               <div className="course-card__banner">
                 <h3 className="course-card__name">{course.name}</h3>
               </div>
 
-              {/* Note; Link to Google Maps with address & rating */}
               <a
                 href={mapsUrl}
                 target="_blank"
