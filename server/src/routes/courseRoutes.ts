@@ -22,26 +22,64 @@ interface CourseQuery {
   maxDistance?: string;
 }
 
+interface Coordinates {
+  lat: number;
+  lng: number;
+}
+
 export interface Course {
   name: string;
   address: string;
   rating: number | null;
   place_id: string;
-  location: { lat: number; lng: number } | null;
+  location: Coordinates | null;
 }
 
-const geocodeCity = async (city: string) => {
+const geocodeGoogle = async (query: string): Promise<Coordinates | null> => {
   const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
-  url.searchParams.set('address', `${city}, USA`);
+  url.searchParams.set('address', query);
   url.searchParams.set('key', GOOGLE_API_KEY);
 
   const response = await fetch(url.toString());
   if (!response.ok) return null;
 
   const payload: any = await response.json();
-  if (payload.status && payload.status !== 'OK') return null;
-  return payload.results?.[0]?.geometry?.location ?? null;
+  if (payload.status !== 'OK') return null;
+
+  const location = payload.results?.[0]?.geometry?.location;
+  return Number.isFinite(location?.lat) && Number.isFinite(location?.lng)
+    ? { lat: location.lat, lng: location.lng }
+    : null;
 };
+
+const geocodeOpenStreetMap = async (
+  query: string
+): Promise<Coordinates | null> => {
+  const url = new URL('https://nominatim.openstreetmap.org/search');
+  url.searchParams.set('q', query);
+  url.searchParams.set('format', 'jsonv2');
+  url.searchParams.set('limit', '1');
+  url.searchParams.set('countrycodes', 'us');
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      'User-Agent': 'Fairway-Finder/1.0',
+      Accept: 'application/json',
+    },
+  });
+  if (!response.ok) return null;
+
+  const payload: any = await response.json();
+  const first = Array.isArray(payload) ? payload[0] : null;
+  const lat = Number(first?.lat);
+  const lng = Number(first?.lon);
+
+  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
+};
+
+const geocodeCity = async (city: string): Promise<Coordinates | null> =>
+  (await geocodeGoogle(`${city}, USA`)) ??
+  (await geocodeOpenStreetMap(`${city}, USA`));
 
 const searchPlacesNew = async (
   city: string,
@@ -60,24 +98,27 @@ const searchPlacesNew = async (
     includedType: 'golf_course',
     strictTypeFiltering: true,
     regionCode: 'US',
+    pageSize: Math.min(20, limit),
   };
 
-  if (maxDistanceMiles && maxDistanceMiles > 0) {
-    const location = await geocodeCity(city);
-    if (location) {
-      body = {
-        ...body,
-        locationBias: {
-          circle: {
-            center: {
-              latitude: location.lat,
-              longitude: location.lng,
-            },
-            radius: Math.min(50000, Math.max(1000, maxDistanceMiles * 1609.34)),
+  const location = await geocodeCity(city);
+  if (location) {
+    const radius = maxDistanceMiles && maxDistanceMiles > 0
+      ? Math.min(50000, Math.max(2000, maxDistanceMiles * 1609.34))
+      : 40000;
+
+    body = {
+      ...body,
+      locationBias: {
+        circle: {
+          center: {
+            latitude: location.lat,
+            longitude: location.lng,
           },
+          radius,
         },
-      };
-    }
+      },
+    };
   }
 
   const response = await fetch(
@@ -94,7 +135,7 @@ const searchPlacesNew = async (
   const payload: any = await response.json();
   const places = Array.isArray(payload.places) ? payload.places : [];
 
-  return places
+  const courses = places
     .map((place: any): Course => ({
       name: place.displayName?.text || 'Unnamed golf course',
       address: place.formattedAddress || 'Address N/A',
@@ -112,6 +153,8 @@ const searchPlacesNew = async (
     .filter((course: Course) => course.place_id)
     .sort((a: Course, b: Course) => (b.rating ?? 0) - (a.rating ?? 0))
     .slice(0, limit);
+
+  return courses.length ? courses : null;
 };
 
 const searchPlacesLegacy = async (
@@ -119,50 +162,28 @@ const searchPlacesLegacy = async (
   limit: number,
   maxDistanceMiles?: number
 ): Promise<Course[]> => {
-  let places: any[] = [];
+  const location = await geocodeCity(city);
+  if (!location) return [];
 
-  if (maxDistanceMiles && maxDistanceMiles > 0) {
-    const location = await geocodeCity(city);
-    if (!location) return [];
+  const radius = maxDistanceMiles && maxDistanceMiles > 0
+    ? Math.min(50000, Math.max(2000, maxDistanceMiles * 1609.34))
+    : 40000;
 
-    const nearbyUrl = new URL(
-      'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
-    );
-    nearbyUrl.searchParams.set('location', `${location.lat},${location.lng}`);
-    nearbyUrl.searchParams.set(
-      'radius',
-      String(Math.min(50000, Math.max(1000, maxDistanceMiles * 1609.34)))
-    );
-    nearbyUrl.searchParams.set('type', 'golf_course');
-    nearbyUrl.searchParams.set('key', GOOGLE_API_KEY);
+  const nearbyUrl = new URL(
+    'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
+  );
+  nearbyUrl.searchParams.set('location', `${location.lat},${location.lng}`);
+  nearbyUrl.searchParams.set('radius', String(radius));
+  nearbyUrl.searchParams.set('type', 'golf_course');
+  nearbyUrl.searchParams.set('key', GOOGLE_API_KEY);
 
-    const response = await fetch(nearbyUrl.toString());
-    if (!response.ok) return [];
-    const payload: any = await response.json();
-    if (payload.status && !['OK', 'ZERO_RESULTS'].includes(payload.status)) {
-      console.warn(`Legacy Places nearby search unavailable: ${payload.status}`);
-      return [];
-    }
-    places = Array.isArray(payload.results) ? payload.results : [];
-  } else {
-    const textUrl = new URL(
-      'https://maps.googleapis.com/maps/api/place/textsearch/json'
-    );
-    textUrl.searchParams.set('query', `golf courses in ${city}, USA`);
-    textUrl.searchParams.set('region', 'us');
-    textUrl.searchParams.set('key', GOOGLE_API_KEY);
+  const response = await fetch(nearbyUrl.toString());
+  if (!response.ok) return [];
 
-    const response = await fetch(textUrl.toString());
-    if (!response.ok) return [];
-    const payload: any = await response.json();
-    if (payload.status && !['OK', 'ZERO_RESULTS'].includes(payload.status)) {
-      console.warn(`Legacy Places text search unavailable: ${payload.status}`);
-      return [];
-    }
-    places = Array.isArray(payload.results) ? payload.results : [];
-  }
+  const payload: any = await response.json();
+  if (payload.status !== 'OK' || !Array.isArray(payload.results)) return [];
 
-  return places
+  return payload.results
     .map((place: any): Course => ({
       name: place.name || 'Unnamed golf course',
       address: place.formatted_address || place.vicinity || 'Address N/A',
@@ -175,12 +196,81 @@ const searchPlacesLegacy = async (
     .slice(0, limit);
 };
 
+const buildOsmAddress = (tags: Record<string, string> = {}) => {
+  const street = [tags['addr:housenumber'], tags['addr:street']]
+    .filter(Boolean)
+    .join(' ');
+  const city = tags['addr:city'] || tags['addr:place'];
+  const state = tags['addr:state'];
+  const postcode = tags['addr:postcode'];
+
+  return [street, city, state, postcode]
+    .filter(Boolean)
+    .join(', ') || 'Address N/A';
+};
+
+const searchOpenStreetMap = async (
+  city: string,
+  limit: number,
+  maxDistanceMiles?: number
+): Promise<Course[]> => {
+  const center = await geocodeOpenStreetMap(`${city}, USA`);
+  if (!center) return [];
+
+  const radius = Math.round(
+    Math.min(
+      50000,
+      Math.max(
+        5000,
+        maxDistanceMiles && maxDistanceMiles > 0
+          ? maxDistanceMiles * 1609.34
+          : 40000
+      )
+    )
+  );
+
+  const query = `[out:json][timeout:15];(node["leisure"="golf_course"](around:${radius},${center.lat},${center.lng});way["leisure"="golf_course"](around:${radius},${center.lat},${center.lng});relation["leisure"="golf_course"](around:${radius},${center.lat},${center.lng}););out center tags ${Math.max(20, limit * 3)};`;
+
+  const response = await fetch('https://overpass-api.de/api/interpreter', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'User-Agent': 'Fairway-Finder/1.0',
+    },
+    body: new URLSearchParams({ data: query }).toString(),
+  });
+  if (!response.ok) return [];
+
+  const payload: any = await response.json();
+  const elements = Array.isArray(payload.elements) ? payload.elements : [];
+
+  return elements
+    .map((element: any): Course | null => {
+      const lat = Number(element.lat ?? element.center?.lat);
+      const lng = Number(element.lon ?? element.center?.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+
+      const name = String(element.tags?.name || '').trim();
+      if (!name) return null;
+
+      return {
+        name,
+        address: buildOsmAddress(element.tags || {}),
+        rating: null,
+        place_id: `osm-${element.type}-${element.id}`,
+        location: { lat, lng },
+      };
+    })
+    .filter((course: Course | null): course is Course => course !== null)
+    .slice(0, limit);
+};
+
 const searchGolfCourseApi = async (
   city: string,
   limit: number
 ): Promise<Course[]> => {
   const url = new URL(`${GOLF_API_BASE}/search`);
-  url.searchParams.set('search_query', city);
+  url.searchParams.set('search_query', city.split(',')[0].trim());
 
   const response = await fetch(url.toString(), {
     headers: {
@@ -194,7 +284,15 @@ const searchGolfCourseApi = async (
   }
 
   const payload: any = await response.json();
-  const courses = Array.isArray(payload.courses) ? payload.courses : [];
+  let courses = Array.isArray(payload.courses) ? payload.courses : [];
+  const requestedRegion = city.split(',')[1]?.trim().toUpperCase();
+
+  if (requestedRegion) {
+    courses = courses.filter((course: any) => {
+      const state = String(course.location?.state || '').trim().toUpperCase();
+      return state === requestedRegion || state.startsWith(requestedRegion);
+    });
+  }
 
   return courses
     .map((course: any): Course => {
@@ -245,17 +343,17 @@ router.get<object, Course[], object, CourseQuery>(
 
     try {
       const modernResults = await searchPlacesNew(city, limit, maxDistanceMiles);
-      if (modernResults?.length) {
-        return res.json(modernResults);
-      }
+      if (modernResults?.length) return res.json(modernResults);
 
       console.warn('Places API (New) unavailable or empty; trying legacy Places.');
       const legacyResults = await searchPlacesLegacy(city, limit, maxDistanceMiles);
-      if (legacyResults.length) {
-        return res.json(legacyResults);
-      }
+      if (legacyResults.length) return res.json(legacyResults);
 
-      console.warn('Google Places unavailable or empty; trying GolfCourseAPI.');
+      console.warn('Google Places unavailable or empty; trying OpenStreetMap.');
+      const osmResults = await searchOpenStreetMap(city, limit, maxDistanceMiles);
+      if (osmResults.length) return res.json(osmResults);
+
+      console.warn('OpenStreetMap course search empty; trying GolfCourseAPI.');
       const golfResults = await searchGolfCourseApi(city, limit);
       return res.json(golfResults);
     } catch (error) {
