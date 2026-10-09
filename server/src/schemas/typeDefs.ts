@@ -1,16 +1,16 @@
-// server/schemas/'typeDefs.ts'
+// server/src/schemas/typeDefs.ts
 
 export default `  
   scalar JSON
 
   """
-  A user profile, containing basic info and their associated trips.
+  A user profile containing public account fields and that user's associated trips.
+  Password hashes are intentionally never exposed through GraphQL.
   """
   type Profile {
     _id: ID
     name: String
     email: String
-    password: String
     trips: [Trip]
   }
 
@@ -30,8 +30,8 @@ export default `
     name: String
     address: String
     location: Location
-    rating: Float       # cached courseRating for handicap calc
-    slope: Int          # cached slopeRating for handicap calc
+    rating: Float
+    slope: Int
   }
 
   """
@@ -49,11 +49,11 @@ export default `
     name: String
     score: JSON
     total: Int
-    handicap: Float     # ✅ New: individual player handicap
+    handicap: Float
   }
 
   """
-  A Trip document: name, date, courses played, players and their scores, and the trip handicap index.
+  A trip owned by one authenticated profile.
   """
   type Trip {
     _id: ID
@@ -61,22 +61,15 @@ export default `
     date: String
     courses: [Course]
     players: [Player]
-    handicap: Float     # stored trip-wide handicap index
+    handicap: Float
   }
 
-  """
-  Input for creating a new user profile.
-  """
   input ProfileInput {
     name: String!
     email: String!
     password: String!
   }
 
-  """
-  Input for creating a new trip.
-  The server will look up the course by name and cache its rating+slope.
-  """
   input TripInput {
     name: String!
     date: String!
@@ -85,85 +78,33 @@ export default `
 
   type Query {
     """
-    Fetch the currently logged-in user's profile.
+    Fetch the currently logged-in user's profile and only their trips.
     """
     me: Profile
 
     """
-    Fetch all profiles (dev use).
-    """
-    profiles: [Profile]
-
-    """
-    Fetch one profile by ID.
-    """
-    profile(profileId: ID!): Profile
-
-    """
-    Fetch all trips (dev use).
+    Fetch only trips belonging to the currently logged-in user.
     """
     trips: [Trip]
 
     """
-    Fetch one trip by ID.
+    Fetch one trip only when it belongs to the currently logged-in user.
     """
     trip(id: ID!): Trip
   }
 
   type Mutation {
-    """
-    Register a new user and return an auth payload.
-    """
     addProfile(input: ProfileInput!): Auth
-
-    """
-    Log in an existing user.
-    """
     login(email: String!, password: String!): Auth
 
-    """
-    Create a new trip and cache initial course's rating+slope.
-    """
     addTrip(input: TripInput!): Trip
-
-    """
-    Delete a trip by ID.
-    """
     deleteTrip(tripId: ID!): Trip
-
-    """
-    Add an additional course to an existing trip.
-    """
     addCourseToTrip(tripId: ID!, courseName: String!): Trip
-
-    """
-    Remove a course from a trip.
-    """
     removeCourseFromTrip(courseName: String!): Trip
-
-    """
-    Add a new player to a trip.
-    """
     addPlayer(tripId: ID!, name: String!): Trip
-
-    """
-    Remove a player from a trip.
-    """
     removePlayer(tripId: ID!, name: String!): Trip
-
-    """
-    Update a single player's score for a specific hole.
-    """
     updateScore(tripId: ID!, player: String!, hole: Int!, score: Int!): Trip
-
-    """
-    Recalculate and store the trip's handicap index.
-    """
     updateTripHandicap(tripId: ID!, handicap: Float!): Trip
-
-    """
-    ✅ NEW: Update a specific player's handicap value.
-    """
     updatePlayerHandicap(tripId: ID!, name: String!, handicap: Float!): Trip
   }
 `;
