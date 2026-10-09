@@ -2,15 +2,14 @@
 
 import { gql } from '@apollo/client';
 
-/** ——— USER PROFILE QUERIES ——— **/
+/** ——— CURRENT USER QUERIES ——— **/
 
-// Note; Fetch the currently authenticated user's profile, including their trips and players
 export const QUERY_ME = gql`
   query Me {
     me {
       _id
       name
-      skills
+      email
       trips {
         _id
         name
@@ -21,37 +20,17 @@ export const QUERY_ME = gql`
         }
         players {
           name
+          handicap
         }
+        handicap
       }
-    }
-  }
-`;
-
-// Note; Fetch all user profiles (for admin or listing purposes)
-export const QUERY_PROFILES = gql`
-  query Profiles {
-    profiles {
-      _id
-      name
-      skills
-    }
-  }
-`;
-
-// Note; Fetch a single profile by its ID
-export const QUERY_SINGLE_PROFILE = gql`
-  query Profile($profileId: ID!) {
-    profile(profileId: $profileId) {
-      _id
-      name
-      skills
     }
   }
 `;
 
 /** ——— TRIP QUERIES ——— **/
 
-// Note; Fetch every trip in the system
+// The server scopes this result to the authenticated user's trip IDs.
 export const QUERY_TRIPS = gql`
   query Trips {
     trips {
@@ -64,13 +43,13 @@ export const QUERY_TRIPS = gql`
       }
       players {
         name
+        handicap
       }
       handicap
     }
   }
 `;
 
-// ✅ Note; Updated to include players so Handicap Tracker works
 export const QUERY_MY_TRIPS = gql`
   query MyTrips {
     me {
@@ -86,6 +65,7 @@ export const QUERY_MY_TRIPS = gql`
         }
         players {
           name
+          handicap
         }
         handicap
       }
@@ -93,7 +73,6 @@ export const QUERY_MY_TRIPS = gql`
   }
 `;
 
-// Note; Fetch full trip including scorecard and handicap
 export const QUERY_TRIP = gql`
   query Trip($id: ID!) {
     trip(id: $id) {
@@ -108,13 +87,13 @@ export const QUERY_TRIP = gql`
         name
         score
         total
+        handicap
       }
       handicap
     }
   }
 `;
 
-// Note; Scorecard only
 export const QUERY_SCORECARD = gql`
   query TripScorecard($id: ID!) {
     trip(id: $id) {
@@ -124,6 +103,7 @@ export const QUERY_SCORECARD = gql`
         name
         score
         total
+        handicap
       }
     }
   }
