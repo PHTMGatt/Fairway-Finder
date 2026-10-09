@@ -1,4 +1,4 @@
-// server/src/schemas/'resolvers.ts'
+// server/src/schemas/resolvers.ts
 
 import { IResolvers } from '@graphql-tools/utils';
 import Profile from '../models/Profile.js';
@@ -10,86 +10,125 @@ interface ProfileType {
   _id: unknown;
   name: string;
   email: string;
-  password: string;
 }
 
 interface Context {
   user?: ProfileType;
 }
 
+const requireUserId = (context: Context): string => {
+  if (!context.user?._id) {
+    throw new AuthenticationError('Not authenticated');
+  }
+  return String(context.user._id);
+};
+
+const getCurrentProfile = async (context: Context) => {
+  const userId = requireUserId(context);
+  const profile = await Profile.findById(userId);
+
+  if (!profile) {
+    throw new AuthenticationError('Profile no longer exists');
+  }
+
+  return profile;
+};
+
+const profileOwnsTrip = (profile: { trips: any[] }, tripId: string) =>
+  profile.trips.some((id) => id.toString() === tripId);
+
+const requireOwnedTrip = async (tripId: string, context: Context) => {
+  const profile = await getCurrentProfile(context);
+
+  if (!profileOwnsTrip(profile, tripId)) {
+    throw new AuthenticationError('Not authorized to access this trip');
+  }
+
+  const trip = await Trip.findById(tripId);
+  if (!trip) {
+    throw new UserInputError('Trip not found');
+  }
+
+  return { profile, trip };
+};
+
+const transformTrip = (trip: any) => {
+  const transformedPlayers = trip.players.map((p: any) => {
+    const ordered = Array.from({ length: 18 }, (_, idx) => {
+      const holeNum = idx + 1;
+      const found = p.scores.find((s: any) => s.hole === holeNum);
+      return { hole: holeNum, score: found?.score ?? 0 };
+    });
+
+    let total = 0;
+    const scoreObj: Record<string, number> = {};
+    ordered.forEach(({ hole, score }) => {
+      scoreObj[`H${hole}`] = score;
+      total += score;
+    });
+
+    return {
+      name: p.name,
+      score: scoreObj,
+      total,
+      handicap: p.handicap ?? null,
+    };
+  });
+
+  return {
+    _id: trip._id,
+    name: trip.name,
+    date: trip.date,
+    courses: trip.courses,
+    players: transformedPlayers,
+    handicap: trip.handicap,
+  };
+};
+
 const resolvers: IResolvers<any, Context> = {
-  /** ——— QUERIES ——— **/
   Query: {
-    // Note; Fetch all user profiles with their trips (dev)
-    profiles: async () => Profile.find().populate('trips'),
-
-    // Note; Fetch a single user profile by ID
-    profile: async (_p, { profileId }: { profileId: string }) =>
-      Profile.findById(profileId).populate('trips'),
-
-    // Note; Fetch current user based on JWT token
+    // Fetch the currently authenticated user's profile and only their trips.
     me: async (_p, _a, context) => {
-      if (!context.user) throw new AuthenticationError('Not authenticated');
-      return Profile.findById(context.user._id).populate('trips');
+      const userId = requireUserId(context);
+      return Profile.findById(userId).populate('trips');
     },
 
-    // Note; Fetch all trips (dev)
-    trips: async () => Trip.find(),
+    // Fetch only trips owned by the current user.
+    trips: async (_p, _a, context) => {
+      const profile = await getCurrentProfile(context);
+      return Trip.find({ _id: { $in: profile.trips } });
+    },
 
-    // Note; Fetch a single trip and transform player scores
-    trip: async (_p, { id }: { id: string }) => {
-      const trip = await Trip.findById(id);
-      if (!trip) return null;
-
-      const transformedPlayers = trip.players.map((p: any) => {
-        const ordered = Array.from({ length: 18 }, (_, idx) => {
-          const holeNum = idx + 1;
-          const found = p.scores.find((s: any) => s.hole === holeNum);
-          return { hole: holeNum, score: found?.score ?? 0 };
-        });
-        let total = 0;
-        const scoreObj: Record<string, number> = {};
-        ordered.forEach(({ hole, score }) => {
-          scoreObj[`H${hole}`] = score;
-          total += score;
-        });
-        return {
-          name: p.name,
-          score: scoreObj,
-          total,
-          handicap: p.handicap ?? null, // ✅ include individual handicap
-        };
-      });
-
-      return {
-        _id: trip._id,
-        name: trip.name,
-        date: trip.date,
-        courses: trip.courses,
-        players: transformedPlayers,
-        handicap: trip.handicap, // Note; legacy trip-wide index
-      };
+    // Fetch a single trip only when it belongs to the current user.
+    trip: async (_p, { id }: { id: string }, context) => {
+      const { trip } = await requireOwnedTrip(id, context);
+      return transformTrip(trip);
     },
   },
 
-  /** ——— MUTATIONS ——— **/
   Mutation: {
-    // Note; Register a new user
+    // Register a new user.
     addProfile: async (_p, { input }) => {
-      const existing = await Profile.findOne({ email: input.email });
+      const normalizedEmail = input.email.trim().toLowerCase();
+      const existing = await Profile.findOne({ email: normalizedEmail });
       if (existing) {
         throw new UserInputError('Email already in use', {
           invalidArgs: ['email'],
         });
       }
-      const profile = await Profile.create(input);
+
+      const profile = await Profile.create({
+        ...input,
+        name: input.name.trim(),
+        email: normalizedEmail,
+      });
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },
 
-    // Note; Authenticate existing user
+    // Authenticate an existing user.
     login: async (_p, { email, password }) => {
-      const profile = await Profile.findOne({ email });
+      const profile = await Profile.findOne({ email: email.trim().toLowerCase() });
       if (!profile) throw new AuthenticationError('No profile found');
       const valid = await profile.isCorrectPassword(password);
       if (!valid) throw new AuthenticationError('Incorrect password');
@@ -97,49 +136,62 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    // Note; Create a new trip for current user
+    // Create a new trip and attach it to the authenticated profile.
     addTrip: async (_p, { input }, context) => {
-      if (!context.user) throw new AuthenticationError('Not authenticated');
-      const userId = context.user._id as string;
+      const profile = await getCurrentProfile(context);
       const trip = await Trip.create({
         name: input.name,
         date: input.date,
         courses: [{ name: input.courseName }],
       });
-      await Profile.findByIdAndUpdate(userId, { $push: { trips: trip._id } });
+
+      profile.trips.push(trip._id as any);
+      await profile.save();
       return trip;
     },
 
-    // Note; Delete a trip and remove it from user's profile
+    // Delete only a trip owned by the authenticated profile.
     deleteTrip: async (_p, { tripId }, context) => {
-      if (!context.user) throw new AuthenticationError('Not authenticated');
-      const userId = context.user._id as string;
-      await Profile.findByIdAndUpdate(userId, { $pull: { trips: tripId } });
-      return Trip.findByIdAndDelete(tripId);
+      const { profile, trip } = await requireOwnedTrip(tripId, context);
+      profile.trips = profile.trips.filter((id) => id.toString() !== tripId) as any;
+      await profile.save();
+      await trip.deleteOne();
+      return trip;
     },
 
-    // Note; Add a course to a trip
-    addCourseToTrip: async (_p, { tripId, courseName }) =>
-      Trip.findByIdAndUpdate(
+    // Add a course only to a trip owned by the authenticated profile.
+    addCourseToTrip: async (_p, { tripId, courseName }, context) => {
+      await requireOwnedTrip(tripId, context);
+      return Trip.findByIdAndUpdate(
         tripId,
         { $push: { courses: { name: courseName } } },
         { new: true, runValidators: true }
-      ),
+      );
+    },
 
-    // Note; Remove a course by name
-    removeCourseFromTrip: async (_p, { courseName }) =>
-      Trip.findOneAndUpdate(
-        { 'courses.name': courseName },
+    // Remove a course only from one of the authenticated profile's trips.
+    removeCourseFromTrip: async (_p, { courseName }, context) => {
+      const profile = await getCurrentProfile(context);
+      const trip = await Trip.findOneAndUpdate(
+        { _id: { $in: profile.trips }, 'courses.name': courseName },
         { $pull: { courses: { name: courseName } } },
-        { new: true }
-      ),
+        { new: true, runValidators: true }
+      );
 
-    // Note; Add a player with 18 empty hole scores
-    addPlayer: async (_p, { tripId, name }) => {
+      if (!trip) {
+        throw new UserInputError('Course not found on one of your trips');
+      }
+      return trip;
+    },
+
+    // Add a player only to a trip owned by the authenticated profile.
+    addPlayer: async (_p, { tripId, name }, context) => {
+      await requireOwnedTrip(tripId, context);
       const fullScores = Array.from({ length: 18 }, (_, i) => ({
         hole: i + 1,
         score: 0,
       }));
+
       return Trip.findByIdAndUpdate(
         tripId,
         { $push: { players: { name, scores: fullScores } } },
@@ -147,19 +199,19 @@ const resolvers: IResolvers<any, Context> = {
       );
     },
 
-    // Note; Remove a player from a trip
-    removePlayer: async (_p, { tripId, name }) =>
-      Trip.findByIdAndUpdate(
+    // Remove a player only from a trip owned by the authenticated profile.
+    removePlayer: async (_p, { tripId, name }, context) => {
+      await requireOwnedTrip(tripId, context);
+      return Trip.findByIdAndUpdate(
         tripId,
         { $pull: { players: { name } } },
-        { new: true }
-      ),
+        { new: true, runValidators: true }
+      );
+    },
 
-    // Note; Update or insert a player's hole score
-    updateScore: async (_p, { tripId, player, hole, score }) => {
-      const trip = await Trip.findById(tripId);
-      if (!trip) throw new UserInputError('Trip not found');
-
+    // Update a score only on a trip owned by the authenticated profile.
+    updateScore: async (_p, { tripId, player, hole, score }, context) => {
+      const { trip } = await requireOwnedTrip(tripId, context);
       const playerObj = trip.players.find((p) => p.name === player);
       if (!playerObj) throw new UserInputError('Player not found');
 
@@ -174,38 +226,25 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Note; Update overall trip-wide handicap (legacy support)
+    // Update a trip-wide handicap only for an owned trip.
     updateTripHandicap: async (_p, { tripId, handicap }, context) => {
-      if (!context.user) throw new AuthenticationError('Not authenticated');
-      const profile = await Profile.findById(context.user._id);
-      if (!profile?.trips.includes(tripId as any)) {
-        throw new AuthenticationError('Not your trip');
-      }
-      const updated = await Trip.findByIdAndUpdate(
-        tripId,
-        { handicap },
-        { new: true, runValidators: true }
-      );
-      if (!updated) throw new UserInputError('Trip not found');
-      return updated;
+      const { trip } = await requireOwnedTrip(tripId, context);
+      trip.handicap = handicap;
+      await trip.save();
+      return trip;
     },
 
-    // ✅ NEW: Update a specific player's handicap within a trip
+    // Update a player's handicap only for an owned trip.
     updatePlayerHandicap: async (
       _p,
       { tripId, name, handicap }: { tripId: string; name: string; handicap: number },
       context
     ) => {
-      if (!context.user) throw new AuthenticationError('Not authenticated');
-
-      const trip = await Trip.findById(tripId);
-      if (!trip) throw new UserInputError('Trip not found');
-
+      const { trip } = await requireOwnedTrip(tripId, context);
       const player = trip.players.find((p) => p.name === name);
       if (!player) throw new UserInputError('Player not found');
 
       player.handicap = handicap;
-
       await trip.save();
       return trip;
     },
