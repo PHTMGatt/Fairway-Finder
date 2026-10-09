@@ -47,8 +47,9 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         const data: LocationSuggestion[] = await response.json();
         if (cancelled) return;
 
-        setSuggestions(data);
-        setOpen(data.length > 0);
+        const compactSuggestions = data.slice(0, 4);
+        setSuggestions(compactSuggestions);
+        setOpen(compactSuggestions.length > 0);
         setActiveIndex(-1);
       } catch {
         if (!cancelled) {
@@ -56,7 +57,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
           setOpen(false);
         }
       }
-    }, 300);
+    }, 250);
 
     return () => {
       cancelled = true;
@@ -94,7 +95,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   };
 
   return (
-    <div className="location-autocomplete">
+    <div className={`location-autocomplete${open ? ' is-open' : ''}`}>
       <input
         className={inputClassName}
         type="text"
@@ -123,7 +124,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
               role="option"
               aria-selected={index === activeIndex}
             >
-              {suggestion.label}
+              <span className="location-autocomplete__pin" aria-hidden="true">📍</span>
+              <span>{suggestion.label}</span>
             </button>
           ))}
         </div>
