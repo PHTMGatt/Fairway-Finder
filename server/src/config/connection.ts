@@ -5,10 +5,11 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const uri = process.env.MONGODB_URI;
-if (!uri) {
+const rawUri = process.env.MONGODB_URI;
+if (!rawUri) {
   throw new Error('Missing MONGODB_URI in environment');
 }
+const uri: string = rawUri;
 
 export async function connectDatabase(): Promise<mongoose.Connection> {
   try {
