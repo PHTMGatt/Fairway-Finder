@@ -15,6 +15,13 @@ interface RouteShape {
   summary: string;
 }
 
+interface PlacesSearchArgs {
+  type: string;
+  city?: string;
+  location: { lat: number; lng: number } | null;
+  radiusMeters: number;
+}
+
 const geocode = async (query: string) => {
   const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
   url.searchParams.set('address', query);
@@ -166,13 +173,8 @@ const placesNew = async ({
   city,
   location,
   radiusMeters,
-}: {
-  type: string;
-  city?: string;
-  location?: { lat: number; lng: number } | null;
-  radiusMeters: number;
-}) => {
-  let center = location ?? null;
+}: PlacesSearchArgs) => {
+  let center = location;
   if (!center && city) {
     center = await geocode(`${city}, USA`);
   }
@@ -230,13 +232,8 @@ const placesLegacy = async ({
   city,
   location,
   radiusMeters,
-}: {
-  type: string;
-  city?: string;
-  location?: { lat: number; lng: number } | null;
-  radiusMeters: number;
-}) => {
-  let center = location ?? null;
+}: PlacesSearchArgs) => {
+  let center = location;
   if (!center && city) {
     center = await geocode(`${city}, USA`);
   }
@@ -310,11 +307,12 @@ router.get(
       : Number.isFinite(miles) && miles > 0
         ? Math.min(50000, miles * 1609.34)
         : 8000;
+    const normalizedCity = city?.trim();
 
     try {
-      const args = {
+      const args: PlacesSearchArgs = {
         type,
-        city: city?.trim() || undefined,
+        ...(normalizedCity ? { city: normalizedCity } : {}),
         location: parsedLocation,
         radiusMeters,
       };
