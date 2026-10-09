@@ -1,66 +1,69 @@
-# 🏌️‍♂️ Fairway Finder – API Key Setup Instructions
+# 🏌️‍♂️ Fairway Finder – API Setup
 
-This guide walks you through setting up the required API keys and environment variables for both the server and client. Replace the placeholders with your own keys.
+Fairway Finder keeps private provider keys on the server. Weather now uses Open-Meteo and does **not** require an API key.
 
 ---
 
-## 🔐 Server Environment Variables (`.env`)
+## 🔐 Server Environment Variables
 
 ```env
-PLACES_API_KEY=your_google_places_api_key
-MONGODB_URI=mongodb://127.0.0.1:27017/tech-thoughts
-JWT_SECRET_KEY=your_jwt_secret_key
+MONGODB_URI=your_mongodb_atlas_connection_string
+JWT_SECRET_KEY=your_long_random_jwt_secret
+PLACES_API_KEY=your_google_server_api_key
+GOLF_API_KEY=your_golfcourseapi_key
 ```
 
-- **Generate/manage your Google Places key:**  
-  👉 https://console.cloud.google.com/apis/credentials
+### Google server key
 
-### ✅ Enable These APIs:
-- Places API  
-- Geocoding API  
-- Directions API  
+Create/manage the key in Google Cloud Console and enable:
 
-> **Note:** When setting API restrictions, you must manually **type in** each API name using the search bar.
+- **Places API (New)**
+- **Routes API**
+- **Geocoding API**
 
-### 🔒 Restriction Setup:
-- Application restriction: `None`  
-- API restriction: `Restrict key` → select all 3 APIs above
+The code currently contains compatibility fallbacks for the older Places/Directions endpoints so an existing deployment can continue working while the Google Cloud project is migrated. New requests prefer Places API (New) and Routes API.
+
+Keep this key server-side and restrict it to only the APIs Fairway Finder needs.
+
+### GolfCourseAPI key
+
+Create/manage the key at GolfCourseAPI. The app uses it for golf-specific course details such as tee data, course rating, and slope rating.
 
 ---
 
-## 💻 Client Environment Variables (`.env` or `.env.local`)
+## 💻 Client Environment Variables
 
 ```env
-VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-VITE_WEATHER_API_KEY=your_openweather_api_key
+VITE_GOOGLE_MAPS_API_KEY=your_browser_google_maps_key
 ```
 
-- **Generate/manage your Google Maps key:**  
-  👉 https://console.cloud.google.com/apis/credentials
+Enable only:
 
-- **Generate your OpenWeather key:**  
-  👉 https://home.openweathermap.org/api_keys
+- **Maps JavaScript API**
 
-### ✅ Enable These APIs:
-- Maps JavaScript API (for Google Maps)
+Use a separate browser key from the server key. Restrict the browser key by HTTP referrer, for example:
 
-### 🔒 Restriction Setup:
-- Application restriction: `Websites`  
-- Allowed URLs:
-  - `http://localhost:3000/*`
-  - `http://localhost:5173/*`
-- API restriction: `Restrict key` → select **Maps JavaScript API**
+- `http://localhost:3000/*`
+- `http://localhost:5173/*`
+- `https://fairway-finder.onrender.com/*`
+
+The browser key is expected to appear in the built JavaScript bundle, so referrer/API restrictions are what protect it. Private provider keys must stay on the server.
 
 ---
 
-## ✅ Summary
+## 🌦 Weather
 
-| Key Use       | ENV Name                  | Where Used | Required APIs                            |
-|---------------|---------------------------|------------|-------------------------------------------|
-| Maps & Places | PLACES_API_KEY            | Server     | Places API, Geocoding API, Directions API |
-| MongoDB       | MONGODB_URI               | Server     | N/A                                       |
-| Auth Token    | JWT_SECRET_KEY            | Server     | N/A                                       |
-| Maps Display  | VITE_GOOGLE_MAPS_API_KEY  | Client     | Maps JavaScript API                       |
-| Weather Data  | VITE_WEATHER_API_KEY      | Client     | OpenWeather                               |
+No weather key is required. `/api/weather` uses Open-Meteo geocoding and current-weather data and normalizes the response for the existing Fairway Finder UI.
 
 ---
+
+## ✅ Current Integration Summary
+
+| Integration | Environment variable | Location | Purpose |
+|---|---|---|---|
+| MongoDB Atlas | `MONGODB_URI` | Server | Users, private trips, scores and handicaps |
+| JWT | `JWT_SECRET_KEY` | Server | Authentication/session signing |
+| Google Places / Routes / Geocoding | `PLACES_API_KEY` | Server | Course discovery, POIs and routing |
+| GolfCourseAPI | `GOLF_API_KEY` | Server | Tee, rating and slope data |
+| Google Maps JavaScript | `VITE_GOOGLE_MAPS_API_KEY` | Client | Interactive map rendering |
+| Open-Meteo | None | Server | Current weather |
