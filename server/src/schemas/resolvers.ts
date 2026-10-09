@@ -87,19 +87,16 @@ const transformTrip = (trip: any) => {
 
 const resolvers: IResolvers<any, Context> = {
   Query: {
-    // Fetch the currently authenticated user's profile and only their trips.
     me: async (_p, _a, context) => {
       const userId = requireUserId(context);
       return Profile.findById(userId).populate('trips');
     },
 
-    // Fetch only trips owned by the current user.
     trips: async (_p, _a, context) => {
       const profile = await getCurrentProfile(context);
       return Trip.find({ _id: { $in: profile.trips } });
     },
 
-    // Fetch a single trip only when it belongs to the current user.
     trip: async (_p, { id }: { id: string }, context) => {
       const { trip } = await requireOwnedTrip(id, context);
       return transformTrip(trip);
@@ -107,7 +104,6 @@ const resolvers: IResolvers<any, Context> = {
   },
 
   Mutation: {
-    // Register a new user.
     addProfile: async (_p, { input }) => {
       const normalizedEmail = input.email.trim().toLowerCase();
       const existing = await Profile.findOne({ email: normalizedEmail });
@@ -126,9 +122,9 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    // Authenticate an existing user.
     login: async (_p, { email, password }) => {
-      const profile = await Profile.findOne({ email: email.trim().toLowerCase() });
+      const normalizedEmail = email.trim().toLowerCase();
+      const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
       if (!profile) throw new AuthenticationError('No profile found');
       const valid = await profile.isCorrectPassword(password);
       if (!valid) throw new AuthenticationError('Incorrect password');
@@ -136,7 +132,6 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    // Create a new trip and attach it to the authenticated profile.
     addTrip: async (_p, { input }, context) => {
       const profile = await getCurrentProfile(context);
       const trip = await Trip.create({
@@ -150,7 +145,6 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Delete only a trip owned by the authenticated profile.
     deleteTrip: async (_p, { tripId }, context) => {
       const { profile, trip } = await requireOwnedTrip(tripId, context);
       profile.trips = profile.trips.filter((id) => id.toString() !== tripId) as any;
@@ -159,7 +153,6 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Add a course only to a trip owned by the authenticated profile.
     addCourseToTrip: async (_p, { tripId, courseName }, context) => {
       await requireOwnedTrip(tripId, context);
       return Trip.findByIdAndUpdate(
@@ -169,7 +162,6 @@ const resolvers: IResolvers<any, Context> = {
       );
     },
 
-    // Remove a course only from one of the authenticated profile's trips.
     removeCourseFromTrip: async (_p, { courseName }, context) => {
       const profile = await getCurrentProfile(context);
       const trip = await Trip.findOneAndUpdate(
@@ -184,7 +176,6 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Add a player only to a trip owned by the authenticated profile.
     addPlayer: async (_p, { tripId, name }, context) => {
       await requireOwnedTrip(tripId, context);
       const fullScores = Array.from({ length: 18 }, (_, i) => ({
@@ -199,7 +190,6 @@ const resolvers: IResolvers<any, Context> = {
       );
     },
 
-    // Remove a player only from a trip owned by the authenticated profile.
     removePlayer: async (_p, { tripId, name }, context) => {
       await requireOwnedTrip(tripId, context);
       return Trip.findByIdAndUpdate(
@@ -209,7 +199,6 @@ const resolvers: IResolvers<any, Context> = {
       );
     },
 
-    // Update a score only on a trip owned by the authenticated profile.
     updateScore: async (_p, { tripId, player, hole, score }, context) => {
       const { trip } = await requireOwnedTrip(tripId, context);
       const playerObj = trip.players.find((p) => p.name === player);
@@ -226,7 +215,6 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Update a trip-wide handicap only for an owned trip.
     updateTripHandicap: async (_p, { tripId, handicap }, context) => {
       const { trip } = await requireOwnedTrip(tripId, context);
       trip.handicap = handicap;
@@ -234,7 +222,6 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    // Update a player's handicap only for an owned trip.
     updatePlayerHandicap: async (
       _p,
       { tripId, name, handicap }: { tripId: string; name: string; handicap: number },
