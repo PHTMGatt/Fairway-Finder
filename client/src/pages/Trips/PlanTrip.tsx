@@ -1,4 +1,4 @@
-// 'src/pages/Trips/PlanTrip.tsx'
+// client/src/pages/Trips/PlanTrip.tsx
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../pages/Auth/AuthContext';
@@ -6,7 +6,8 @@ import { useMutation } from '@apollo/client';
 import { ADD_TRIP } from '../../utils/mutations';
 import { QUERY_TRIPS } from '../../utils/queries';
 import { Alert } from 'react-bootstrap';
-import { FaFlagCheckered } from 'react-icons/fa';   // Added icon import
+import { FaFlagCheckered } from 'react-icons/fa';
+import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
 import './PlanTrip.css';
 
 interface Course {
@@ -17,7 +18,7 @@ interface Course {
 }
 
 const PlanTrip: React.FC = () => {
-  const { isLoggedIn } = useAuth(); 
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
   const [searchCity, setSearchCity] = useState<string>('');
@@ -57,7 +58,7 @@ const PlanTrip: React.FC = () => {
       const courses: Course[] = await res.json();
 
       if (!courses.length) {
-        setCourseError(`No courses found for “${city}.”`);
+        setCourseError(`No courses found near “${city}.”`);
       } else {
         setCourseOptions(courses);
       }
@@ -100,27 +101,24 @@ const PlanTrip: React.FC = () => {
 
   return (
     <main className="plan-trip">
-      {/* Animated Title with icon */}
       <h2 className="plan-trip__title">
         <FaFlagCheckered className="plan-trip__icon" /> Plan a Trip
       </h2>
 
-      {/* City search form */}
       <form className="plan-trip__form" onSubmit={handleCourseSearch}>
-        <input
-          className="plan-trip__input"
-          type="text"
-          placeholder="Search city for courses..."
+        <LocationAutocomplete
           value={searchCity}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setSearchCity(e.target.value)}
+          onChange={setSearchCity}
+          placeholder="Search city for courses..."
+          inputClassName="plan-trip__input"
           disabled={courseLoading}
+          ariaLabel="Trip course city"
         />
         <button className="plan-trip__btn" type="submit" disabled={courseLoading}>
           {courseLoading ? 'Searching…' : 'Find Courses'}
         </button>
       </form>
 
-      {/* Bootstrap Alert for courseError */}
       {courseError && (
         <Alert
           variant="danger"
@@ -132,7 +130,6 @@ const PlanTrip: React.FC = () => {
         </Alert>
       )}
 
-      {/* Course selection list */}
       {courseOptions.length > 0 && (
         <ul className="plan-trip__results">
           {courseOptions.map((c) => (
@@ -158,7 +155,6 @@ const PlanTrip: React.FC = () => {
         </div>
       )}
 
-      {/* Trip save form */}
       <form className="plan-trip__form" onSubmit={handleTripSave}>
         <input
           className="plan-trip__input"
@@ -178,7 +174,6 @@ const PlanTrip: React.FC = () => {
         </button>
       </form>
 
-      {/* Bootstrap Alert for submitError */}
       {submitError && (
         <Alert
           variant="danger"
