@@ -53,7 +53,6 @@ import courseRoutes from './routes/courseRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
 import mapRoutes from './routes/mapRoutes.js';
 import golfRoutes from './routes/golfRoutes.js';
-import Profile from './models/Profile.js';
 import { authenticateToken } from './utils/auth.js';
 
 async function startServer() {
@@ -75,21 +74,6 @@ async function startServer() {
     app.use('/api', weatherRoutes);
     app.use('/api', mapRoutes);
     app.use('/api', golfRoutes);
-
-    if (NODE_ENV !== 'production') {
-      app.delete('/api/dev/clear-users', async (_req, res: Response) => {
-        try {
-          const result = await Profile.deleteMany({});
-          res.json({
-            message: 'All profiles deleted',
-            deletedCount: result.deletedCount,
-          });
-        } catch (err) {
-          console.error('[DEV] Failed to clear users:', err);
-          res.status(500).json({ error: 'Failed to clear users' });
-        }
-      });
-    }
 
     app.get('/health', (_req, res: Response) => res.send('OK'));
 
