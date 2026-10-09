@@ -48,7 +48,7 @@ export const authenticateToken = ({
     req.user = data;
   } catch (err: any) {
     console.warn(`Token verification failed: ${err?.name || 'invalid token'}`);
-    req.user = undefined;
+    delete req.user;
   }
 
   return req;
