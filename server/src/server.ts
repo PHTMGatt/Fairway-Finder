@@ -19,20 +19,13 @@ dotenv.config({
 const {
   MONGODB_URI,
   PORT = '3001',
-  WEATHER_API_KEY,
   PLACES_API_KEY,
   JWT_SECRET_KEY,
   GOLF_API_KEY,
   NODE_ENV = 'development',
 } = process.env;
 
-if (
-  !MONGODB_URI ||
-  !WEATHER_API_KEY ||
-  !PLACES_API_KEY ||
-  !JWT_SECRET_KEY ||
-  !GOLF_API_KEY
-) {
+if (!MONGODB_URI || !PLACES_API_KEY || !JWT_SECRET_KEY || !GOLF_API_KEY) {
   console.error('❌ Missing required environment variables');
   process.exit(1);
 }
@@ -41,7 +34,6 @@ if (NODE_ENV !== 'production') {
   console.log(`🔑 Environment loaded:
   • MongoDB URI: configured
   • Server Port: ${PORT}
-  • Weather Key: configured
   • Places Key: configured
   • Golf Key: configured
   • JWT Secret: configured`);
