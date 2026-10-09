@@ -6,8 +6,14 @@ import fetch from 'node-fetch';
 const router = Router();
 
 const GOOGLE_API_KEY = process.env.PLACES_API_KEY;
+const GOLF_API_KEY = process.env.GOLF_API_KEY;
+const GOLF_API_BASE = 'https://api.golfcourseapi.com/v1';
+
 if (!GOOGLE_API_KEY) {
   throw new Error('Missing PLACES_API_KEY in server environment');
+}
+if (!GOLF_API_KEY) {
+  throw new Error('Missing GOLF_API_KEY in server environment');
 }
 
 interface CourseQuery {
@@ -33,6 +39,7 @@ const geocodeCity = async (city: string) => {
   if (!response.ok) return null;
 
   const payload: any = await response.json();
+  if (payload.status && payload.status !== 'OK') return null;
   return payload.results?.[0]?.geometry?.location ?? null;
 };
 
@@ -82,9 +89,7 @@ const searchPlacesNew = async (
     }
   );
 
-  if (!response.ok) {
-    return null;
-  }
+  if (!response.ok) return null;
 
   const payload: any = await response.json();
   const places = Array.isArray(payload.places) ? payload.places : [];
@@ -118,7 +123,7 @@ const searchPlacesLegacy = async (
 
   if (maxDistanceMiles && maxDistanceMiles > 0) {
     const location = await geocodeCity(city);
-    if (!location) throw new Error('Geocoding failed for city');
+    if (!location) return [];
 
     const nearbyUrl = new URL(
       'https://maps.googleapis.com/maps/api/place/nearbysearch/json'
@@ -132,7 +137,12 @@ const searchPlacesLegacy = async (
     nearbyUrl.searchParams.set('key', GOOGLE_API_KEY);
 
     const response = await fetch(nearbyUrl.toString());
+    if (!response.ok) return [];
     const payload: any = await response.json();
+    if (payload.status && !['OK', 'ZERO_RESULTS'].includes(payload.status)) {
+      console.warn(`Legacy Places nearby search unavailable: ${payload.status}`);
+      return [];
+    }
     places = Array.isArray(payload.results) ? payload.results : [];
   } else {
     const textUrl = new URL(
@@ -143,7 +153,12 @@ const searchPlacesLegacy = async (
     textUrl.searchParams.set('key', GOOGLE_API_KEY);
 
     const response = await fetch(textUrl.toString());
+    if (!response.ok) return [];
     const payload: any = await response.json();
+    if (payload.status && !['OK', 'ZERO_RESULTS'].includes(payload.status)) {
+      console.warn(`Legacy Places text search unavailable: ${payload.status}`);
+      return [];
+    }
     places = Array.isArray(payload.results) ? payload.results : [];
   }
 
@@ -157,6 +172,60 @@ const searchPlacesLegacy = async (
     }))
     .filter((course: Course) => course.place_id)
     .sort((a: Course, b: Course) => (b.rating ?? 0) - (a.rating ?? 0))
+    .slice(0, limit);
+};
+
+const searchGolfCourseApi = async (
+  city: string,
+  limit: number
+): Promise<Course[]> => {
+  const url = new URL(`${GOLF_API_BASE}/search`);
+  url.searchParams.set('search_query', city);
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Key ${GOLF_API_KEY}`,
+    },
+  });
+
+  if (!response.ok) {
+    console.warn(`GolfCourseAPI search unavailable: ${response.status}`);
+    return [];
+  }
+
+  const payload: any = await response.json();
+  const courses = Array.isArray(payload.courses) ? payload.courses : [];
+
+  return courses
+    .map((course: any): Course => {
+      const clubName = String(course.club_name || '').trim();
+      const courseName = String(course.course_name || '').trim();
+      const name =
+        clubName && courseName && clubName.toLowerCase() !== courseName.toLowerCase()
+          ? `${clubName} — ${courseName}`
+          : courseName || clubName || 'Unnamed golf course';
+
+      const loc = course.location || {};
+      const address =
+        loc.address ||
+        [loc.city, loc.state, loc.country].filter(Boolean).join(', ') ||
+        'Address N/A';
+
+      const lat = Number(loc.latitude);
+      const lng = Number(loc.longitude);
+
+      return {
+        name,
+        address,
+        rating: null,
+        place_id: course.id ? `golfcourseapi-${course.id}` : '',
+        location:
+          Number.isFinite(lat) && Number.isFinite(lng)
+            ? { lat, lng }
+            : null,
+      };
+    })
+    .filter((course: Course) => course.place_id)
     .slice(0, limit);
 };
 
@@ -176,13 +245,19 @@ router.get<object, Course[], object, CourseQuery>(
 
     try {
       const modernResults = await searchPlacesNew(city, limit, maxDistanceMiles);
-      if (modernResults) {
+      if (modernResults?.length) {
         return res.json(modernResults);
       }
 
-      console.warn('Places API (New) unavailable; using legacy fallback.');
+      console.warn('Places API (New) unavailable or empty; trying legacy Places.');
       const legacyResults = await searchPlacesLegacy(city, limit, maxDistanceMiles);
-      return res.json(legacyResults);
+      if (legacyResults.length) {
+        return res.json(legacyResults);
+      }
+
+      console.warn('Google Places unavailable or empty; trying GolfCourseAPI.');
+      const golfResults = await searchGolfCourseApi(city, limit);
+      return res.json(golfResults);
     } catch (error) {
       console.error(
         'Course discovery failed:',
