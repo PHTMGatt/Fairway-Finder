@@ -2,21 +2,15 @@
 import { Schema, model, Document, Types } from 'mongoose';
 import bcrypt from 'bcrypt';
 
-/**
- * Note; Interface for a user profile document, including helper methods.
- */
 export interface ProfileDoc extends Document {
   name: string;
   email: string;
   password: string;
   trips: Types.ObjectId[];
-  handicap?: number;           //Note; Handicap index (optional)
+  handicap?: number;
   isCorrectPassword(candidatePassword: string): Promise<boolean>;
 }
 
-/**
- * Note; Schema definition for user profiles.
- */
 const profileSchema = new Schema<ProfileDoc>(
   {
     name: {
@@ -29,12 +23,15 @@ const profileSchema = new Schema<ProfileDoc>(
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
       match: [/.+@.+\..+/, 'Must match a valid email address'],
     },
     password: {
       type: String,
       required: true,
       minlength: 5,
+      select: false,
     },
     trips: [
       {
@@ -42,7 +39,7 @@ const profileSchema = new Schema<ProfileDoc>(
         ref: 'Trip',
       },
     ],
-    handicap: {                  //Note; Add handicap field
+    handicap: {
       type: Number,
       default: null,
     },
@@ -60,9 +57,6 @@ const profileSchema = new Schema<ProfileDoc>(
   }
 );
 
-/**
- * Note; Pre-save middleware to hash password before storing.
- */
 profileSchema.pre<ProfileDoc>('save', async function (next) {
   if (this.isNew || this.isModified('password')) {
     const saltRounds = 10;
@@ -71,17 +65,11 @@ profileSchema.pre<ProfileDoc>('save', async function (next) {
   next();
 });
 
-/**
- * Note; Instance method to verify a plaintext password against the stored hash.
- */
 profileSchema.methods.isCorrectPassword = function (
   candidatePassword: string
 ): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-/**
- * Note; Create and export the Profile model.
- */
 const Profile = model<ProfileDoc>('Profile', profileSchema);
 export default Profile;
