@@ -133,7 +133,7 @@ const Weather: React.FC = () => {
     : fahrenheitToCelsius(weather.tempF);            // to °C
 
   return (
-    <main className="weather-page">
+    <section className="weather-page">
       <div className="weather-card">
 
         {/* ===== Search Panel ===== */}
@@ -210,7 +210,7 @@ const Weather: React.FC = () => {
         )}
 
       </div>
-    </main>
+    </section>
   );
 };
 

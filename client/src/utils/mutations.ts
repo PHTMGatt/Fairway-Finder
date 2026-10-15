@@ -59,10 +59,10 @@ export const ADD_COURSE_TO_TRIP = gql`
   }
 `;
 
-// Note; Removes a course from all trips that include it
+// Remove a course from one explicitly selected trip.
 export const REMOVE_COURSE_FROM_TRIP = gql`
-  mutation RemoveCourseFromTrip($courseName: String!) {
-    removeCourseFromTrip(courseName: $courseName) {
+  mutation RemoveCourseFromTrip($tripId: ID!, $courseName: String!) {
+    removeCourseFromTrip(tripId: $tripId, courseName: $courseName) {
       _id
       name
       courses {

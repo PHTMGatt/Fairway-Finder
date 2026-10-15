@@ -38,10 +38,10 @@ const SavedTrips: React.FC = () => {
 
   // Note; Render the list of saved trips
   return (
-    <main className="saved-trips">
+    <section className="saved-trips">
       <h2 className="saved-trips__title">Your Saved Trips</h2>
       <TripList trips={trips} title="" />
-    </main>
+    </section>
   );
 };
 

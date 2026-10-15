@@ -17,7 +17,7 @@ const ErrorPage: React.FC = () => {
   // Note; Derive a user‐friendly message
   const errorInfo = isRouteErrorResponse(error)
     ? `${error.status} ${error.statusText}`
-    : error.statusText || error.message || 'Unknown error';
+    : error?.statusText || error?.message || 'This page could not be opened.';
 
   return (
     <div className="error-page">
@@ -35,6 +35,7 @@ const ErrorPage: React.FC = () => {
       <p className="error-page__info">
         <i>{errorInfo}</i>
       </p>
+      <a href="/">Return to Fairway Finder</a>
     </div>
   );
 };

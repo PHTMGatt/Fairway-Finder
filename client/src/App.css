@@ -1,4 +1,16 @@
 /* ===== App.css ===== */
+.preview-notice { margin: 0; padding: .8rem 1rem; color: #173b24; background: #fff3c4; text-align: center; font-size: .9rem; }
+.skip-link { position: fixed; top: .5rem; left: .5rem; z-index: 10000; padding: .75rem; background: #fff; color: #111; transform: translateY(-200%); }
+.skip-link:focus { transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* — Global Base Styles — */
 body, html {
@@ -155,4 +167,3 @@ body {
   margin: 0; /* reset default margin if not already set */
   overflow-x: hidden;
 }
-

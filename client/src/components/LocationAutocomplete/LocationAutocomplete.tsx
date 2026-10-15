@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useEffect, useState } from 'react';
+import React, { KeyboardEvent, useEffect, useState, useId, useRef } from 'react';
 import './LocationAutocomplete.css';
 
 interface LocationSuggestion {
@@ -26,6 +26,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const menuId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const query = value.trim();
@@ -37,19 +39,20 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     }
 
     let cancelled = false;
+    const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
       try {
         const response = await fetch(
-          `/api/locations/suggest?q=${encodeURIComponent(query)}`
+          `/api/locations/suggest?q=${encodeURIComponent(query)}`, { signal: controller.signal }
         );
         if (!response.ok) return;
 
         const data: LocationSuggestion[] = await response.json();
         if (cancelled) return;
 
-        const compactSuggestions = data.slice(0, 4);
+        const compactSuggestions = Array.isArray(data) ? data.filter(item => typeof item?.label === 'string' && typeof item?.value === 'string').slice(0, 4) : [];
         setSuggestions(compactSuggestions);
-        setOpen(compactSuggestions.length > 0);
+        setOpen(compactSuggestions.length > 0 && document.activeElement === inputRef.current);
         setActiveIndex(-1);
       } catch {
         if (!cancelled) {
@@ -61,6 +64,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
     return () => {
       cancelled = true;
+      controller.abort();
       window.clearTimeout(timeout);
     };
   }, [value, disabled]);
@@ -97,6 +101,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   return (
     <div className={`location-autocomplete${open ? ' is-open' : ''}`}>
       <input
+        ref={inputRef}
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open}
+        aria-controls={open ? menuId : undefined}
+        aria-activedescendant={open && activeIndex >= 0 ? `${menuId}-${activeIndex}` : undefined}
         className={inputClassName}
         type="text"
         value={value}
@@ -111,10 +121,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
       />
 
       {open && suggestions.length > 0 && (
-        <div className="location-autocomplete__menu" role="listbox">
+        <div className="location-autocomplete__menu" role="listbox" id={menuId} aria-label="Suggested locations">
           {suggestions.map((suggestion, index) => (
             <button
               key={`${suggestion.value}-${index}`}
+              id={`${menuId}-${index}`}
+              tabIndex={-1}
               type="button"
               className={`location-autocomplete__option${
                 index === activeIndex ? ' active' : ''

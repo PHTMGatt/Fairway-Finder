@@ -30,7 +30,7 @@ class AuthService {
    * Note; Remove the JWT from localStorage, effectively logging out.
    */
   logout(): void {
-    localStorage.removeItem(AuthService.TOKEN_KEY);
+    try { localStorage.removeItem(AuthService.TOKEN_KEY); } catch { /* Storage can be disabled. */ }
   }
 
   /**
@@ -38,7 +38,7 @@ class AuthService {
    * @returns the token string, or null if none is stored
    */
   getToken(): string | null {
-    return localStorage.getItem(AuthService.TOKEN_KEY);
+    try { return localStorage.getItem(AuthService.TOKEN_KEY); } catch { return null; }
   }
 
   /**
@@ -78,7 +78,7 @@ class AuthService {
     try {
       const { exp } = jwtDecode<JwtPayload>(token);
       // Note; exp is in seconds since epoch
-      return exp !== undefined && exp < Date.now() / 1000;
+      return typeof exp !== 'number' || !Number.isFinite(exp) || exp <= Date.now() / 1000;
     } catch {
       // Note; If decode fails, treat as expired
       return true;

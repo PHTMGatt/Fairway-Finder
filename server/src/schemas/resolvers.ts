@@ -5,6 +5,8 @@ import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { signToken } from '../utils/auth.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
+import { isValidObjectId } from 'mongoose';
+import { boundedText, validScore, validHandicap, validTripDate } from '../utils/validation.js';
 
 interface ProfileType {
   _id: unknown;
@@ -38,6 +40,8 @@ const profileOwnsTrip = (profile: { trips: any[] }, tripId: string) =>
   profile.trips.some((id) => id.toString() === tripId);
 
 const requireOwnedTrip = async (tripId: string, context: Context) => {
+  requireUserId(context);
+  if (!isValidObjectId(tripId)) throw new UserInputError('Invalid trip ID');
   const profile = await getCurrentProfile(context);
 
   if (!profileOwnsTrip(profile, tripId)) {
@@ -105,6 +109,9 @@ const resolvers: IResolvers<any, Context> = {
 
   Mutation: {
     addProfile: async (_p, { input }) => {
+      input.name = boundedText(input.name, 'Name', 80);
+      boundedText(input.email, 'Email', 254);
+      if (typeof input.password !== 'string' || input.password.length < 8 || Buffer.byteLength(input.password, 'utf8') > 72) throw new UserInputError('Use a password of at least 8 characters and at most 72 UTF-8 bytes.');
       const normalizedEmail = input.email.trim().toLowerCase();
       const existing = await Profile.findOne({ email: normalizedEmail });
       if (existing) {
@@ -118,22 +125,25 @@ const resolvers: IResolvers<any, Context> = {
         name: input.name.trim(),
         email: normalizedEmail,
       });
-      const token = signToken(profile.name, profile.email, profile._id as string);
+      const token = signToken(profile.name, profile.email, String(profile._id));
       return { token, profile };
     },
 
     login: async (_p, { email, password }) => {
       const normalizedEmail = email.trim().toLowerCase();
       const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
-      if (!profile) throw new AuthenticationError('No profile found');
+      if (!profile) throw new AuthenticationError('Invalid email or password');
       const valid = await profile.isCorrectPassword(password);
-      if (!valid) throw new AuthenticationError('Incorrect password');
-      const token = signToken(profile.name, profile.email, profile._id as string);
+      if (!valid) throw new AuthenticationError('Invalid email or password');
+      const token = signToken(profile.name, profile.email, String(profile._id));
       return { token, profile };
     },
 
     addTrip: async (_p, { input }, context) => {
       const profile = await getCurrentProfile(context);
+      input.name = boundedText(input.name, 'Trip name');
+      input.courseName = boundedText(input.courseName, 'Course name');
+      validTripDate(input.date);
       const trip = await Trip.create({
         name: input.name,
         date: input.date,
@@ -155,6 +165,7 @@ const resolvers: IResolvers<any, Context> = {
 
     addCourseToTrip: async (_p, { tripId, courseName }, context) => {
       await requireOwnedTrip(tripId, context);
+      courseName = boundedText(courseName, 'Course name');
       return Trip.findByIdAndUpdate(
         tripId,
         { $push: { courses: { name: courseName } } },
@@ -162,10 +173,11 @@ const resolvers: IResolvers<any, Context> = {
       );
     },
 
-    removeCourseFromTrip: async (_p, { courseName }, context) => {
-      const profile = await getCurrentProfile(context);
+    removeCourseFromTrip: async (_p, { tripId, courseName }, context) => {
+      await requireOwnedTrip(tripId, context);
+      courseName = boundedText(courseName, 'Course name');
       const trip = await Trip.findOneAndUpdate(
-        { _id: { $in: profile.trips }, 'courses.name': courseName },
+        { _id: tripId, 'courses.name': courseName },
         { $pull: { courses: { name: courseName } } },
         { new: true, runValidators: true }
       );
@@ -177,7 +189,9 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     addPlayer: async (_p, { tripId, name }, context) => {
-      await requireOwnedTrip(tripId, context);
+      const { trip } = await requireOwnedTrip(tripId, context);
+      name = boundedText(name, 'Player name', 80);
+      if (trip.players.some(player => player.name.toLowerCase() === name.toLowerCase())) throw new UserInputError('That player is already on this trip.');
       const fullScores = Array.from({ length: 18 }, (_, i) => ({
         hole: i + 1,
         score: 0,
@@ -200,6 +214,7 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     updateScore: async (_p, { tripId, player, hole, score }, context) => {
+      validScore(hole, score);
       const { trip } = await requireOwnedTrip(tripId, context);
       const playerObj = trip.players.find((p) => p.name === player);
       if (!playerObj) throw new UserInputError('Player not found');
@@ -216,6 +231,7 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     updateTripHandicap: async (_p, { tripId, handicap }, context) => {
+      validHandicap(handicap);
       const { trip } = await requireOwnedTrip(tripId, context);
       trip.handicap = handicap;
       await trip.save();
@@ -227,6 +243,7 @@ const resolvers: IResolvers<any, Context> = {
       { tripId, name, handicap }: { tripId: string; name: string; handicap: number },
       context
     ) => {
+      validHandicap(handicap);
       const { trip } = await requireOwnedTrip(tripId, context);
       const player = trip.players.find((p) => p.name === name);
       if (!player) throw new UserInputError('Player not found');

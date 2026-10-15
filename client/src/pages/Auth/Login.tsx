@@ -24,6 +24,10 @@ const Login: React.FC = () => {
   //Note; handle form submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (import.meta.env.VITE_PREVIEW_MODE === 'true') {
+      setErrorMessage('Live sign-in is unavailable in this review preview.');
+      return;
+    }
     setErrorMessage(null);
 
     const { email, password } = credentials;
@@ -54,13 +58,16 @@ const Login: React.FC = () => {
   }
 
   return (
-    <main className="auth-page">
+    <section className="auth-page">
       <div className="auth-card">
-        <h4 className="auth-header">Log In</h4>
+        <h1 className="auth-header">Log In</h1>
         <div className="auth-body">
           <form className="auth-form" onSubmit={handleSubmit}>
             <input
               name="email"
+              aria-label="Email"
+              autoComplete="email"
+              required
               type="email"
               className="auth-input"
               placeholder="Email"
@@ -69,6 +76,9 @@ const Login: React.FC = () => {
             />
             <input
               name="password"
+              aria-label="Password"
+              autoComplete="current-password"
+              required
               type="password"
               className="auth-input"
               placeholder="Password"
@@ -84,11 +94,11 @@ const Login: React.FC = () => {
             </button>
           </form>
           {errorMessage && (
-            <div className="auth-error">{errorMessage}</div>
+            <div className="auth-error" role="alert">{errorMessage}</div>
           )}
         </div>
       </div>
-    </main>
+    </section>
   );
 };
 

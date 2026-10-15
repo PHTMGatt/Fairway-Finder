@@ -31,6 +31,10 @@ const Signup: React.FC = () => {
   // Note; Submit the signup mutation
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (import.meta.env.VITE_PREVIEW_MODE === 'true') {
+      setErrorMessage('Account creation is unavailable in this review preview.');
+      return;
+    }
     setErrorMessage(null);
 
     const { name, email, password } = formValues;
@@ -63,13 +67,16 @@ const Signup: React.FC = () => {
   }
 
   return (
-    <main className="auth-page">
+    <section className="auth-page">
       <div className="auth-card">
-        <h4 className="auth-header">Sign Up</h4>
+        <h1 className="auth-header">Sign Up</h1>
         <div className="auth-body">
           <form className="auth-form" onSubmit={handleSubmit}>
             <input
               name="name"
+              aria-label="Name"
+              autoComplete="name"
+              required
               className="auth-input"
               placeholder="Username"
               value={formValues.name}
@@ -77,6 +84,9 @@ const Signup: React.FC = () => {
             />
             <input
               name="email"
+              aria-label="Email"
+              autoComplete="email"
+              required
               type="email"
               className="auth-input"
               placeholder="Email"
@@ -85,6 +95,10 @@ const Signup: React.FC = () => {
             />
             <input
               name="password"
+              aria-label="Password"
+              autoComplete="new-password"
+              minLength={8}
+              required
               type="password"
               className="auth-input"
               placeholder="Password"
@@ -103,20 +117,9 @@ const Signup: React.FC = () => {
             <div className="auth-error">{errorMessage}</div>
           )}
 
-          {/* Note; Dev-only: clear all user profiles */}
-          <button
-            className="auth-btn clear-session-btn"
-            onClick={async () => {
-              await fetch('/api/dev/clear-users', { method: 'DELETE' });
-              Auth.logout();
-              window.location.reload();
-            }}
-          >
-            Delete All Users (DEV ONLY)
-          </button>
         </div>
       </div>
-    </main>
+    </section>
   );
 };
 

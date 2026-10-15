@@ -201,6 +201,7 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
   ]);
 
   useEffect(() => {
+    if (!import.meta.env.VITE_GOOGLE_MAPS_API_KEY) return;
     const interval = window.setInterval(() => {
       if (
         origin &&
@@ -224,6 +225,9 @@ const GoogleMapView: React.FC<GoogleMapViewProps> = ({
     [clearPoiMarkers]
   );
 
+  if (!import.meta.env.VITE_GOOGLE_MAPS_API_KEY) {
+    return <div className="map-container"><p role="status" style={{ padding: '2rem', color: '#18384b' }}>The interactive map is not configured in this environment. Other Fairway Finder tools remain available.</p></div>;
+  }
   return (
     <div className="map-container">
       <div ref={mapContainerRef} className="google-map" />

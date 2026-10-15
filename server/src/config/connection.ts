@@ -17,7 +17,7 @@ export async function connectDatabase(): Promise<mongoose.Connection> {
     await mongoose.connect(uri, { serverSelectionTimeoutMS: 10000 });
     console.log('✅ MongoDB connected (Fairway-Finder)');
     return mongoose.connection;
-  } catch (error) {
+  } catch {
     console.error('❌ MongoDB connection failed');
     throw new Error('Database connection failed');
   }

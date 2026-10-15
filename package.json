@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "test": "npm run build --prefix server && node --test scripts/*.test.mjs",
+    "test:browser": "node scripts/browser-smoke.mjs",
     "start": "node server/dist/server.js",
     "start:dev": "concurrently \"cd server && npm run dev\" \"wait-on tcp:3001 && cd client && npm run dev\"",
     "server": "cd server && npm start",
@@ -28,6 +30,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "playwright": "1.59.0",
     "wait-on": "^7.2.0"
   },
   "dependencies": {
@@ -39,9 +42,7 @@
     "cors": "^2.8.5",
     "main": "file:",
     "normalize.css": "^8.0.1",
-    "pacman": "^0.15.0",
     "react-bootstrap": "^2.10.10",
-    "react-icons": "^5.5.0",
-    "tree": "^0.1.3"
+    "react-icons": "^5.5.0"
   }
 }
