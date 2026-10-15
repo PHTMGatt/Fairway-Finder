@@ -7,11 +7,12 @@ import './CourseList.css';
 
 //Note; remastered CourseList with memo, useMemo for login check
 interface CourseListProps {
+  tripId: string;
   courses?: string[];
   isLoggedInUser: boolean;
 }
 
-const CourseList: React.FC<CourseListProps> = memo(({ courses = [], isLoggedInUser }) => {
+const CourseList: React.FC<CourseListProps> = memo(({ tripId, courses = [], isLoggedInUser }) => {
   //Note; auth check memoized (if needed elsewhere)
   const showRemove = useMemo(() => isLoggedInUser, [isLoggedInUser]);
 
@@ -25,12 +26,12 @@ const CourseList: React.FC<CourseListProps> = memo(({ courses = [], isLoggedInUs
   const handleCourseRemove = useCallback(
     async (courseName: string) => {
       try {
-        await removeCourseFromTrip({ variables: { courseName } });
+        await removeCourseFromTrip({ variables: { tripId, courseName } });
       } catch {
         //Note; error displayed below
       }
     },
-    [removeCourseFromTrip]
+    [removeCourseFromTrip, tripId]
   );
 
   if (courses.length === 0) {

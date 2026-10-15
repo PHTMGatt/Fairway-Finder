@@ -30,7 +30,7 @@ const MapRouting: React.FC = () => {
   };
 
   return (
-    <main className="map-routing">
+    <section className="map-routing">
       <h2 className="map-routing__title">Route Planner</h2>
 
       <form className="map-routing__form" onSubmit={handleSubmit}>
@@ -89,7 +89,7 @@ const MapRouting: React.FC = () => {
       </div>
 
       <div className="map-routing__map">
-        <div className="map-overlay">Drag the map to explore your route</div>
+        {import.meta.env.VITE_GOOGLE_MAPS_API_KEY && <div className="map-overlay">Drag the map to explore your route</div>}
         {submitted && (
           <GoogleMapView
             origin={origin}
@@ -99,7 +99,7 @@ const MapRouting: React.FC = () => {
           />
         )}
       </div>
-    </main>
+    </section>
   );
 };
 

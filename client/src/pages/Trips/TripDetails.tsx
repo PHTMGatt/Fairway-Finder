@@ -8,7 +8,8 @@ import React, {
   useCallback,
 } from 'react';
 import { useQuery } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate, Link } from 'react-router-dom';
+import Auth from '../../utils/auth';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import { FaMapMarkerAlt } from 'react-icons/fa';
@@ -73,7 +74,7 @@ const TripDetails: React.FC = () => {
 
   const { loading, error, data } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
-    skip: !tripId,
+    skip: !tripId || !Auth.loggedIn(),
   });
   const trip = data?.trip;
   const courseName = trip?.courses?.[0]?.name;
@@ -158,6 +159,7 @@ const TripDetails: React.FC = () => {
     fetchWeather(weatherCity);
   };
 
+  if (!Auth.loggedIn()) return <Navigate to="/login" replace />;
   if (!tripId) {
     return <p className="trip-details__status">❌ No trip ID provided.</p>;
   }
@@ -166,9 +168,11 @@ const TripDetails: React.FC = () => {
   }
   if (error || !trip) {
     return (
-      <p className="trip-details__status">
-        ❌ Error loading trip: {error?.message}
-      </p>
+      <section className="trip-details__status" role="alert">
+        <h1>Trip unavailable</h1>
+        <p>The trip could not be loaded or is not available to this account.</p>
+        <Link to="/saved-trips">Return to saved trips</Link>
+      </section>
     );
   }
 

@@ -100,7 +100,7 @@ const PlanTrip: React.FC = () => {
   };
 
   return (
-    <main className="plan-trip">
+    <section className="plan-trip">
       <h2 className="plan-trip__title">
         <FaFlagCheckered className="plan-trip__icon" /> Plan a Trip
       </h2>
@@ -184,7 +184,7 @@ const PlanTrip: React.FC = () => {
           {submitError}
         </Alert>
       )}
-    </main>
+    </section>
   );
 };
 

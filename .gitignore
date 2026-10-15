@@ -21,6 +21,7 @@
 
 # ————— Testing —————
 /coverage
+/artifacts/
 /.cache
 /temp
 /tmp

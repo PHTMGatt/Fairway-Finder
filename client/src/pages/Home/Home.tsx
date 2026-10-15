@@ -42,7 +42,7 @@ const Home: React.FC = () => {
   }, [isLoggedIn]);
 
   return (
-    <main className="home">
+    <section className="home">
       {/* Note; Hero buttons */}
       <section className="home__hero">
         <h2 className="home__title">Plan your next golf adventure.</h2>
@@ -131,7 +131,7 @@ const Home: React.FC = () => {
           <span>Weather</span>
         </button>
       </nav>
-    </main>
+    </section>
   );
 };
 

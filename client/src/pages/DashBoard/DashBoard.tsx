@@ -24,7 +24,7 @@ const Dashboard: React.FC = () => {
   const myTrips = data?.me?.trips || [];
 
   return (
-    <main className="dashboard container">
+    <section className="dashboard container">
       {/* Note; Page title */}
       <h2 className="dashboard__title">My Golf Road Trips</h2>
 
@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
       ) : (
         <TripList trips={myTrips} title="Your Trips" />
       )}
-    </main>
+    </section>
   );
 };
 

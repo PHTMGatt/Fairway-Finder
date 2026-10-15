@@ -48,7 +48,7 @@ const CourseFinder: React.FC = () => {
   };
 
   return (
-    <main className="course-finder">
+    <section className="course-finder">
       <div className="course-finder__banner">
         <h2 className="course-finder__title">Find the Best Golf Courses</h2>
         <p className="course-finder__subtitle">
@@ -114,7 +114,7 @@ const CourseFinder: React.FC = () => {
           );
         })}
       </ul>
-    </main>
+    </section>
   );
 };
 

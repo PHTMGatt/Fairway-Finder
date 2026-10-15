@@ -1,7 +1,7 @@
 // client/src/main.tsx
 
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, createHashRouter, RouterProvider } from 'react-router-dom';
 import { AuthProvider } from './pages/Auth/AuthContext';
 
 import App from './App';
@@ -19,7 +19,8 @@ import Weather from './pages/Weather/Weather';
 import Handicap from './pages/Handicap/HandicapTracker';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const router = createBrowserRouter([
+const createRouter = import.meta.env.VITE_REVIEW_HASH_ROUTER === 'true' ? createHashRouter : createBrowserRouter;
+const router = createRouter([
   {
     path: '/',
     element: <App />,
