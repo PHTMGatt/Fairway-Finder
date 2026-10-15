@@ -2,6 +2,8 @@
 
 This branch hardens the existing app and adds reproducible tests. Live data validation and production rollout remain blocked.
 
+For subfolder-hosted review previews only, run `VITE_REVIEW_HASH_ROUTER=true VITE_PREVIEW_MODE=true npx vite build --base=./` inside `client`. These flags are not part of normal production builds.
+
 ## Implemented
 - Missing Google Maps configuration no longer crashes the whole frontend; map unavailability has an explicit state.
 - Mobile route-planner inputs now fit the viewport.

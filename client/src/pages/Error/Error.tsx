@@ -1,7 +1,7 @@
 // src/pages/Error/Error.tsx
 
 import React from 'react';
-import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
+import { useRouteError, isRouteErrorResponse, Link } from 'react-router-dom';
 import './Error.css';
 
 // Note; Shape of error object from React Router
@@ -35,7 +35,7 @@ const ErrorPage: React.FC = () => {
       <p className="error-page__info">
         <i>{errorInfo}</i>
       </p>
-      <a href="/">Return to Fairway Finder</a>
+      <Link to="/">Return to Fairway Finder</Link>
     </div>
   );
 };
