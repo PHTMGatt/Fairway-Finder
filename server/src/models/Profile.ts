@@ -66,9 +66,13 @@ const profileSchema = new Schema<ProfileDoc>(
   }
 );
 
-// Note; TTL index: MongoDB deletes a profile once expiresAt passes. Documents without
-// expiresAt (every permanent account) are never touched by it.
-profileSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// Note; TTL index: MongoDB deletes a guest profile once expiresAt passes. The partial filter
+// means only isGuest documents are ever considered, so a permanent account can't be
+// deleted even if it somehow ends up with an expiresAt.
+profileSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { isGuest: true } }
+);
 
 profileSchema.pre<ProfileDoc>('save', async function (next) {
   if (this.isNew || this.isModified('password')) {

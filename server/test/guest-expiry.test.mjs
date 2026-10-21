@@ -27,10 +27,11 @@ const waitFor = async (condition, timeoutMs = 15_000) => {
   return false;
 };
 
-test('profiles and trips have TTL indexes on expiresAt', async () => {
+test('profiles and trips have guest-only TTL indexes on expiresAt', async () => {
   for (const Model of [Profile, Trip]) {
     const ttl = (await Model.collection.indexes()).find((i) => i.key.expiresAt === 1);
     assert.equal(ttl?.expireAfterSeconds, 0, Model.modelName);
+    assert.deepEqual(ttl?.partialFilterExpression, { isGuest: true }, Model.modelName);
   }
 });
 
@@ -40,7 +41,7 @@ test('permanent profiles and trips never store guest fields', async () => {
   const storedProfile = await raw(Profile, profile._id);
   const storedTrip = await raw(Trip, trip._id);
   assert.ok(!('isGuest' in storedProfile) && !('expiresAt' in storedProfile));
-  assert.ok(!('expiresAt' in storedTrip));
+  assert.ok(!('isGuest' in storedTrip) && !('expiresAt' in storedTrip));
 });
 
 test('existing documents keep working and gain no fields when loaded and saved', async () => {
@@ -70,16 +71,25 @@ test('MongoDB deletes expired guest profiles and trips, and leaves everything el
   const future = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   const expiredGuest = await Profile.create({ name: 'guest-old', email: 'old@guest.invalid', password: 'goodpass1', isGuest: true, expiresAt: past });
-  const expiredTrip = await Trip.create({ name: 'Guest trip', date: '2026-11-01', expiresAt: past });
+  const expiredTrip = await Trip.create({ name: 'Guest trip', date: '2026-11-01', isGuest: true, expiresAt: past });
   const activeGuest = await Profile.create({ name: 'guest-new', email: 'new@guest.invalid', password: 'goodpass1', isGuest: true, expiresAt: future });
-  const activeTrip = await Trip.create({ name: 'Active guest trip', date: '2026-11-01', expiresAt: future });
+  const activeTrip = await Trip.create({ name: 'Active guest trip', date: '2026-11-01', isGuest: true, expiresAt: future });
   const permanent = await Profile.create({ name: 'Keeper', email: 'keeper@example.com', password: 'goodpass1' });
   const permanentTrip = await Trip.create({ name: 'Keeper trip', date: '2026-11-01' });
+  // Note; Permanent documents that somehow carry a past expiresAt must still never be deleted
+  const strayProfile = await Profile.create({ name: 'Stray', email: 'stray@example.com', password: 'goodpass1', expiresAt: past });
+  const strayTrip = await Trip.create({ name: 'Stray trip', date: '2026-11-01', expiresAt: past });
+  const notGuestProfile = await Profile.create({ name: 'NotGuest', email: 'notguest@example.com', password: 'goodpass1', isGuest: false, expiresAt: past });
 
   const gone = await waitFor(async () => !(await raw(Profile, expiredGuest._id)) && !(await raw(Trip, expiredTrip._id)));
   assert.ok(gone, 'expired guest profile and trip were deleted');
+  // Note; Give the TTL monitor a few more passes to prove it leaves the rest alone
+  await new Promise((r) => setTimeout(r, 3000));
 
-  for (const [Model, doc] of [[Profile, activeGuest], [Trip, activeTrip], [Profile, permanent], [Trip, permanentTrip]]) {
+  for (const [Model, doc] of [
+    [Profile, activeGuest], [Trip, activeTrip], [Profile, permanent], [Trip, permanentTrip],
+    [Profile, strayProfile], [Trip, strayTrip], [Profile, notGuestProfile],
+  ]) {
     assert.ok(await raw(Model, doc._id), `${Model.modelName} ${doc.name} still exists`);
   }
 });

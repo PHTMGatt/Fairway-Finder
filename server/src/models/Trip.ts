@@ -40,6 +40,7 @@ export interface TripDoc extends Document {
   courses: CourseSubdoc[]
   players: PlayerSubdoc[]
   handicap?: number      // Note; trip-wide handicap index (optional)
+  isGuest?: boolean      // Note; set only on Guest Demo trips
   expiresAt?: Date       // Note; set only on Guest Demo trips
   createdAt: Date
   updatedAt: Date
@@ -87,6 +88,7 @@ const tripSchema = new Schema<TripDoc>(
     courses: { type: [courseSchema], default: [] },
     players: { type: [playerSchema], default: [] },
     handicap: { type: Number, default: null },  // Note; trip-wide index (optional)
+    isGuest: { type: Boolean },                 // Note; no default: permanent trips never store it
     expiresAt: { type: Date },                  // Note; no default: permanent trips never store it
   },
   {
@@ -96,8 +98,12 @@ const tripSchema = new Schema<TripDoc>(
   }
 )
 
-// Note; TTL index: MongoDB deletes a guest trip once expiresAt passes; trips without it are untouched
-tripSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 })
+// Note; TTL index: MongoDB deletes a guest trip once expiresAt passes. Only isGuest trips are
+// considered, so a permanent trip is never deleted even if it has an expiresAt.
+tripSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { isGuest: true } }
+)
 
 // Note; Create and export the Trip model
 const Trip = model<TripDoc>('Trip', tripSchema)
