@@ -1,6 +1,8 @@
 // server/src/schemas/resolvers.ts
 
 import { IResolvers } from '@graphql-tools/utils';
+import bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { claimInvite, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
@@ -39,6 +41,10 @@ const getCurrentProfile = async (context: Context) => {
 
 // Note; Same message for unknown email and wrong password so login can't be used to probe for accounts
 const INVALID_LOGIN_MESSAGE = 'Invalid email or password';
+
+// Note; Compared against when the email isn't found, so unknown emails take as long as wrong
+// passwords. Same cost (10) as Profile's pre-save hash; matches no real password.
+const TIMING_DUMMY_HASH = bcrypt.hashSync(randomBytes(16).toString('hex'), 10);
 
 // Note; Rules for NEW passwords only; existing accounts keep their current passwords.
 // bcrypt ignores everything after 72 bytes, so longer passwords are rejected rather than silently truncated.
@@ -174,7 +180,10 @@ const resolvers: IResolvers<any, Context> = {
       enforceRateLimit(loginLimiter, context.ip);
       const normalizedEmail = email.trim().toLowerCase();
       const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
-      if (!profile) throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
+      if (!profile) {
+        await bcrypt.compare(password, TIMING_DUMMY_HASH);
+        throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
+      }
       const valid = await profile.isCorrectPassword(password);
       if (!valid) throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
       const token = signToken(profile.name, profile.email, profile._id as string);
