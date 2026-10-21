@@ -4,8 +4,7 @@ import { connectDatabase } from '../config/connection'; // Database connection
 import Profile from '../models/Profile';                // Mongoose model
 import profileSeeds from './profileData.json' assert { type: 'json' };
 import cleanDB from './cleanDB';                        // DB cleanup utility
-
-const LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
+import { describeMongoTarget } from '../utils/dbTarget';
 
 // Note; Seeding wipes every Profile, Trip and Course, so only allow it against a local database
 const assertSafeSeedTarget = (): void => {
@@ -13,16 +12,10 @@ const assertSafeSeedTarget = (): void => {
     throw new Error('Refusing to seed with NODE_ENV=production');
   }
 
-  let host = '';
-  try {
-    host = new URL(process.env.MONGODB_URI || '').hostname;
-  } catch {
-    // Note; Unparseable URIs fall through and are treated as remote
-  }
-
-  if (!LOCAL_HOSTS.includes(host) && process.env.ALLOW_REMOTE_SEED !== 'true') {
+  const { host, isLocal } = describeMongoTarget(process.env.MONGODB_URI);
+  if (!isLocal && process.env.ALLOW_REMOTE_SEED !== 'true') {
     throw new Error(
-      `Refusing to seed non-local database host "${host || 'unknown'}" (set ALLOW_REMOTE_SEED=true to override)`
+      `Refusing to seed non-local database host "${host}" (set ALLOW_REMOTE_SEED=true to override)`
     );
   }
 };
