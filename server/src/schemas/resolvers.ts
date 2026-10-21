@@ -4,6 +4,7 @@ import { IResolvers } from '@graphql-tools/utils';
 import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { signToken } from '../utils/auth.js';
+import { enforceRateLimit, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
@@ -14,6 +15,7 @@ interface ProfileType {
 
 interface Context {
   user?: ProfileType;
+  ip?: string;
 }
 
 const requireUserId = (context: Context): string => {
@@ -116,7 +118,8 @@ const resolvers: IResolvers<any, Context> = {
   },
 
   Mutation: {
-    addProfile: async (_p, { input }) => {
+    addProfile: async (_p, { input }, context) => {
+      enforceRateLimit(signupLimiter, context.ip);
       const normalizedEmail = input.email.trim().toLowerCase();
       const existing = await Profile.findOne({ email: normalizedEmail });
       if (existing) {
@@ -139,7 +142,8 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
-    login: async (_p, { email, password }) => {
+    login: async (_p, { email, password }, context) => {
+      enforceRateLimit(loginLimiter, context.ip);
       const normalizedEmail = email.trim().toLowerCase();
       const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
       if (!profile) throw new AuthenticationError(INVALID_LOGIN_MESSAGE);

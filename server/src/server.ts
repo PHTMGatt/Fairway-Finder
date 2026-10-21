@@ -23,6 +23,8 @@ const {
   JWT_SECRET_KEY,
   GOLF_API_KEY,
   NODE_ENV = 'development',
+  TRUST_PROXY,
+  DEBUG_CLIENT_IP,
 } = process.env;
 
 if (!MONGODB_URI || !PLACES_API_KEY || !JWT_SECRET_KEY || !GOLF_API_KEY) {
@@ -47,6 +49,7 @@ import mapRoutes from './routes/mapRoutes.js';
 import golfRoutes from './routes/golfRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import { authenticateToken } from './utils/auth.js';
+import { apiLimiter, rateLimitMiddleware, resolveTrustProxy } from './utils/rateLimit.js';
 
 async function startServer() {
   try {
@@ -59,10 +62,24 @@ async function startServer() {
     await apollo.start();
 
     const app = express();
+    app.set('trust proxy', resolveTrustProxy(TRUST_PROXY, NODE_ENV));
     app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
     app.use(express.json());
     app.use(compression());
 
+    // Note; Opt-in check that req.ip is the real client IP behind Render's proxy
+    if (DEBUG_CLIENT_IP === 'true') {
+      app.get('/api/debug/client-ip', (req, res: Response) => {
+        const forwarded = String(req.headers['x-forwarded-for'] || '');
+        res.json({
+          ip: req.ip,
+          trustProxy: app.get('trust proxy'),
+          forwardedHops: forwarded ? forwarded.split(',').length : 0,
+        });
+      });
+    }
+
+    app.use('/api', rateLimitMiddleware(apiLimiter));
     app.use('/api', courseRoutes);
     app.use('/api', weatherRoutes);
     app.use('/api', mapRoutes);
@@ -77,7 +94,7 @@ async function startServer() {
         context: async ({ req, res }) => {
           const r = req as any;
           authenticateToken({ req: r, res });
-          return { user: r.user };
+          return { user: r.user, ip: r.ip };
         },
       })
     );
