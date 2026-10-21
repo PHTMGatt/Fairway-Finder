@@ -7,6 +7,7 @@ import { UserInputError } from 'apollo-server-errors';
  * so existing documents are never re-validated against them when saved.
  */
 export const LIMITS = {
+  username: 40,
   tripName: 80,
   tripDate: 40,
   courseName: 150,

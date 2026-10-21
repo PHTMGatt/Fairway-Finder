@@ -55,6 +55,23 @@ test('sign-up without an inviteCode is rejected by the schema', async () => {
   assert.match(res.error?.message ?? '', /inviteCode/);
 });
 
+test('guest identities and over-long usernames are reserved/rejected at sign-up', async () => {
+  const code = createInvite();
+  for (const [input, message] of [
+    [{ name: 'guest-abc123', email: 'g1@example.com' }, 'Usernames starting with "guest-" are reserved'],
+    [{ name: '  GUEST-Abc', email: 'g2@example.com' }, 'Usernames starting with "guest-" are reserved'],
+    [{ name: 'Normal', email: 'abc@guest.invalid' }, 'That email address is not allowed'],
+    [{ name: 'Normal', email: ' ABC@Guest.Invalid ' }, 'That email address is not allowed'],
+    [{ name: 'x'.repeat(41), email: 'long@example.com' }, 'Username must be 1 to 40 characters'],
+  ]) {
+    const res = await signup({ ...input, inviteCode: code });
+    assert.equal(res.error?.message, message, JSON.stringify(input));
+  }
+  assert.equal((await inviteFor(code)).usedAt, null, 'none of these consumed the invite');
+  const ok = await signup({ name: 'guesthouse', email: 'guesthouse@example.com', inviteCode: code });
+  assert.ok(ok.data?.addProfile?.token, 'names merely starting with "guest" are fine');
+});
+
 test('a fake invite code cannot be used to check whether an email is registered', async () => {
   const taken = await signup({ name: 'Probe', email: 'legacy@example.com', inviteCode: 'made-up-code' });
   const free = await signup({ name: 'Probe', email: 'nobody-here@example.com', inviteCode: 'made-up-code' });

@@ -9,6 +9,7 @@ import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '..
 import { signToken } from '../utils/auth.js';
 import { enforceRateLimit, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
 import { LIMITS, checkRange, checkText } from '../utils/validate.js';
+import { isReservedGuestEmail, isReservedGuestName } from '../utils/guest.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
@@ -145,6 +146,14 @@ const resolvers: IResolvers<any, Context> = {
           `Password must be ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_BYTES} characters`,
           { invalidArgs: ['password'] }
         );
+      }
+
+      checkText(name, 'name', 'Username', LIMITS.username);
+      if (isReservedGuestName(name)) {
+        throw new UserInputError('Usernames starting with "guest-" are reserved', { invalidArgs: ['name'] });
+      }
+      if (isReservedGuestEmail(email)) {
+        throw new UserInputError('That email address is not allowed', { invalidArgs: ['email'] });
       }
 
       const normalizedEmail = email.trim().toLowerCase();
