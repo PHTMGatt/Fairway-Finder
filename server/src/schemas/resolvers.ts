@@ -66,8 +66,10 @@ const profileOwnsTrip =(profile: { trips: any[] }, tripId: string) =>
 const requireOwnedTrip = async (tripId: string, context: Context) => {
   const profile = await getCurrentProfile(context);
 
+  // Note; Someone else's trip looks exactly like a missing one: no auth error (which would log the
+  // user out on the client) and no hint that the trip exists
   if (!profileOwnsTrip(profile, tripId)) {
-    throw new AuthenticationError('Not authorized to access this trip');
+    throw new UserInputError('Trip not found');
   }
 
   const trip = await Trip.findById(tripId);
