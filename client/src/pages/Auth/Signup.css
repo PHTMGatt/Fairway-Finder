@@ -78,14 +78,12 @@
   font-weight: bold;
 }
 
-/* Dev-only red button */
-.auth-page .clear-session-btn {
-  background: #ffeaea;
-  color: #990000;
-  border: 1px solid #cc0000;
-}
-.auth-page .clear-session-btn:hover {
-  background: #ffcccc;
+/* Short helper text (invite-only notice, login link) */
+.auth-page .auth-note {
+  margin: 0;
+  color: #003344;
+  font-size: 0.95rem;
+  text-align: center;
 }
 
 /* Full-page wrapper */

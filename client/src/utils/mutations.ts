@@ -2,7 +2,7 @@ import { gql } from '@apollo/client';
 
 /** ——— AUTH & PROFILE MUTATIONS ——— **/
 
-// Note; Registers a new user profile and returns auth token & basic profile info
+// Note; Registers a new user profile (input requires an inviteCode) and returns auth token & basic profile info
 export const ADD_PROFILE = gql`
   mutation AddProfile($input: ProfileInput!) {
     addProfile(input: $input) {
