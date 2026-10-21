@@ -24,8 +24,10 @@ export const dist = (relativePath) =>
  * Start an in-memory MongoDB, point MONGODB_URI at it, and connect mongoose.
  * Refuses to continue unless the database is on 127.0.0.1.
  */
-export const startTestDb = async (dbName = 'ff_test') => {
-  const mem = await MongoMemoryServer.create();
+export const startTestDb = async (dbName = 'ff_test', { ttlMonitorSleepSecs } = {}) => {
+  // Note; MongoDB's TTL cleanup normally runs every 60s; TTL tests can shorten it
+  const args = ttlMonitorSleepSecs ? ['--setParameter', `ttlMonitorSleepSecs=${ttlMonitorSleepSecs}`] : [];
+  const mem = await MongoMemoryServer.create({ instance: { args } });
   const uri = `${mem.getUri()}${dbName}`;
   if (new URL(uri).hostname !== '127.0.0.1') {
     await mem.stop();
