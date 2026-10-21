@@ -94,6 +94,7 @@ export const enforceRateLimit = (limiter: RateLimiter, ip: string | undefined) =
 // Note; Shared limiters for the auth mutations (per IP)
 export const loginLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
 export const signupLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 });
+export const guestLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 3 });
 
 // Note; Light limit on the /api proxies to paid Google/Golf/weather APIs
 export const apiLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 120 });

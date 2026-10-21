@@ -50,10 +50,12 @@ import golfRoutes from './routes/golfRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import { authenticateToken } from './utils/auth.js';
 import { apiLimiter, rateLimitMiddleware, resolveTrustProxy } from './utils/rateLimit.js';
+import { startGuestCleanup } from './utils/guestCleanup.js';
 
 async function startServer() {
   try {
     await connectDatabase();
+    startGuestCleanup();
 
     const apollo = new ApolloServer({
       typeDefs: schema.typeDefs,

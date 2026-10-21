@@ -12,6 +12,10 @@ export default `
     name: String
     email: String
     trips: [Trip]
+    "True for a temporary Guest Demo account."
+    isGuest: Boolean
+    "When a Guest Demo and its trips are deleted (ISO 8601); null for permanent accounts."
+    expiresAt: String
   }
 
   """
@@ -100,6 +104,11 @@ export default `
   type Mutation {
     addProfile(input: ProfileInput!): Auth
     login(email: String!, password: String!): Auth
+
+    """
+    Start an anonymous Guest Demo: a temporary account whose data is deleted after 24 hours.
+    """
+    startGuestSession: Auth
 
     addTrip(input: TripInput!): Trip
     deleteTrip(tripId: ID!): Trip

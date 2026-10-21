@@ -7,9 +7,15 @@ import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
 import { signToken } from '../utils/auth.js';
-import { enforceRateLimit, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
+import { enforceRateLimit, guestLimiter, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
 import { LIMITS, checkRange, checkText } from '../utils/validate.js';
-import { isReservedGuestEmail, isReservedGuestName } from '../utils/guest.js';
+import {
+  GUEST_MAX_TRIPS,
+  createGuestProfile,
+  isExpiredGuest,
+  isReservedGuestEmail,
+  isReservedGuestName,
+} from '../utils/guest.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
@@ -36,6 +42,10 @@ const getCurrentProfile = async (context: Context) => {
 
   if (!profile) {
     throw new AuthenticationError('Profile no longer exists');
+  }
+  // Note; Decided from the database record, never the token; TTL deletion can lag a minute
+  if (isExpiredGuest(profile)) {
+    throw new AuthenticationError('Your guest demo has ended', { reason: 'GUEST_EXPIRED' });
   }
 
   return profile;
@@ -116,10 +126,15 @@ const transformTrip = (trip: any) => {
 };
 
 const resolvers: IResolvers<any, Context> = {
+  Profile: {
+    isGuest: (profile) => profile.isGuest === true,
+    expiresAt: (profile) => (profile.expiresAt ? new Date(profile.expiresAt).toISOString() : null),
+  },
+
   Query: {
     me: async (_p, _a, context) => {
-      const userId = requireUserId(context);
-      return Profile.findById(userId).populate('trips');
+      const profile = await getCurrentProfile(context);
+      return profile.populate('trips');
     },
 
     trips: async (_p, _a, context) => {
@@ -194,7 +209,8 @@ const resolvers: IResolvers<any, Context> = {
       enforceRateLimit(loginLimiter, context.ip);
       const normalizedEmail = email.trim().toLowerCase();
       const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
-      if (!profile) {
+      // Note; Guest accounts can never sign in by password; they look like unknown emails
+      if (!profile || profile.isGuest) {
         await bcrypt.compare(password, TIMING_DUMMY_HASH);
         throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
       }
@@ -204,15 +220,30 @@ const resolvers: IResolvers<any, Context> = {
       return { token, profile };
     },
 
+    startGuestSession: async (_p, _a, context) => {
+      enforceRateLimit(guestLimiter, context.ip);
+      const profile = await createGuestProfile();
+      const token = signToken(profile.name, profile.email, profile._id as string, {
+        notAfter: profile.expiresAt as Date,
+        isGuest: true,
+      });
+      return { token, profile };
+    },
+
     addTrip: async (_p, { input }, context) => {
       checkText(input.name, 'name', 'Trip name', LIMITS.tripName);
       checkText(input.date, 'date', 'Trip date', LIMITS.tripDate);
       checkText(input.courseName, 'courseName', 'Course name', LIMITS.courseName);
       const profile = await getCurrentProfile(context);
+      if (profile.isGuest && profile.trips.length >= GUEST_MAX_TRIPS) {
+        throw new UserInputError(`The guest demo is limited to ${GUEST_MAX_TRIPS} trips`);
+      }
       const trip = await Trip.create({
         name: input.name,
         date: input.date,
         courses: [{ name: input.courseName }],
+        // Note; Guest trips expire with their guest, set in the same write
+        ...(profile.isGuest ? { isGuest: true, expiresAt: profile.expiresAt } : {}),
       });
 
       profile.trips.push(trip._id as any);
