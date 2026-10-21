@@ -8,6 +8,7 @@ import Trip from '../models/Trip.js';
 import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
 import { signToken } from '../utils/auth.js';
 import { enforceRateLimit, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
+import { LIMITS, checkRange, checkText } from '../utils/validate.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
@@ -195,6 +196,9 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     addTrip: async (_p, { input }, context) => {
+      checkText(input.name, 'name', 'Trip name', LIMITS.tripName);
+      checkText(input.date, 'date', 'Trip date', LIMITS.tripDate);
+      checkText(input.courseName, 'courseName', 'Course name', LIMITS.courseName);
       const profile = await getCurrentProfile(context);
       const trip = await Trip.create({
         name: input.name,
@@ -216,12 +220,18 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     addCourseToTrip: async (_p, { tripId, courseName }, context) => {
+      checkText(courseName, 'courseName', 'Course name', LIMITS.courseName);
       await requireOwnedTrip(tripId, context);
-      return Trip.findByIdAndUpdate(
-        tripId,
+      // Note; The cap is part of the update filter so concurrent adds can't exceed it
+      const updated = await Trip.findOneAndUpdate(
+        { _id: tripId, [`courses.${LIMITS.coursesPerTrip - 1}`]: { $exists: false } },
         { $push: { courses: { name: courseName } } },
         { new: true, runValidators: true }
       );
+      if (!updated) {
+        throw new UserInputError(`A trip can have at most ${LIMITS.coursesPerTrip} courses`);
+      }
+      return updated;
     },
 
     removeCourseFromTrip: async (_p, { courseName }, context) => {
@@ -239,17 +249,27 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     addPlayer: async (_p, { tripId, name }, context) => {
-      await requireOwnedTrip(tripId, context);
+      checkText(name, 'name', 'Player name', LIMITS.playerName);
+      const { trip } = await requireOwnedTrip(tripId, context);
+      // Note; Scores and handicaps are looked up by player name, so names must be unique per trip
+      if (trip.players.some((p) => p.name === name.trim())) {
+        throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
+      }
       const fullScores = Array.from({ length: 18 }, (_, i) => ({
         hole: i + 1,
         score: 0,
       }));
 
-      return Trip.findByIdAndUpdate(
-        tripId,
+      // Note; The cap is part of the update filter so concurrent adds can't exceed it
+      const updated = await Trip.findOneAndUpdate(
+        { _id: tripId, [`players.${LIMITS.playersPerTrip - 1}`]: { $exists: false } },
         { $push: { players: { name, scores: fullScores } } },
         { new: true, runValidators: true }
       );
+      if (!updated) {
+        throw new UserInputError(`A trip can have at most ${LIMITS.playersPerTrip} players`);
+      }
+      return updated;
     },
 
     removePlayer: async (_p, { tripId, name }, context) => {
@@ -262,6 +282,8 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     updateScore: async (_p, { tripId, player, hole, score }, context) => {
+      checkRange(hole, 'hole', 'Hole', LIMITS.hole, true);
+      checkRange(score, 'score', 'Score', LIMITS.score, true);
       const { trip } = await requireOwnedTrip(tripId, context);
       const playerObj = trip.players.find((p) => p.name === player);
       if (!playerObj) throw new UserInputError('Player not found');
@@ -278,6 +300,7 @@ const resolvers: IResolvers<any, Context> = {
     },
 
     updateTripHandicap: async (_p, { tripId, handicap }, context) => {
+      checkRange(handicap, 'handicap', 'Handicap', LIMITS.handicap);
       const { trip } = await requireOwnedTrip(tripId, context);
       trip.handicap = handicap;
       await trip.save();
@@ -289,6 +312,7 @@ const resolvers: IResolvers<any, Context> = {
       { tripId, name, handicap }: { tripId: string; name: string; handicap: number },
       context
     ) => {
+      checkRange(handicap, 'handicap', 'Handicap', LIMITS.handicap);
       const { trip } = await requireOwnedTrip(tripId, context);
       const player = trip.players.find((p) => p.name === name);
       if (!player) throw new UserInputError('Player not found');
