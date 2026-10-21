@@ -16,10 +16,22 @@ const userFrom = (authorization) => {
 const token = signToken(USER.username, USER.email, USER._id);
 const decoded = jwt.decode(token, { complete: true });
 
-test('signToken issues an HS256 token with { data } payload and 8h expiry', () => {
+test('signToken issues an HS256 token with { data } payload and 7-day expiry', () => {
   assert.equal(decoded.header.alg, 'HS256');
   assert.deepEqual(decoded.payload.data, USER);
-  assert.equal(decoded.payload.exp - decoded.payload.iat, 8 * 3600);
+  assert.equal(decoded.payload.exp - decoded.payload.iat, 7 * 24 * 3600);
+});
+
+test('signToken never outlives notAfter, and marks guest tokens', () => {
+  const notAfter = new Date(Date.now() + 2 * 3600 * 1000);
+  const guest = jwt.decode(signToken('g', 'g@guest.invalid', 'id', { notAfter, isGuest: true }));
+  assert.equal(guest.exp, Math.floor(notAfter.getTime() / 1000));
+  assert.equal(guest.data.isGuest, true);
+
+  const later = new Date(Date.now() + 30 * 24 * 3600 * 1000);
+  const capped = jwt.decode(signToken('u', 'u@example.com', 'id', { notAfter: later }));
+  assert.equal(capped.exp - capped.iat, 7 * 24 * 3600, 'still capped at 7 days');
+  assert.ok(!('isGuest' in capped.data));
 });
 
 test('valid token authenticates with or without the Bearer prefix', () => {
