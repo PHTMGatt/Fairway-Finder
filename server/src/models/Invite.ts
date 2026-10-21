@@ -66,4 +66,36 @@ export const hashInviteCode = (code: string): string =>
   createHash('sha256').update(code.trim()).digest('hex');
 
 const Invite = model<InviteDoc>('Invite', inviteSchema);
+
+/**
+ * Note; Atomically claim an unused, unexpired invite for this email.
+ * Returns null if the code is wrong, used, expired, or locked to another email,
+ * so two simultaneous sign-ups can never both redeem the same invite.
+ */
+export const claimInvite = (code: string, email: string) => {
+  const now = new Date();
+  return Invite.findOneAndUpdate(
+    {
+      codeHash: hashInviteCode(code),
+      usedAt: null,
+      expiresAt: { $gt: now },
+      $or: [{ email: null }, { email }],
+    },
+    { $set: { usedAt: now } },
+    { new: true }
+  );
+};
+
+/**
+ * Note; Record which profile redeemed a claimed invite.
+ */
+export const markInviteUsedBy = (inviteId: Types.ObjectId, profileId: Types.ObjectId) =>
+  Invite.updateOne({ _id: inviteId }, { $set: { usedBy: profileId } });
+
+/**
+ * Note; Give a claimed invite back if account creation failed afterwards.
+ */
+export const releaseInvite = (inviteId: Types.ObjectId) =>
+  Invite.updateOne({ _id: inviteId, usedBy: null }, { $set: { usedAt: null } });
+
 export default Invite;

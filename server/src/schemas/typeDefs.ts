@@ -64,10 +64,14 @@ export default `
     handicap: Float
   }
 
+  """
+  Sign-up details. Permanent accounts are invite-only, so a valid invite code is required.
+  """
   input ProfileInput {
     name: String!
     email: String!
     password: String!
+    inviteCode: String!
   }
 
   input TripInput {

@@ -3,6 +3,7 @@
 import { IResolvers } from '@graphql-tools/utils';
 import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
+import { claimInvite, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
 import { signToken } from '../utils/auth.js';
 import { enforceRateLimit, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
@@ -38,6 +39,11 @@ const getCurrentProfile = async (context: Context) => {
 
 // Note; Same message for unknown email and wrong password so login can't be used to probe for accounts
 const INVALID_LOGIN_MESSAGE = 'Invalid email or password';
+
+// Note; Rules for NEW passwords only; existing accounts keep their current passwords.
+// bcrypt ignores everything after 72 bytes, so longer passwords are rejected rather than silently truncated.
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_BYTES = 72;
 
 // Note; Unique-index races surface as Mongo E11000; map them to a clean input error
 const toDuplicateKeyError = (err: any) => {
@@ -120,7 +126,20 @@ const resolvers: IResolvers<any, Context> = {
   Mutation: {
     addProfile: async (_p, { input }, context) => {
       enforceRateLimit(signupLimiter, context.ip);
-      const normalizedEmail = input.email.trim().toLowerCase();
+      const { name, email, password, inviteCode } = input;
+
+      if (
+        password.length < PASSWORD_MIN_LENGTH ||
+        Buffer.byteLength(password, 'utf8') > PASSWORD_MAX_BYTES
+      ) {
+        throw new UserInputError(
+          `Password must be ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_BYTES} characters`,
+          { invalidArgs: ['password'] }
+        );
+      }
+
+      const normalizedEmail = email.trim().toLowerCase();
+      // Note; Checked before claiming so a taken email doesn't burn the invite
       const existing = await Profile.findOne({ email: normalizedEmail });
       if (existing) {
         throw new UserInputError('Email already in use', {
@@ -128,16 +147,25 @@ const resolvers: IResolvers<any, Context> = {
         });
       }
 
+      const invite = await claimInvite(inviteCode, normalizedEmail);
+      if (!invite) {
+        throw new UserInputError('Invalid or expired invite code', {
+          invalidArgs: ['inviteCode'],
+        });
+      }
+
       let profile;
       try {
         profile = await Profile.create({
-          ...input,
-          name: input.name.trim(),
+          name: name.trim(),
           email: normalizedEmail,
+          password,
         });
       } catch (err) {
+        await releaseInvite(invite._id as any);
         throw toDuplicateKeyError(err);
       }
+      await markInviteUsedBy(invite._id as any, profile._id as any);
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },
