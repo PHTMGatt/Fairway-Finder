@@ -7,3 +7,4 @@
 export { default as Profile } from './Profile';
 export { default as Trip } from './Trip';
 export { default as Course } from './Course';
+export { default as Invite } from './Invite';
