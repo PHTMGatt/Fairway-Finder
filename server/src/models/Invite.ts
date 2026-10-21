@@ -67,6 +67,20 @@ export const hashInviteCode = (code: string): string =>
 
 const Invite = model<InviteDoc>('Invite', inviteSchema);
 
+// Note; Matches an invite this email may redeem right now: right code, unused, unexpired, email lock ok
+const usableInviteFilter = (code: string, email: string, now: Date) => ({
+  codeHash: hashInviteCode(code),
+  usedAt: null,
+  expiresAt: { $gt: now },
+  $or: [{ email: null }, { email }],
+});
+
+/**
+ * Note; Read-only check that an invite is currently usable by this email, without claiming it.
+ */
+export const isInviteUsable = async (code: string, email: string) =>
+  (await Invite.exists(usableInviteFilter(code, email, new Date()))) !== null;
+
 /**
  * Note; Atomically claim an unused, unexpired invite for this email.
  * Returns null if the code is wrong, used, expired, or locked to another email,
@@ -75,12 +89,7 @@ const Invite = model<InviteDoc>('Invite', inviteSchema);
 export const claimInvite = (code: string, email: string) => {
   const now = new Date();
   return Invite.findOneAndUpdate(
-    {
-      codeHash: hashInviteCode(code),
-      usedAt: null,
-      expiresAt: { $gt: now },
-      $or: [{ email: null }, { email }],
-    },
+    usableInviteFilter(code, email, now),
     { $set: { usedAt: now } },
     { new: true }
   );

@@ -55,6 +55,13 @@ test('sign-up without an inviteCode is rejected by the schema', async () => {
   assert.match(res.error?.message ?? '', /inviteCode/);
 });
 
+test('a fake invite code cannot be used to check whether an email is registered', async () => {
+  const taken = await signup({ name: 'Probe', email: 'legacy@example.com', inviteCode: 'made-up-code' });
+  const free = await signup({ name: 'Probe', email: 'nobody-here@example.com', inviteCode: 'made-up-code' });
+  assert.equal(taken.error?.message, INVALID_INVITE);
+  assert.equal(free.error?.message, INVALID_INVITE);
+});
+
 test('rejections do not consume the invite', async () => {
   const code = createInvite();
   const cases = [

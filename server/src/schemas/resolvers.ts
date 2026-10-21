@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
-import { claimInvite, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
+import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
 import { signToken } from '../utils/auth.js';
 import { enforceRateLimit, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
@@ -145,6 +145,12 @@ const resolvers: IResolvers<any, Context> = {
       }
 
       const normalizedEmail = email.trim().toLowerCase();
+      const invalidInvite = () =>
+        new UserInputError('Invalid or expired invite code', { invalidArgs: ['inviteCode'] });
+
+      // Note; Validate the invite first so "Email already in use" is only revealed to invite holders
+      if (!(await isInviteUsable(inviteCode, normalizedEmail))) throw invalidInvite();
+
       // Note; Checked before claiming so a taken email doesn't burn the invite
       const existing = await Profile.findOne({ email: normalizedEmail });
       if (existing) {
@@ -154,11 +160,7 @@ const resolvers: IResolvers<any, Context> = {
       }
 
       const invite = await claimInvite(inviteCode, normalizedEmail);
-      if (!invite) {
-        throw new UserInputError('Invalid or expired invite code', {
-          invalidArgs: ['inviteCode'],
-        });
-      }
+      if (!invite) throw invalidInvite();
 
       let profile;
       try {
