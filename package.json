@@ -17,7 +17,8 @@
     "lint": "eslint client/src server/src --format table",
     "lint:all": "eslint . --ext .ts,.tsx,.js,.jsx --format table",
     "deploy:prep": "npm install && npm run build && npm run lint:all",
-    "seed": "cd server && npm run seed"
+    "seed": "cd server && npm run seed",
+    "test": "cd server && npm test"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.33.0",
