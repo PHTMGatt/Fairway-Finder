@@ -34,7 +34,19 @@ const getCurrentProfile = async (context: Context) => {
   return profile;
 };
 
-const profileOwnsTrip = (profile: { trips: any[] }, tripId: string) =>
+// Note; Same message for unknown email and wrong password so login can't be used to probe for accounts
+const INVALID_LOGIN_MESSAGE = 'Invalid email or password';
+
+// Note; Unique-index races surface as Mongo E11000; map them to a clean input error
+const toDuplicateKeyError = (err: any) => {
+  if (err?.code !== 11000) return err;
+  const field = Object.keys(err.keyPattern ?? err.keyValue ?? {})[0];
+  return field === 'name'
+    ? new UserInputError('Username already taken', { invalidArgs: ['name'] })
+    : new UserInputError('Email already in use', { invalidArgs: ['email'] });
+};
+
+const profileOwnsTrip =(profile: { trips: any[] }, tripId: string) =>
   profile.trips.some((id) => id.toString() === tripId);
 
 const requireOwnedTrip = async (tripId: string, context: Context) => {
@@ -113,11 +125,16 @@ const resolvers: IResolvers<any, Context> = {
         });
       }
 
-      const profile = await Profile.create({
-        ...input,
-        name: input.name.trim(),
-        email: normalizedEmail,
-      });
+      let profile;
+      try {
+        profile = await Profile.create({
+          ...input,
+          name: input.name.trim(),
+          email: normalizedEmail,
+        });
+      } catch (err) {
+        throw toDuplicateKeyError(err);
+      }
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },
@@ -125,9 +142,9 @@ const resolvers: IResolvers<any, Context> = {
     login: async (_p, { email, password }) => {
       const normalizedEmail = email.trim().toLowerCase();
       const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
-      if (!profile) throw new AuthenticationError('No profile found');
+      if (!profile) throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
       const valid = await profile.isCorrectPassword(password);
-      if (!valid) throw new AuthenticationError('Incorrect password');
+      if (!valid) throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },
