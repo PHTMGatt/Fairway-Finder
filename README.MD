@@ -1,102 +1,136 @@
-# 🏌️‍♂️ Fairway Finder
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)   [![GitHub stars](https://img.shields.io/github/stars/PHTMGatt/Fairway-Finder?style=social)](https://github.com/PHTMGatt/Fairway-Finder/stargazers)
+# Fairway Finder
 
-A modern, full-stack golf trip planner. Search and save courses, plan driving routes, check tee-off weather, and calculate handicaps—all with instant, secure authentication and a polished, responsive interface.
+Fairway Finder is a full-stack golf trip planner built with React, TypeScript, Apollo GraphQL, Express, MongoDB/Mongoose, Google Maps, and external golf/weather data.
 
----
+The project is being shaped for **private, small-group use**: permanent accounts are invite-only, while a temporary **Guest Demo** provides a low-friction way to try the trip-planning workflow without creating a permanent account.
 
-## 📸 Screenshot
+## Core experience
 
-<p align="center">
-  <img src="client/src/assets/images/GHRM.png" alt="Fairway Finder Screenshot" width="600" />
-</p>
+- Plan golf trips and save courses to a trip
+- View saved trips and trip details
+- Track players, handicaps, and hole-by-hole scores
+- Search courses and use map/routing tools
+- View weather information for trip planning
+- Private account data scoped to the authenticated owner
 
----
+## Secure access model
 
-## 🎯 Elevator Pitch
+The current secure-access feature work includes:
 
-Fairway Finder is a single-page MERN application that streamlines golf trip planning by combining course lookup, route mapping, weather forecasting, and handicap calculation into one intuitive platform. With real-time API integrations and a seamless user experience, everything you need is at your fingertips.
+- **Invite-only signup** for permanent accounts
+- Password login with rate limiting and timing equalization
+- JWT authentication with a required strong secret
+- Trip ownership checks on protected reads/writes
+- **24-hour Guest Demo** sessions
+- Guest trips automatically tied to the guest expiry
+- Maximum of **3 guest trips**
+- Guest creation rate limits and an active-guest cap
+- Guest identities reserved from permanent signup/login
+- MongoDB guest-only TTL cleanup plus a backup cleanup sweep
+- Explicit server startup gate that waits for guest TTL and invite indexes before accepting traffic
 
----
+Guest Demo client UX includes a shared **Try as Guest** action, Plan Trip landing, expiry messaging, a header expiry warning, and separate handling for normal vs guest session expiry.
 
-## 💡 Concept & Motivation
+> The secure-access rollout should not be treated as production-ready until the deployment checklist in `HANDOFF.md` is complete, including a production DB backup and post-deploy smoke test.
 
-Planning a golf trip often means juggling multiple tools—course details, directions, weather, and handicaps. Fairway Finder removes that complexity. By integrating Google Maps, OpenWeather, and the Golf Course API, it provides a single, cohesive solution for organizing every aspect of your golf outing.
+## Stack
 
----
+### Client
+- React 18
+- TypeScript
+- Vite
+- React Router
+- Apollo Client
+- Bootstrap / custom CSS
+- Google Maps via `@vis.gl/react-google-maps`
 
-## 🛠️ Core Features
+### Server
+- Node.js
+- Express
+- Apollo Server / GraphQL
+- MongoDB + Mongoose
+- JWT authentication
+- `express-rate-limit`
 
-- **Instant Authentication (JWT)**  
-  Secure sign-up, login, and logout without page reloads. React Context manages auth state so header buttons update immediately.
+### Testing / validation
+- Node test runner + `mongodb-memory-server` for server integration tests
+- Vitest for client unit tests
+- ESLint
+- TypeScript builds for client and server
+- GitHub Actions validation on pushes and pull requests
 
-- **Course Finder (Golf Course API)**  
-  Search by course name, view tee box ratings and slopes filtered by gender, and save selections directly to your trip itinerary.
+The MongoDB integration tests use an in-memory localhost database. They are intentionally isolated from production Atlas data.
 
-- **Route Planning (Google Maps API)**  
-  Plan driving routes with turn-by-turn directions and visualize nearby amenities (golf courses, gas stations, rest areas) along the way.
+## Local setup
 
-- **Weather Integration (OpenWeather API)**  
-  Fetch 7-day forecasts and toggle between Fahrenheit and Celsius to view conditions for your chosen trip date.
+### Prerequisites
 
-- **Handicap Tracker (USGA Formula)**  
-  Calculate your handicap index instantly using real-time slope and rating data, then save that information to your profile.
+- Node.js 20+
+- npm
+- A local/dev MongoDB connection string or the repository's test tooling
+- Required API keys for Maps / Places / golf data
+- A strong JWT secret
 
-- **Discord Webhook Bot Integration**  
-  Automatically post updates (e.g., commit messages or trip notifications) to a Discord channel via webhooks—legacy and webhook bot implementations supported.
+### Install
 
-- **Polished, Responsive UI**  
-  Scoped CSS prevents style conflicts. Glass-inspired form cards, smooth focus and hover effects, and a consistent color palette deliver a professional, mobile-friendly interface.
+```bash
+npm install
+```
 
----
+### Development
 
-## 🔧 Technology Stack
+Run the server and client using the repository scripts/environment expected by each package. The server expects its environment file under `server/.env`.
 
-- **Frontend:**  
-  React (TypeScript) · React Router v6 · Apollo Client (GraphQL) · CSS (Scoped selectors) · Google Maps JS API (@vis.gl/react-google-maps) · OpenWeather API
+Common required variables include:
 
-- **Backend:**  
-  Node.js · Express.js · Apollo Server (GraphQL) · MongoDB (Mongoose) · JSON Web Tokens (JWT)
+```env
+MONGODB_URI=...
+JWT_SECRET_KEY=...
+PLACES_API_KEY=...
+GOLF_API_KEY=...
+```
 
-- **Discord Integration:**  
-  Custom Discord Webhook Bot (legacy and webhook versions) for automated notifications and commit message postings.
+The client requires its Vite-exposed Maps key, for example:
 
-- **Deployment & Tooling:**  
-  Render (frontend & backend) · MongoDB Atlas · GitHub Actions (CI) · Environment variables to secure API keys
+```env
+VITE_GOOGLE_MAPS_API_KEY=...
+```
 
----
+Never commit real secrets or production connection strings.
 
-## 🚀 Live Demo & Repository
+## Validation
 
-- **Live Site:** [https://fairway-finder.onrender.com](https://fairway-finder.onrender.com)  
-- **MVP Site:** [https://fairway-finder-mvp.onrender.com](https://fairway-finder-mvp.onrender.com)  
-- **GitHub:** [https://github.com/PHTMGatt/Fairway-Finder](https://github.com/PHTMGatt/Fairway-Finder)
+From the repository root:
 
----
+```bash
+npm run lint
+npm run build
+npm test
+```
 
-## 🔮 Future Directions
+Client tests can also be run directly:
 
-- **Social Sharing:** Allow users to share golf itineraries via social media or unique trip links.  
-- **Tee-Time Booking:** Integrate a real-time tee-time reservation API.  
-- **Progressive Web App (PWA):** Add offline support and “Add to Home Screen” functionality for mobile users.
+```bash
+cd client
+npm test -- --run
+```
 
----
+The current verified feature checkpoint passes **50 server tests**, **15 client tests**, the full client/server build, and lint with **0 errors / 0 warnings**. See `HANDOFF.md` for the exact rollout state and remaining production gates.
 
-## 🧠 Credits
+## MongoDB safety
 
-- **Primary Developer:** [Bryen Gatt](https://github.com/PHTMGatt)  
-- **Contributors:**  
-  • [Jarred Hampton](https://github.com/Jarred13D)  
-  • [Jared Owens](https://github.com/jaredowens)  
-  • [Hunter West](https://github.com/Frankthedestro)  
-  • [Nicholas Dear](https://github.com/n6dd)
+Production MongoDB is treated as persistent user data, not as a test environment.
 
----
+- Guest expiry is implemented with **partial TTL indexes** that only match `{ isGuest: true }`
+- Permanent profiles/trips do not receive guest expiry fields
+- Startup creates declared safety-critical indexes additively and does not drop unrelated production indexes
+- Seed/invite tooling contains guards against accidental remote writes
+- Take a production backup before the first deployment that enables the new guest/invite index behavior
 
-## License
+## Deployment
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+The app is designed to run as a single full-stack service in production, with the server serving the built client. Do not deploy the secure-access/Guest Demo work until the ordered rollout checklist in `HANDOFF.md` has been completed.
 
-This project is licensed under the [MIT License](LICENSE).
+## License / portfolio note
 
-© 2025 Fairway Finder. All rights reserved.
+This is a personal portfolio project and private-use application. Do not reuse private deployment credentials, API keys, database contents, or invite secrets.
