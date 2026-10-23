@@ -1,5 +1,4 @@
 // server/src/server.ts
-
 import path from 'path';
 import { fileURLToPath } from 'url';
 import express, { Response } from 'express';
@@ -42,6 +41,7 @@ if (NODE_ENV !== 'production') {
 }
 
 import { connectDatabase } from './config/connection.js';
+import { initializeModelIndexes } from './models/index.js';
 import { schema } from './schemas/index.js';
 import courseRoutes from './routes/courseRoutes.js';
 import weatherRoutes from './routes/weatherRoutes.js';
@@ -55,6 +55,8 @@ import { startGuestCleanup } from './utils/guestCleanup.js';
 async function startServer() {
   try {
     await connectDatabase();
+    await initializeModelIndexes();
+    console.log('✅ MongoDB indexes ready (guest TTL + invite uniqueness)');
     startGuestCleanup();
 
     const apollo = new ApolloServer({
