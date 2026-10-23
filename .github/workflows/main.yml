@@ -22,10 +22,12 @@ jobs:
 
       - name: Install all dependencies
         run: |
-          npm install
-          cd client && npm install
-          cd ../server && npm install
-          cd ..
+          # The root package has an install lifecycle that installs both
+          # workspaces. Skip that lifecycle here because CI installs each
+          # package explicitly below; otherwise client/server install twice.
+          npm install --ignore-scripts
+          npm install --prefix client
+          npm install --prefix server
 
       - name: Run lint
         run: npm run lint
