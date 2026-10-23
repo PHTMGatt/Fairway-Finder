@@ -18,7 +18,7 @@ describe('guest session token metadata', () => {
       exp
     );
 
-    const info = (Auth as any).getSessionInfoFromToken(token);
+    const info = Auth.getSessionInfoFromToken(token);
 
     expect(info).toEqual({
       isGuest: true,
@@ -33,7 +33,7 @@ describe('guest session token metadata', () => {
       exp
     );
 
-    const info = (Auth as any).getSessionInfoFromToken(token);
+    const info = Auth.getSessionInfoFromToken(token);
 
     expect(info).toEqual({
       isGuest: false,
@@ -42,6 +42,25 @@ describe('guest session token metadata', () => {
   });
 
   it('returns null for malformed tokens', () => {
-    expect((Auth as any).getSessionInfoFromToken('not-a-token')).toBeNull();
+    expect(Auth.getSessionInfoFromToken('not-a-token')).toBeNull();
+  });
+
+  it('chooses a guest-expired redirect reason for guest tokens', () => {
+    const token = tokenWith(
+      { _id: 'guest-id', username: 'guest-abc', email: 'abc@guest.invalid', isGuest: true },
+      1_900_000_000
+    );
+
+    expect((Auth as any).getExpiredReasonFromToken(token)).toBe('guest_expired');
+  });
+
+  it('chooses a normal expired redirect reason for permanent or malformed tokens', () => {
+    const permanent = tokenWith(
+      { _id: 'user-id', username: 'player', email: 'player@example.com' },
+      1_900_000_100
+    );
+
+    expect((Auth as any).getExpiredReasonFromToken(permanent)).toBe('expired');
+    expect((Auth as any).getExpiredReasonFromToken('broken')).toBe('expired');
   });
 });
