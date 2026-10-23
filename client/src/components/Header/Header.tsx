@@ -2,28 +2,10 @@ import { useApolloClient } from '@apollo/client';
 import { Link, useNavigate } from 'react-router-dom';
 import { MouseEvent, useEffect, useState } from 'react';
 import { useAuth } from '../../pages/Auth/AuthContext';
-import Auth, { SessionInfo } from '../../utils/auth';
+import Auth from '../../utils/auth';
+import { getGuestBannerState } from './guestBanner';
 import golfGif from '../../assets/images/golf2.gif';
 import './Header.css';
-
-interface GuestBannerState {
-  expiresAt: Date;
-  warning: boolean;
-  expired: boolean;
-}
-
-export const getGuestBannerState = (
-  session: SessionInfo | null,
-  now: number = Date.now()
-): GuestBannerState | null => {
-  if (!session?.isGuest || !session.expiresAt) return null;
-  const remaining = session.expiresAt.getTime() - now;
-  return {
-    expiresAt: session.expiresAt,
-    warning: remaining <= 2 * 60 * 60 * 1000,
-    expired: remaining <= 0,
-  };
-};
 
 const Header: React.FC = () => {
   const { isLoggedIn, logoutUser } = useAuth();

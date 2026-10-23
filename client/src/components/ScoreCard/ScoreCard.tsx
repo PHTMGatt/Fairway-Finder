@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_TRIP } from '../../utils/queries';
 import { ADD_PLAYER, REMOVE_PLAYER, UPDATE_SCORE } from '../../utils/mutations';
+import { scorecardErrorMessage } from './scorecardUtils';
 import './ScoreCard.css';
 
 interface PlayerSubdoc {
@@ -37,11 +38,6 @@ export const ScoreInput: React.FC<ScoreInputProps> = ({ value, onChange }) => (
     onChange={(event) => onChange(Number.parseInt(event.target.value || '0', 10))}
   />
 );
-
-export const scorecardErrorMessage = (error: unknown): string => {
-  if (error instanceof Error && error.message.trim()) return error.message;
-  return 'Could not save scorecard changes. Please try again.';
-};
 
 const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   const { loading, error, data } = useQuery<TripData>(QUERY_TRIP, {

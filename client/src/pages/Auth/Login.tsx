@@ -5,17 +5,8 @@ import Auth from '../../utils/auth';
 import { LOGIN_USER } from '../../utils/mutations';
 import GuestDemoButton from '../../components/GuestDemoButton';
 import { useAuth } from './AuthContext';
+import { getLoginReasonMessage } from './loginReason';
 import './Login.css';
-
-export const getLoginReasonMessage = (reason: string | null): string | null => {
-  if (reason === 'guest_expired') {
-    return 'Your Guest Demo expired. Its temporary data has been deleted.';
-  }
-  if (reason === 'expired') {
-    return 'Your session expired. Please log in again.';
-  }
-  return null;
-};
 
 const Login: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
