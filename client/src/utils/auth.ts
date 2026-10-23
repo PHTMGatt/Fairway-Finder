@@ -7,11 +7,17 @@ interface UserData {
   _id: string;
   username: string;
   email: string;
+  isGuest?: boolean;
 }
 
 // Note; JWT payload format includes user data under `data`
 interface AuthTokenPayload extends JwtPayload {
   data: UserData;
+}
+
+export interface SessionInfo {
+  isGuest: boolean;
+  expiresAt: Date | null;
 }
 
 class AuthService {
@@ -39,6 +45,28 @@ class AuthService {
    */
   getToken(): string | null {
     return localStorage.getItem(AuthService.TOKEN_KEY);
+  }
+
+  /**
+   * Decode session metadata without requiring the token to still be valid.
+   * This lets the UI tell a normal expired session from a Guest Demo expiry
+   * before logout removes the token.
+   */
+  getSessionInfoFromToken(token: string): SessionInfo | null {
+    try {
+      const payload = jwtDecode<AuthTokenPayload>(token);
+      return {
+        isGuest: payload.data?.isGuest === true,
+        expiresAt: payload.exp === undefined ? null : new Date(payload.exp * 1000),
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  getSessionInfo(): SessionInfo | null {
+    const token = this.getToken();
+    return token ? this.getSessionInfoFromToken(token) : null;
   }
 
   /**
