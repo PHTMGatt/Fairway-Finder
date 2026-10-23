@@ -1,29 +1,30 @@
 // client/src/App.tsx
 
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React from 'react';
+import React, { useMemo } from 'react';
 import './App.css';
 import {
   ApolloClient,
   InMemoryCache,
   ApolloProvider,
   createHttpLink,
+  from,
+  NormalizedCacheObject,
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
-import { Outlet } from 'react-router-dom';
+import { onError } from '@apollo/client/link/error';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
+import Auth from './utils/auth';
+import { useAuth } from './pages/Auth/AuthContext';
 
-// (No need to import AuthProvider here, since main.tsx already wraps)
- 
-// Note; Pull Google Maps API key from environment (handled on server in production)
 const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 if (!MAP_KEY) {
   throw new Error('Missing VITE_GOOGLE_MAPS_API_KEY in environment variables');
 }
 
-// Note; Base GraphQL endpoint (uses relative path in prod, localhost in dev)
 const httpLink = createHttpLink({
   uri:
     import.meta.env.MODE === 'development'
@@ -32,9 +33,8 @@ const httpLink = createHttpLink({
   credentials: 'include',
 });
 
-// Note; Attach JWT token from localStorage to each GraphQL request
 const authLink = setContext((_, { headers }) => {
-  const token = localStorage.getItem('id_token');
+  const token = Auth.getToken();
   return {
     headers: {
       ...headers,
@@ -43,30 +43,52 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-// Note; Instantiate Apollo Client with auth middleware and in-memory cache
-const apolloClient = new ApolloClient({
-  link: authLink.concat(httpLink),
-  cache: new InMemoryCache(),
-});
+const App: React.FC = () => {
+  const navigate = useNavigate();
+  const { logoutUser } = useAuth();
 
-const App: React.FC = () => (
-  <ApolloProvider client={apolloClient}>
-    {/* Note; Provides Google Maps JS API to all descendants */}
-    <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
-      <div className="app-layout">
-        {/* Note; Persistent header at top */}
-        <Header />
+  const apolloClient = useMemo(() => {
+    let client: ApolloClient<NormalizedCacheObject>;
+    let handlingAuthError = false;
 
-        {/* Note; Routed pages render here */}
-        <main className="app-content">
-          <Outlet />
-        </main>
+    const errorLink = onError(({ graphQLErrors }) => {
+      const unauthenticated = graphQLErrors?.some(
+        (graphQLError) => graphQLError.extensions?.code === 'UNAUTHENTICATED'
+      );
 
-        {/* Note; Persistent footer at bottom */}
-        <Footer />
-      </div>
-    </APIProvider>
-  </ApolloProvider>
-);
+      if (!unauthenticated || handlingAuthError) return;
+      handlingAuthError = true;
+
+      const token = Auth.getToken();
+      const reason = token ? Auth.getExpiredReasonFromToken(token) : 'expired';
+      logoutUser();
+
+      void client.clearStore().finally(() => {
+        navigate(`/login?reason=${reason}`, { replace: true });
+      });
+    });
+
+    client = new ApolloClient({
+      link: from([errorLink, authLink, httpLink]),
+      cache: new InMemoryCache(),
+    });
+
+    return client;
+  }, [logoutUser, navigate]);
+
+  return (
+    <ApolloProvider client={apolloClient}>
+      <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
+        <div className="app-layout">
+          <Header />
+          <main className="app-content">
+            <Outlet />
+          </main>
+          <Footer />
+        </div>
+      </APIProvider>
+    </ApolloProvider>
+  );
+};
 
 export default App;

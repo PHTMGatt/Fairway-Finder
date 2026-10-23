@@ -1,34 +1,71 @@
-import { Link } from 'react-router-dom';
-import { MouseEvent } from 'react';
+import { useApolloClient } from '@apollo/client';
+import { Link, useNavigate } from 'react-router-dom';
+import { MouseEvent, useEffect, useState } from 'react';
 import { useAuth } from '../../pages/Auth/AuthContext';
+import Auth, { SessionInfo } from '../../utils/auth';
 import golfGif from '../../assets/images/golf2.gif';
 import './Header.css';
 
-// Note; remastered Header to use isLoggedIn + logoutUser from context
+interface GuestBannerState {
+  expiresAt: Date;
+  warning: boolean;
+  expired: boolean;
+}
+
+export const getGuestBannerState = (
+  session: SessionInfo | null,
+  now: number = Date.now()
+): GuestBannerState | null => {
+  if (!session?.isGuest || !session.expiresAt) return null;
+  const remaining = session.expiresAt.getTime() - now;
+  return {
+    expiresAt: session.expiresAt,
+    warning: remaining <= 2 * 60 * 60 * 1000,
+    expired: remaining <= 0,
+  };
+};
+
 const Header: React.FC = () => {
   const { isLoggedIn, logoutUser } = useAuth();
+  const apolloClient = useApolloClient();
+  const navigate = useNavigate();
+  const [now, setNow] = useState(Date.now());
+  const guestBanner = getGuestBannerState(Auth.getSessionInfo(), now);
 
-  const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    logoutUser(); // clears token and sets isLoggedIn=false immediately
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(interval);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!guestBanner?.expired) return;
+    logoutUser();
+    void apolloClient.clearStore().finally(() => {
+      navigate('/login?reason=guest_expired', { replace: true });
+    });
+  }, [apolloClient, guestBanner?.expired, logoutUser, navigate]);
+
+  const handleLogout = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    logoutUser();
+    void apolloClient.clearStore().finally(() => {
+      navigate('/', { replace: true });
+    });
   };
 
   return (
     <header className="header header--bg">
-      {/* Animated icon links to home */}
       <Link to="/" className="header__icon-link">
         <img src={golfGif} alt="Home" className="header__gif-icon" />
       </Link>
 
-      {/* Center title link */}
       <Link to="/" className="header__logo">
         FAIRWAY FINDER
       </Link>
 
-      {/* Spacer pushes buttons right */}
       <div className="header__spacer" />
 
-      {/* Auth buttons (now using isLoggedIn from context) */}
       <div className="header__actions">
         {isLoggedIn ? (
           <>
@@ -50,6 +87,24 @@ const Header: React.FC = () => {
           </>
         )}
       </div>
+
+      {guestBanner && !guestBanner.expired && (
+        <div
+          className={`header__guest-banner${guestBanner.warning ? ' header__guest-banner--warning' : ''}`}
+          role="status"
+        >
+          <span>
+            Guest Demo · temporary data deletes at{' '}
+            {guestBanner.expiresAt.toLocaleString([], {
+              hour: 'numeric',
+              minute: '2-digit',
+              month: 'short',
+              day: 'numeric',
+            })}
+          </span>
+          {guestBanner.warning && <strong>Less than 2 hours left</strong>}
+        </div>
+      )}
     </header>
   );
 };

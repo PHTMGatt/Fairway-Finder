@@ -5,7 +5,6 @@ import { QUERY_TRIP } from '../../utils/queries';
 import { ADD_PLAYER, REMOVE_PLAYER, UPDATE_SCORE } from '../../utils/mutations';
 import './ScoreCard.css';
 
-//Note; remastered ScoreCard with stable structure, logic preserved
 interface PlayerSubdoc {
   name: string;
   score: Record<string, number>;
@@ -22,6 +21,27 @@ interface TripData {
 interface ScoreCardProps {
   tripId: string;
 }
+
+interface ScoreInputProps {
+  value: number;
+  onChange: (score: number) => void;
+}
+
+export const ScoreInput: React.FC<ScoreInputProps> = ({ value, onChange }) => (
+  <input
+    type="number"
+    min={0}
+    max={30}
+    className="scorecard__input"
+    value={value}
+    onChange={(event) => onChange(Number.parseInt(event.target.value || '0', 10))}
+  />
+);
+
+export const scorecardErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message.trim()) return error.message;
+  return 'Could not save scorecard changes. Please try again.';
+};
 
 const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   const { loading, error, data } = useQuery<TripData>(QUERY_TRIP, {
@@ -40,6 +60,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   });
 
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'front9' | 'back9' | 'threehole'>('front9');
   const [threeHoleIndex, setThreeHoleIndex] = useState(0);
 
@@ -53,12 +74,22 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   const handleAddPlayer = async () => {
     const trimmed = newPlayerName.trim();
     if (!trimmed) return;
-    await addPlayer({ variables: { tripId, name: trimmed } });
-    setNewPlayerName('');
+    setSaveError(null);
+    try {
+      await addPlayer({ variables: { tripId, name: trimmed } });
+      setNewPlayerName('');
+    } catch (mutationError: unknown) {
+      setSaveError(scorecardErrorMessage(mutationError));
+    }
   };
 
   const handleRemovePlayer = async (name: string) => {
-    await removePlayer({ variables: { tripId, name } });
+    setSaveError(null);
+    try {
+      await removePlayer({ variables: { tripId, name } });
+    } catch (mutationError: unknown) {
+      setSaveError(scorecardErrorMessage(mutationError));
+    }
   };
 
   const handleScoreChange = async (
@@ -66,9 +97,14 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     hole: number,
     newScore: number
   ) => {
-    await updateScore({
-      variables: { tripId, player: playerName, hole, score: newScore },
-    });
+    setSaveError(null);
+    try {
+      await updateScore({
+        variables: { tripId, player: playerName, hole, score: newScore },
+      });
+    } catch (mutationError: unknown) {
+      setSaveError(scorecardErrorMessage(mutationError));
+    }
   };
 
   const handleSlide = (direction: 'prev' | 'next') => {
@@ -85,7 +121,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
 
   return (
     <div className="scorecard">
-      {/*Note; header and view toggles */}
       <div className="scorecard__header">
         <h4 className="scorecard__title">
           {viewMode === 'threehole'
@@ -105,7 +140,6 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
         </div>
       </div>
 
-      {/*Note; 3-hole nav buttons */}
       {viewMode === 'threehole' && (
         <div className="scorecard__nav scorecard__slider">
           <button
@@ -125,14 +159,19 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
         </div>
       )}
 
-      {/*Note; score entry table */}
+      {saveError && (
+        <p className="scorecard__error" role="alert">
+          {saveError}
+        </p>
+      )}
+
       <div className="scorecard__table-wrapper">
         <table className="scorecard__table">
           <thead>
             <tr>
               <th>Player</th>
-              {holeNumbers.map((h) => (
-                <th key={h}>Hole {h}</th>
+              {holeNumbers.map((hole) => (
+                <th key={hole}>Hole {hole}</th>
               ))}
               <th>Total</th>
               <th>✖</th>
@@ -144,21 +183,14 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
                 <td>{player.name}</td>
                 {holeNumbers.map((holeNum) => {
                   const key = `H${holeNum}`;
-                  const val = player.score[key] ?? 0;
+                  const value = player.score[key] ?? 0;
                   return (
                     <td key={holeNum}>
-                      <input
-                        type="number"
-                        min={0}
-                        className="scorecard__input"
-                        value={val}
-                        onChange={(e) =>
-                          handleScoreChange(
-                            player.name,
-                            holeNum,
-                            parseInt(e.target.value || '0', 10)
-                          )
-                        }
+                      <ScoreInput
+                        value={value}
+                        onChange={(score) => {
+                          void handleScoreChange(player.name, holeNum, score);
+                        }}
                       />
                     </td>
                   );
@@ -166,8 +198,10 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
                 <td>{player.total}</td>
                 <td>
                   <button
+                    type="button"
                     className="scorecard__remove"
-                    onClick={() => handleRemovePlayer(player.name)}
+                    onClick={() => void handleRemovePlayer(player.name)}
+                    aria-label={`Remove ${player.name}`}
                   >
                     🗑
                   </button>
@@ -178,16 +212,19 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
         </table>
       </div>
 
-      {/*Note; add player section */}
       <div className="scorecard__add-player">
         <input
           type="text"
           className="scorecard__player-input"
           placeholder="Add player name"
           value={newPlayerName}
-          onChange={(e) => setNewPlayerName(e.target.value)}
+          onChange={(event) => setNewPlayerName(event.target.value)}
         />
-        <button className="scorecard__add-btn" onClick={handleAddPlayer}>
+        <button
+          type="button"
+          className="scorecard__add-btn"
+          onClick={() => void handleAddPlayer()}
+        >
           Add Player
         </button>
       </div>

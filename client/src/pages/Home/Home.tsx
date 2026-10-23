@@ -7,33 +7,26 @@ import { useQuery } from '@apollo/client';
 import { QUERY_TRIPS } from '../../utils/queries';
 import TripList from '../../components/TripList/TripList';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
+import GuestDemoButton from '../../components/GuestDemoButton';
 import Auth from '../../utils/auth';
 import './Home.css';
 
 const Home: React.FC = () => {
-  // Note; Hook for navigation
   const navigate = useNavigate();
-
-  // Note; Controlled inputs
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [maxDistance, setMaxDistance] = useState('');
   const [searchTriggered, setSearchTriggered] = useState(false);
   const [mapMountGate, setMapMountGate] = useState(false);
-
-  // Note; Check authentication
   const isLoggedIn = Auth.loggedIn();
 
-  // Note; Load user trips
   const { loading, error, data } = useQuery(QUERY_TRIPS, { skip: !isLoggedIn });
   const trips = data?.trips || [];
 
-  // Note; Trigger course search
   const handleFindCourses = () => {
     setSearchTriggered(true);
   };
 
-  // Note; Delay map render until DOM is mounted
   useEffect(() => {
     if (isLoggedIn) {
       const delay = setTimeout(() => setMapMountGate(true), 100);
@@ -43,7 +36,6 @@ const Home: React.FC = () => {
 
   return (
     <main className="home">
-      {/* Note; Hero buttons */}
       <section className="home__hero">
         <h2 className="home__title">Plan your next golf adventure.</h2>
         <div className="home__buttons">
@@ -56,7 +48,6 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Note; Search + map section */}
       {isLoggedIn ? (
         <>
           <section className="home__search">
@@ -99,11 +90,11 @@ const Home: React.FC = () => {
         </>
       ) : (
         <section className="home__locked">
-          <p>Please log in to access trip planning and course search.</p>
+          <p>Log in for your saved trips, or open a temporary Guest Demo.</p>
+          <GuestDemoButton className="btn btn--light home__btn" />
         </section>
       )}
 
-      {/* Note; Saved trips section */}
       {isLoggedIn && (
         <section className="home__saved-trips container">
           {loading ? (
@@ -116,7 +107,6 @@ const Home: React.FC = () => {
         </section>
       )}
 
-      {/* Note; Footer nav icons */}
       <nav className="home__bottom-nav">
         <button className="home__nav-item btn--circle" onClick={() => navigate('/routing')}>
           <FaMapMarkedAlt size={20} />

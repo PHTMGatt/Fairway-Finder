@@ -20,6 +20,8 @@ export interface SessionInfo {
   expiresAt: Date | null;
 }
 
+export type ExpiredSessionReason = 'expired' | 'guest_expired';
+
 class AuthService {
   // Note; Key under which the JWT is stored in localStorage
   private static readonly TOKEN_KEY = 'id_token';
@@ -67,6 +69,10 @@ class AuthService {
   getSessionInfo(): SessionInfo | null {
     const token = this.getToken();
     return token ? this.getSessionInfoFromToken(token) : null;
+  }
+
+  getExpiredReasonFromToken(token: string): ExpiredSessionReason {
+    return this.getSessionInfoFromToken(token)?.isGuest ? 'guest_expired' : 'expired';
   }
 
   /**

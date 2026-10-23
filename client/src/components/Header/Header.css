@@ -1,11 +1,9 @@
 /* 'client/src/components/Header/Header.css' */
-
-/* Note; header background: texture + striped gradient */
 .header--bg {
   position: relative;
   height: 120px;
   padding: 0 2rem;
-  background-image: 
+  background-image:
     url('../../assets/images/pool-table.png'),
     repeating-linear-gradient(
       45deg,
@@ -24,7 +22,6 @@
   z-index: 1;
 }
 
-/* Note; main logo centered absolute */
 .header__logo {
   position: absolute;
   left: 50%;
@@ -44,7 +41,6 @@
   transform: translateX(-50%) scale(1.08);
 }
 
-/* Note; golf gif icon left side */
 .header__icon-link {
   display: flex;
   align-items: center;
@@ -62,19 +58,16 @@
   filter: brightness(1.4);
 }
 
-/* Note; spacer pushes auth buttons */
 .header__spacer {
   flex-grow: 1;
 }
 
-/* Note; right-side button container */
 .header__actions {
   display: flex;
   gap: 0.5rem;
   z-index: 10;
 }
 
-/* Note; reusable button style */
 .header__btn {
   font-size: 0.9rem;
   font-weight: 600;
@@ -101,19 +94,41 @@
   outline: none;
 }
 
-/* ===== MOBILE RESPONSIVE ===== */
+.header__guest-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 7px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: min(680px, 65vw);
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1f3b24;
+  font-size: 0.78rem;
+  line-height: 1.2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  z-index: 25;
+}
+.header__guest-banner--warning {
+  background: #fff4cf;
+  color: #6a4300;
+}
+.header__guest-banner strong {
+  white-space: nowrap;
+}
 
-/* 1) Adjust earlier at <=900px */
 @media (max-width: 900px) {
   .header--bg {
     flex-direction: column;
-    align-items: flex-start;  /* start stacking, but keep left alignment */
+    align-items: flex-start;
     height: auto;
     padding: 1rem 1.5rem;
     text-align: left;
   }
 
-  /* Move logo down a bit and shrink */
   .header__logo {
     position: static;
     transform: none;
@@ -122,36 +137,42 @@
     top: auto;
   }
 
-  /* Shrink the icon */
   .header__gif-icon {
     height: 70px;
     margin-right: 0.5rem;
   }
 
-  /* Spacer disappears early */
   .header__spacer {
     display: none;
   }
 
-  /* Collapse actions a bit sooner */
   .header__actions {
     flex-wrap: wrap;
     justify-content: flex-end;
     width: 100%;
     margin-top: 0.5rem;
   }
+
   .header__btn {
     margin: 0.25rem 0;
-    /* don't force full width yet; just allow wrap */
+  }
+
+  .header__guest-banner {
+    position: static;
+    transform: none;
+    max-width: none;
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+    border-radius: 8px;
   }
 }
 
-/* 2) Further adjust at <=768px (tablet/smaller) */
 @media (max-width: 768px) {
   .header--bg {
     align-items: center;
     text-align: center;
-    padding: 1rem 1rem;
+    padding: 1rem;
   }
 
   .header__logo {
@@ -159,7 +180,6 @@
     margin-bottom: 0.5rem;
   }
 
-  /* Position icon above title */
   .header__icon-link {
     position: static;
     margin-bottom: 0.5rem;
@@ -183,9 +203,13 @@
     font-size: 0.85rem;
     padding: 0.35rem 0.75rem;
   }
+
+  .header__guest-banner {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
 }
 
-/* 3) Collapse fully at <=480px (small phones) */
 @media (max-width: 480px) {
   .header__logo {
     font-size: 1.5rem;

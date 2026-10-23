@@ -1,5 +1,4 @@
 /* src/components/ScoreCard/'ScoreCard.css' */
-/*Note; outer card wrapper with glass effect */
 .scorecard {
   margin-top: 2rem;
   padding: 2rem;
@@ -9,7 +8,6 @@
   backdrop-filter: blur(8px);
 }
 
-/*Note; header layout and title */
 .scorecard__header {
   display: flex;
   flex-wrap: wrap;
@@ -24,7 +22,6 @@
   font-weight: 600;
 }
 
-/*Note; button nav */
 .scorecard__nav {
   display: flex;
   flex-wrap: wrap;
@@ -52,13 +49,21 @@
   cursor: not-allowed;
 }
 
-/*Note; horizontal scroll wrapper for table */
+.scorecard__error {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: 6px;
+  background: #fff1f2;
+  color: #9e1c2f;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .scorecard__table-wrapper {
   width: 100%;
   overflow-x: auto;
 }
 
-/*Note; styled score table */
 .scorecard__table {
   width: 100%;
   min-width: 650px;
@@ -81,7 +86,6 @@
   font-weight: 600;
 }
 
-/*Note; score inputs */
 .scorecard__input {
   width: 3rem;
   padding: 0.3rem;
@@ -91,7 +95,6 @@
   font-size: 1rem;
 }
 
-/*Note; remove player button */
 .scorecard__remove {
   background: transparent;
   border: none;
@@ -100,7 +103,6 @@
   font-size: 1.1rem;
 }
 
-/*Note; player adder */
 .scorecard__add-player {
   display: flex;
   flex-wrap: wrap;
@@ -129,7 +131,6 @@
   background: #218838;
 }
 
-/*Note; responsive tweaks */
 @media (max-width: 768px) {
   .scorecard__header {
     flex-direction: column;

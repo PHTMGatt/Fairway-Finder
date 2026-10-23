@@ -1,27 +1,37 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import Auth from '../../utils/auth';
 import { LOGIN_USER } from '../../utils/mutations';
+import GuestDemoButton from '../../components/GuestDemoButton';
 import { useAuth } from './AuthContext';
 import './Login.css';
 
-//Note; remastered Login page with preserved flow and error handling
+export const getLoginReasonMessage = (reason: string | null): string | null => {
+  if (reason === 'guest_expired') {
+    return 'Your Guest Demo expired. Its temporary data has been deleted.';
+  }
+  if (reason === 'expired') {
+    return 'Your session expired. Please log in again.';
+  }
+  return null;
+};
+
 const Login: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
 
   const [loginUser, { loading }] = useMutation(LOGIN_USER);
   const { refreshAuth } = useAuth();
+  const reasonMessage = getLoginReasonMessage(searchParams.get('reason'));
 
-  //Note; handle input changes
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials((prev) => ({ ...prev, [name]: value }));
     setErrorMessage(null);
   };
 
-  //Note; handle form submit
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -41,16 +51,16 @@ const Login: React.FC = () => {
       } else {
         setErrorMessage('Invalid credentials.');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
       const message =
-        err?.graphQLErrors?.[0]?.message || err.message || 'Login failed.';
+        error instanceof Error && error.message ? error.message : 'Login failed.';
       setErrorMessage(message);
     }
   };
 
-  //Note; redirect if already logged in
   if (Auth.loggedIn()) {
-    return <Navigate to="/saved-trips" replace />;
+    const destination = Auth.getSessionInfo()?.isGuest ? '/plan-trip' : '/saved-trips';
+    return <Navigate to={destination} replace />;
   }
 
   return (
@@ -58,6 +68,11 @@ const Login: React.FC = () => {
       <div className="auth-card">
         <h4 className="auth-header">Log In</h4>
         <div className="auth-body">
+          {reasonMessage && (
+            <div className="auth-info" role="status">
+              {reasonMessage}
+            </div>
+          )}
           <form className="auth-form" onSubmit={handleSubmit}>
             <input
               name="email"
@@ -75,17 +90,15 @@ const Login: React.FC = () => {
               value={credentials.password}
               onChange={handleChange}
             />
-            <button
-              type="submit"
-              className="auth-btn"
-              disabled={loading}
-            >
+            <button type="submit" className="auth-btn" disabled={loading}>
               {loading ? 'Logging in…' : 'Submit'}
             </button>
           </form>
-          {errorMessage && (
-            <div className="auth-error">{errorMessage}</div>
-          )}
+          {errorMessage && <div className="auth-error">{errorMessage}</div>}
+          <div className="auth-divider" aria-hidden="true">
+            <span>or</span>
+          </div>
+          <GuestDemoButton className="auth-btn" />
         </div>
       </div>
     </main>
