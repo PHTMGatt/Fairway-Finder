@@ -35,3 +35,7 @@ lerna-debug.log*
 # ————— System Files —————
 .DS_Store
 Thumbs.db
+
+# ————— Local Claude Code Settings —————
+.claude/settings.local.json
+.claude/launch.json
