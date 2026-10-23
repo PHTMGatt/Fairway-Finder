@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import Auth from './auth';
 
 const encode = (value: object) =>
-  Buffer.from(JSON.stringify(value)).toString('base64url');
+  btoa(JSON.stringify(value))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '');
 
 const tokenWith = (data: object, exp: number) =>
   `${encode({ alg: 'none', typ: 'JWT' })}.${encode({ data, exp })}.signature`;
