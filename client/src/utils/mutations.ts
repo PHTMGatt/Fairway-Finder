@@ -28,6 +28,21 @@ export const LOGIN_USER = gql`
   }
 `;
 
+// Note; Starts a temporary anonymous Guest Demo session.
+export const START_GUEST_SESSION = gql`
+  mutation StartGuestSession {
+    startGuestSession {
+      token
+      profile {
+        _id
+        name
+        isGuest
+        expiresAt
+      }
+    }
+  }
+`;
+
 /** ——— TRIP MANAGEMENT MUTATIONS ——— **/
 
 // Note; Creates a new trip with name, date, and empty courses list
