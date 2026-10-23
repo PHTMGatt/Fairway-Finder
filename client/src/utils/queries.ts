@@ -10,6 +10,8 @@ export const QUERY_ME = gql`
       _id
       name
       email
+      isGuest
+      expiresAt
       trips {
         _id
         name
@@ -55,6 +57,8 @@ export const QUERY_MY_TRIPS = gql`
     me {
       _id
       name
+      isGuest
+      expiresAt
       trips {
         _id
         name
