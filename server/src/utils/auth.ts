@@ -73,7 +73,7 @@ export const signToken = (
   const nowSeconds = Math.floor(Date.now() / 1000);
   let exp = nowSeconds + SESSION_TTL_SECONDS;
   if (notAfter) exp = Math.min(exp, Math.floor(notAfter.getTime() / 1000));
-  return jwt.sign({ data: payload, exp }, getSecret());
+  return jwt.sign({ data: payload, iat: nowSeconds, exp }, getSecret());
 };
 
 export class AuthenticationError extends GraphQLError {
