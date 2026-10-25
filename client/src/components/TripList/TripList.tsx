@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { DELETE_TRIP } from '../../utils/mutations';
+import { deleteTripWithConfirmation } from './TripList.utils';
 import './TripList.css';
 
 interface Trip {
@@ -15,31 +16,6 @@ interface TripListProps {
   trips?: Trip[];
   title?: string;
 }
-
-type DeleteTripMutation = (options: {
-  variables: { tripId: string };
-}) => Promise<unknown>;
-
-const DEFAULT_DELETE_ERROR = 'Could not delete trip. Please try again.';
-
-export const deleteTripWithConfirmation = async (
-  trip: Pick<Trip, '_id' | 'name'>,
-  deleteTrip: DeleteTripMutation,
-  confirmDelete: (message: string) => boolean
-): Promise<string | null> => {
-  if (!confirmDelete(`Delete "${trip.name}"? This cannot be undone.`)) {
-    return null;
-  }
-
-  try {
-    await deleteTrip({ variables: { tripId: trip._id } });
-    return null;
-  } catch (error: unknown) {
-    return error instanceof Error && error.message
-      ? error.message
-      : DEFAULT_DELETE_ERROR;
-  }
-};
 
 export const TripDeleteError: React.FC<{ message: string | null }> = ({ message }) =>
   message ? (
