@@ -72,7 +72,7 @@ const toDuplicateKeyError = (err: any) => {
     : new UserInputError('Email already in use', { invalidArgs: ['email'] });
 };
 
-const profileOwnsTrip =(profile: { trips: any[] }, tripId: string) =>
+const profileOwnsTrip = (profile: { trips: any[] }, tripId: string) =>
   profile.trips.some((id) => id.toString() === tripId);
 
 const requireOwnedTrip = async (tripId: string, context: Context) => {
@@ -274,18 +274,20 @@ const resolvers: IResolvers<any, Context> = {
       return updated;
     },
 
-    removeCourseFromTrip: async (_p, { courseName }, context) => {
-      const profile = await getCurrentProfile(context);
-      const trip = await Trip.findOneAndUpdate(
-        { _id: { $in: profile.trips }, 'courses.name': courseName },
+    removeCourseFromTrip: async (_p, { tripId, courseName }, context) => {
+      checkText(courseName, 'courseName', 'Course name', LIMITS.courseName);
+      await requireOwnedTrip(tripId, context);
+
+      const updated = await Trip.findOneAndUpdate(
+        { _id: tripId, 'courses.name': courseName },
         { $pull: { courses: { name: courseName } } },
         { new: true, runValidators: true }
       );
 
-      if (!trip) {
-        throw new UserInputError('Course not found on one of your trips');
+      if (!updated) {
+        throw new UserInputError('Course not found on this trip');
       }
-      return trip;
+      return updated;
     },
 
     addPlayer: async (_p, { tripId, name }, context) => {
