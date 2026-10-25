@@ -13,6 +13,14 @@ The project is being shaped for **private, small-group use**: permanent accounts
 - View weather information for trip planning
 - Private account data scoped to the authenticated owner
 
+## Screenshots
+
+Home page of the live deployment at https://fairway-finder.onrender.com (captured 2026-10-25, signed out). That deploy predates this branch, so the Guest Demo UI is not shown yet.
+
+| Desktop (1440×900) | Phone (390×844) |
+|---|---|
+| <img src="docs/screenshots/fairway-desktop.png" alt="Fairway Finder home page on desktop" width="600"> | <img src="docs/screenshots/fairway-mobile.png" alt="Fairway Finder home page on a phone" width="220"> |
+
 ## Secure access model
 
 The current secure-access feature work includes:
