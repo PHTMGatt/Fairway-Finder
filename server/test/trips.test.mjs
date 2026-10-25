@@ -33,6 +33,7 @@ const newTrip = async (name = 'Limits trip') =>
   (await alice(ADD_TRIP, { input: { name, date: '2026-11-01', courseName: 'Links' } })).data.addTrip._id;
 const ADD_PLAYER = `mutation($t: ID!, $n: String!) { addPlayer(tripId: $t, name: $n) { _id } }`;
 const ADD_COURSE = `mutation($t: ID!, $c: String!) { addCourseToTrip(tripId: $t, courseName: $c) { _id } }`;
+const REMOVE_COURSE = `mutation($t: ID!, $c: ID!) { removeCourseFromTrip(tripId: $t, courseId: $c) { _id courses { _id name } } }`;
 const UPDATE_SCORE = `mutation($t: ID!, $p: String!, $h: Int!, $s: Int!) { updateScore(tripId: $t, player: $p, hole: $h, score: $s) { _id } }`;
 const PLAYER_HCP = `mutation($t: ID!, $n: String!, $h: Float!) { updatePlayerHandicap(tripId: $t, name: $n, handicap: $h) { _id } }`;
 const TRIP_HCP = `mutation($t: ID!, $h: Float!) { updateTripHandicap(tripId: $t, handicap: $h) { _id } }`;
@@ -128,4 +129,39 @@ test("someone else's trip looks the same as a missing one, and is not an auth er
   const stillThere = await Trip.findById(tripId).lean();
   assert.equal(stillThere.players.length, 0, "Bob's add-player did not touch Alice's trip");
   assert.equal((await alice(TRIP, { id: tripId })).data?.trip?.name, 'Pebble', 'owner still sees it');
+});
+
+test('course removal targets one owned trip and one embedded course id', async () => {
+  const firstTripId = await newTrip('Course target A');
+  const secondTripId = await newTrip('Course target B');
+  const firstBefore = await Trip.findById(firstTripId).lean();
+  const secondBefore = await Trip.findById(secondTripId).lean();
+  const firstCourseId = firstBefore.courses[0]._id.toString();
+
+  assert.equal(firstBefore.courses[0].name, 'Links');
+  assert.equal(secondBefore.courses[0].name, 'Links');
+
+  const removed = await alice(REMOVE_COURSE, { t: firstTripId, c: firstCourseId });
+  assert.equal(removed.error, null);
+
+  const [firstAfter, secondAfter] = await Promise.all([
+    Trip.findById(firstTripId).lean(),
+    Trip.findById(secondTripId).lean(),
+  ]);
+  assert.equal(firstAfter.courses.length, 0, 'target trip lost only the requested course');
+  assert.equal(secondAfter.courses.length, 1, 'same-named course on another trip remains');
+  assert.equal(secondAfter.courses[0].name, 'Links');
+});
+
+test('course removal enforces trip ownership before touching a course', async () => {
+  const tripId = await newTrip('Owned removal');
+  const tripBefore = await Trip.findById(tripId).lean();
+  const courseId = tripBefore.courses[0]._id.toString();
+  const missingTripId = '64b000000000000000000099';
+
+  assert.equal((await bob(REMOVE_COURSE, { t: tripId, c: courseId })).error?.message, 'Trip not found');
+  assert.equal((await bob(REMOVE_COURSE, { t: missingTripId, c: courseId })).error?.message, 'Trip not found');
+
+  const tripAfter = await Trip.findById(tripId).lean();
+  assert.equal(tripAfter.courses.length, 1, 'unauthorized removal did not mutate the trip');
 });
