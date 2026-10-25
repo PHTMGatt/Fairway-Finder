@@ -1,10 +1,8 @@
 /* src/components/TripList/TripList.css */
-/*Note; trip list wrapper */
 .trip-list {
   margin: 1rem 0;
 }
 
-/*Note; section title */
 .trip-list__title {
   font-size: 1.3rem;
   font-weight: 700;
@@ -12,35 +10,27 @@
   color: #1f3b24;
 }
 
-/*Note; delete all button */
-.trip-list__delete-all {
-  margin-bottom: 1rem;
-  background-color: #c62828;
-  color: white;
-  padding: 0.6rem 1rem;
-  border: none;
+.trip-list__error {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #c62828;
   border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-.trip-list__delete-all:hover {
-  background-color: #b71c1c;
+  background: #fff5f5;
+  color: #8e1b1b;
 }
 
-/*Note; responsive grid of trip cards */
 .trip-list__grid {
   display: grid;
   gap: 1rem;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 }
+
 @media (max-width: 500px) {
   .trip-list__grid {
     grid-template-columns: 1fr;
   }
 }
 
-/*Note; empty fallback message */
 .trip-list__empty {
   font-size: 1rem;
   color: #666;
@@ -55,7 +45,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/*Note; individual trip card */
 .trip-card {
   display: flex;
   flex-direction: column;
@@ -67,12 +56,12 @@
   overflow: hidden;
   transition: transform 0.2s, box-shadow 0.2s;
 }
+
 .trip-card:hover {
   transform: translateY(-3px);
   box-shadow: 0 10px 24px rgba(109, 194, 255, 0.35);
 }
 
-/*Note; card header bar */
 .trip-card__header {
   background: linear-gradient(to right, #81c784, #66bb6a);
   color: #fff;
@@ -84,7 +73,6 @@
   align-items: center;
 }
 
-/*Note; course count bubble */
 .trip-card__count {
   background: rgba(255, 255, 255, 0.3);
   padding: 0.15rem 0.5rem;
@@ -92,7 +80,6 @@
   font-size: 0.85rem;
 }
 
-/*Note; delete icon button */
 .trip-card__delete {
   background: transparent;
   border: none;
@@ -102,12 +89,17 @@
   cursor: pointer;
   transition: color 0.2s, transform 0.2s;
 }
+
 .trip-card__delete:hover {
   color: #b71c1c;
   transform: scale(1.2);
 }
 
-/*Note; view trip CTA */
+.trip-card__delete:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
 .trip-card__btn {
   margin-top: auto;
   padding: 0.75rem;
@@ -119,6 +111,7 @@
   border-top: 1px solid #b3e5fc;
   transition: background-color 0.25s, box-shadow 0.25s;
 }
+
 .trip-card__btn:hover {
   background-color: #4aa7e0;
   box-shadow: 0 4px 12px rgba(109, 194, 255, 0.5);
