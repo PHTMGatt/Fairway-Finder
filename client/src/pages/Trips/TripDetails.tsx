@@ -14,6 +14,12 @@ import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import { FaMapMarkerAlt } from 'react-icons/fa';
 import { Alert } from 'react-bootstrap';
 import ScoreCard from '../../components/ScoreCard/ScoreCard';
+import {
+  PersistedTripCourse,
+  TeeRating,
+  resolveGolfCourseLookup,
+  storedTeeRating,
+} from './tripDetailsCourse';
 import './TripDetails.css';
 
 interface WeatherData {
@@ -23,6 +29,13 @@ interface WeatherData {
   wind: { speed: number };
   rain?: { '1h': number };
   snow?: { '1h': number };
+}
+
+interface TripCourse extends PersistedTripCourse {
+  _id?: string;
+  address?: string | null;
+  location?: { lat: number; lng: number } | null;
+  rating?: number | null;
 }
 
 interface GolfCourseAPIResponse {
@@ -43,63 +56,76 @@ interface GolfCourseAPIResponse {
   };
 }
 
+const routeWeatherCity = (): string => {
+  const value = window.history.state?.usr?.city;
+  return typeof value === 'string' ? value.trim() : '';
+};
+
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
-
-  const [tripDate, setTripDate] = useState<string>(() =>
-    localStorage.getItem(`tripDate-${tripId}`) || ''
-  );
-  const [weatherCity, setWeatherCity] = useState<string>(() =>
-    localStorage.getItem(`weatherCity-${tripId}`) || ''
-  );
-
+  const [initialWeatherCity] = useState(routeWeatherCity);
+  const [weatherCity, setWeatherCity] = useState(initialWeatherCity);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
   const [weatherError, setWeatherError] = useState<string>('');
   const [golfApiError, setGolfApiError] = useState<string>('');
+  const [teeRating, setTeeRating] = useState<TeeRating | null>(null);
   const [showAlert, setShowAlert] = useState<boolean>(false);
-
-  useEffect(() => {
-    const nav = window.history.state?.usr;
-    if (nav?.date) {
-      localStorage.setItem(`tripDate-${tripId}`, nav.date);
-      setTripDate(nav.date);
-    }
-    if (nav?.city) {
-      localStorage.setItem(`weatherCity-${tripId}`, nav.city);
-      setWeatherCity(nav.city);
-    }
-  }, [tripId]);
 
   const { loading, error, data } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
     skip: !tripId,
   });
   const trip = data?.trip;
-  const courseName = trip?.courses?.[0]?.name;
+  const course: TripCourse | undefined = trip?.courses?.[0];
 
-  const fetchWeather = (city: string) => {
+  const fetchWeather = useCallback(async (city: string) => {
+    const normalizedCity = city.trim();
+    if (!normalizedCity) return;
+
     setWeatherLoading(true);
     setWeatherError('');
-    fetch(`/api/weather?city=${encodeURIComponent(city)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch weather');
-        return res.json();
-      })
-      .then((json) => setWeatherData(json))
-      .catch((err) => setWeatherError(err.message))
-      .finally(() => setWeatherLoading(false));
-  };
+    try {
+      const response = await fetch(
+        `/api/weather?city=${encodeURIComponent(normalizedCity)}`
+      );
+      if (!response.ok) throw new Error('Failed to fetch weather');
+      setWeatherData(await response.json());
+    } catch (weatherRequestError: unknown) {
+      setWeatherError(
+        weatherRequestError instanceof Error
+          ? weatherRequestError.message
+          : 'Unable to load weather'
+      );
+    } finally {
+      setWeatherLoading(false);
+    }
+  }, []);
 
-  // Keep the GolfCourseAPI key server-side. The browser only calls our proxy.
-  const fetchSlopeAndRating = useCallback(
-    async (name: string) => {
-      if (!name) return;
+  const loadTeeRating = useCallback(async (selectedCourse: TripCourse) => {
+    const persisted = storedTeeRating(selectedCourse);
+    if (persisted) {
+      setTeeRating(persisted);
+      setGolfApiError('');
+      return;
+    }
 
-      try {
-        setGolfApiError('');
+    const lookup = resolveGolfCourseLookup(selectedCourse);
+    if (!lookup) {
+      setTeeRating(null);
+      setGolfApiError('');
+      return;
+    }
+
+    try {
+      setGolfApiError('');
+      let courseId: string;
+
+      if (lookup.kind === 'details') {
+        courseId = lookup.id;
+      } else {
         const search = await fetch(
-          `/api/golf/search?search_query=${encodeURIComponent(name)}`
+          `/api/golf/search?search_query=${encodeURIComponent(lookup.query)}`
         );
         if (!search.ok) {
           throw new Error('Unable to search golf course details');
@@ -107,43 +133,49 @@ const TripDetails: React.FC = () => {
 
         const searchJson = await search.json();
         const firstResult = searchJson.courses?.[0];
-        if (!firstResult) return;
-
-        const details = await fetch(`/api/golf/${firstResult.id}`);
-        if (!details.ok) {
-          throw new Error('Unable to load golf course details');
+        if (!firstResult?.id) {
+          setTeeRating(null);
+          return;
         }
-
-        const fullData: GolfCourseAPIResponse = await details.json();
-        const firstTee = fullData.tees.male?.[0];
-        if (!firstTee) throw new Error('No tee data found');
-
-        localStorage.setItem(
-          `slopeRating-${tripId}`,
-          String(firstTee.slope_rating)
-        );
-        localStorage.setItem(
-          `courseRating-${tripId}`,
-          String(firstTee.course_rating)
-        );
-      } catch (err: any) {
-        setGolfApiError(err.message || 'Error loading slope/rating');
+        courseId = String(firstResult.id);
       }
-    },
-    [tripId]
-  );
+
+      const details = await fetch(`/api/golf/${encodeURIComponent(courseId)}`);
+      if (!details.ok) {
+        throw new Error('Unable to load golf course details');
+      }
+
+      const fullData: GolfCourseAPIResponse = await details.json();
+      const firstTee = fullData.tees.male?.[0];
+      if (!firstTee) throw new Error('No tee data found');
+
+      setTeeRating({
+        slopeRating: firstTee.slope_rating,
+        courseRating: firstTee.course_rating,
+      });
+    } catch (golfRequestError: unknown) {
+      setGolfApiError(
+        golfRequestError instanceof Error
+          ? golfRequestError.message
+          : 'Error loading slope/rating'
+      );
+      setTeeRating(null);
+    }
+  }, []);
 
   useEffect(() => {
-    if (weatherCity) {
-      fetchWeather(weatherCity);
+    if (initialWeatherCity) {
+      void fetchWeather(initialWeatherCity);
     }
-  }, [weatherCity]);
+  }, [fetchWeather, initialWeatherCity]);
 
   useEffect(() => {
-    if (courseName) {
-      fetchSlopeAndRating(courseName);
+    if (course) {
+      void loadTeeRating(course);
+    } else {
+      setTeeRating(null);
     }
-  }, [courseName, fetchSlopeAndRating]);
+  }, [course, loadTeeRating]);
 
   const handleCitySubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -154,8 +186,7 @@ const TripDetails: React.FC = () => {
     }
 
     setShowAlert(false);
-    localStorage.setItem(`weatherCity-${tripId}`, weatherCity);
-    fetchWeather(weatherCity);
+    void fetchWeather(weatherCity);
   };
 
   if (!tripId) {
@@ -173,12 +204,21 @@ const TripDetails: React.FC = () => {
   }
 
   const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
+  const mapsQuery = [course?.name, course?.address].filter(Boolean).join(' ');
+  const hasGooglePlace = course?.source === 'google' && course?.providerId;
+  const mapsUrl = course?.name
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery || course.name)}${
+        hasGooglePlace
+          ? `&query_place_id=${encodeURIComponent(course.providerId as string)}`
+          : ''
+      }`
+    : '';
 
   return (
     <div className="trip-details">
       <h2 className="trip-details__title">{trip.name}</h2>
       <p className="trip-details__label">
-        Date: <strong>{tripDate || 'N/A'}</strong>
+        Date: <strong>{trip.date || 'N/A'}</strong>
       </p>
 
       {showAlert && (
@@ -188,7 +228,7 @@ const TripDetails: React.FC = () => {
           dismissible
           className="trip-details__alert"
         >
-          Please enter a city name.
+          Please enter a weather location.
         </Alert>
       )}
 
@@ -196,7 +236,7 @@ const TripDetails: React.FC = () => {
         <input
           type="text"
           className="trip-details__weather-input"
-          placeholder="Search city for courses..."
+          placeholder="Weather location (city, state)..."
           value={weatherCity}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setWeatherCity(e.target.value)}
         />
@@ -205,7 +245,7 @@ const TripDetails: React.FC = () => {
           className="trip-details__weather-btn"
           disabled={weatherLoading}
         >
-          {weatherLoading ? 'Loading…' : 'Find Courses'}
+          {weatherLoading ? 'Loading…' : 'Update Weather'}
         </button>
       </form>
 
@@ -217,15 +257,19 @@ const TripDetails: React.FC = () => {
           <div className="trip-card__header">Course Info</div>
           <div className="trip-card__body">
             <h3 className="trip-card__course-name">
-              {trip.courses?.[0]?.name ?? 'No course selected'}
+              {course?.name ?? 'No course selected'}
             </h3>
-            <p>{trip.courses?.[0]?.address ?? 'No address available'}</p>
-            {trip.courses?.[0]?.name && (
+            <p>{course?.address ?? 'No address available'}</p>
+            {typeof course?.rating === 'number' && <p>⭐ {course.rating}</p>}
+            {teeRating && (
+              <p>
+                Course rating {teeRating.courseRating} · Slope {teeRating.slopeRating}
+              </p>
+            )}
+            {mapsUrl && (
               <a
                 className="trip-card__link"
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  trip.courses[0].name
-                )}`}
+                href={mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -252,7 +296,7 @@ const TripDetails: React.FC = () => {
                 </p>
               </>
             ) : (
-              <p>No weather data. Enter a city above.</p>
+              <p>No weather data. Enter a location above.</p>
             )}
           </div>
         </div>
