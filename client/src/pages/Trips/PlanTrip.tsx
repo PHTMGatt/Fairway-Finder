@@ -8,24 +8,18 @@ import { QUERY_TRIPS } from '../../utils/queries';
 import { Alert } from 'react-bootstrap';
 import { FaFlagCheckered } from 'react-icons/fa';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import { CourseSearchResult, toTripCourseInput } from './planTripCourse';
 import './PlanTrip.css';
-
-interface Course {
-  name: string;
-  address: string;
-  rating: number | null;
-  place_id: string;
-}
 
 const PlanTrip: React.FC = () => {
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
   const [searchCity, setSearchCity] = useState<string>('');
-  const [courseOptions, setCourseOptions] = useState<Course[]>([]);
+  const [courseOptions, setCourseOptions] = useState<CourseSearchResult[]>([]);
   const [courseLoading, setCourseLoading] = useState<boolean>(false);
   const [courseError, setCourseError] = useState<string>('');
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<CourseSearchResult | null>(null);
 
   const [tripName, setTripName] = useState<string>('');
   const [tripDate, setTripDate] = useState<string>('');
@@ -55,7 +49,7 @@ const PlanTrip: React.FC = () => {
     try {
       const res = await fetch(`/api/courses?city=${encodeURIComponent(city)}`);
       if (!res.ok) throw new Error('Failed to fetch courses');
-      const courses: Course[] = await res.json();
+      const courses: CourseSearchResult[] = await res.json();
 
       if (!courses.length) {
         setCourseError(`No courses found near “${city}.”`);
@@ -84,15 +78,17 @@ const PlanTrip: React.FC = () => {
           input: {
             name: tripName.trim(),
             date: tripDate,
-            courseName: selectedCourse.name,
+            course: toTripCourseInput(selectedCourse),
           },
         },
       });
       const newId = data?.addTrip?._id;
       if (!newId) throw new Error('Trip creation failed.');
 
+      // Keep the location hint during the transition; Trip Details will stop
+      // relying on route/localStorage state in the next data-flow slice.
       navigate(`/trip/${newId}`, {
-        state: { date: tripDate, city: searchCity.trim() },
+        state: { city: searchCity.trim() },
       });
     } catch (err: any) {
       setSubmitError(err.message || 'Something went wrong.');
@@ -132,18 +128,18 @@ const PlanTrip: React.FC = () => {
 
       {courseOptions.length > 0 && (
         <ul className="plan-trip__results">
-          {courseOptions.map((c) => (
+          {courseOptions.map((course) => (
             <li
-              key={c.place_id}
+              key={course.place_id}
               className={
                 `plan-trip__result-item` +
-                (selectedCourse?.place_id === c.place_id ? ' selected' : '')
+                (selectedCourse?.place_id === course.place_id ? ' selected' : '')
               }
-              onClick={() => setSelectedCourse(c)}
+              onClick={() => setSelectedCourse(course)}
             >
-              <strong>{c.name}</strong>
+              <strong>{course.name}</strong>
               <br />
-              <small>{c.address}</small>
+              <small>{course.address}</small>
             </li>
           ))}
         </ul>
