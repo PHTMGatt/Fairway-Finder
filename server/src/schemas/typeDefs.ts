@@ -27,14 +27,19 @@ export default `
   }
 
   """
-  A golf course, including cached rating and slope for handicap calculations.
+  A canonical selected-course snapshot embedded in a trip. Provider identity and
+  enrichment fields are optional so legacy name-only trips remain compatible.
   """
   type Course {
     _id: ID
     name: String
+    source: String
+    providerId: String
     address: String
     location: Location
     rating: Float
+    golfCourseApiId: String
+    courseRating: Float
     slope: Int
   }
 
@@ -44,6 +49,23 @@ export default `
   type Location {
     lat: Float
     lng: Float
+  }
+
+  input LocationInput {
+    lat: Float!
+    lng: Float!
+  }
+
+  input TripCourseInput {
+    name: String!
+    source: String
+    providerId: String
+    address: String
+    location: LocationInput
+    rating: Float
+    golfCourseApiId: String
+    courseRating: Float
+    slope: Int
   }
 
   """
@@ -78,10 +100,15 @@ export default `
     inviteCode: String!
   }
 
+  """
+  New clients send a structured course snapshot. courseName remains temporarily
+  supported for older clients while the trip-planning flow is migrated.
+  """
   input TripInput {
     name: String!
     date: String!
-    courseName: String!
+    course: TripCourseInput
+    courseName: String
   }
 
   type Query {

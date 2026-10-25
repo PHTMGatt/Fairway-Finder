@@ -29,6 +29,18 @@ interface Context {
   ip?: string;
 }
 
+interface TripCourseInput {
+  name: string;
+  source?: string | null;
+  providerId?: string | null;
+  address?: string | null;
+  location?: { lat: number; lng: number } | null;
+  rating?: number | null;
+  golfCourseApiId?: string | null;
+  courseRating?: number | null;
+  slope?: number | null;
+}
+
 const requireUserId = (context: Context): string => {
   if (!context.user?._id) {
     throw new AuthenticationError('Not authenticated');
@@ -90,6 +102,31 @@ const requireOwnedTrip = async (tripId: string, context: Context) => {
   }
 
   return { profile, trip };
+};
+
+const optionalText = (value?: string | null) => {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+};
+
+const normalizeTripCourse = (input: TripCourseInput) => {
+  checkText(input.name, 'courseName', 'Course name', LIMITS.courseName);
+
+  return {
+    name: input.name.trim(),
+    ...(optionalText(input.source) ? { source: optionalText(input.source) } : {}),
+    ...(optionalText(input.providerId) ? { providerId: optionalText(input.providerId) } : {}),
+    ...(optionalText(input.address) ? { address: optionalText(input.address) } : {}),
+    ...(input.location
+      ? { location: { lat: input.location.lat, lng: input.location.lng } }
+      : {}),
+    ...(typeof input.rating === 'number' ? { rating: input.rating } : {}),
+    ...(optionalText(input.golfCourseApiId)
+      ? { golfCourseApiId: optionalText(input.golfCourseApiId) }
+      : {}),
+    ...(typeof input.courseRating === 'number' ? { courseRating: input.courseRating } : {}),
+    ...(typeof input.slope === 'number' ? { slope: input.slope } : {}),
+  };
 };
 
 const transformTrip = (trip: any) => {
@@ -233,7 +270,14 @@ const resolvers: IResolvers<any, Context> = {
     addTrip: async (_p, { input }, context) => {
       checkText(input.name, 'name', 'Trip name', LIMITS.tripName);
       checkText(input.date, 'date', 'Trip date', LIMITS.tripDate);
-      checkText(input.courseName, 'courseName', 'Course name', LIMITS.courseName);
+
+      const selectedCourse: TripCourseInput | null = input.course
+        ?? (typeof input.courseName === 'string' ? { name: input.courseName } : null);
+      if (!selectedCourse) {
+        throw new UserInputError('A course is required', { invalidArgs: ['course'] });
+      }
+      const course = normalizeTripCourse(selectedCourse);
+
       const profile = await getCurrentProfile(context);
       if (profile.isGuest && profile.trips.length >= GUEST_MAX_TRIPS) {
         throw new UserInputError(`The guest demo is limited to ${GUEST_MAX_TRIPS} trips`);
@@ -241,7 +285,7 @@ const resolvers: IResolvers<any, Context> = {
       const trip = await Trip.create({
         name: input.name,
         date: input.date,
-        courses: [{ name: input.courseName }],
+        courses: [course],
         // Note; Guest trips expire with their guest, set in the same write
         ...(profile.isGuest ? { isGuest: true, expiresAt: profile.expiresAt } : {}),
       });

@@ -19,6 +19,14 @@ export const QUERY_ME = gql`
         courses {
           _id
           name
+          source
+          providerId
+          address
+          location { lat lng }
+          rating
+          golfCourseApiId
+          courseRating
+          slope
         }
         players {
           name
@@ -42,6 +50,14 @@ export const QUERY_TRIPS = gql`
       courses {
         _id
         name
+        source
+        providerId
+        address
+        location { lat lng }
+        rating
+        golfCourseApiId
+        courseRating
+        slope
       }
       players {
         name
@@ -66,6 +82,14 @@ export const QUERY_MY_TRIPS = gql`
         courses {
           _id
           name
+          source
+          providerId
+          address
+          location { lat lng }
+          rating
+          golfCourseApiId
+          courseRating
+          slope
         }
         players {
           name
@@ -86,6 +110,14 @@ export const QUERY_TRIP = gql`
       courses {
         _id
         name
+        source
+        providerId
+        address
+        location { lat lng }
+        rating
+        golfCourseApiId
+        courseRating
+        slope
       }
       players {
         name
