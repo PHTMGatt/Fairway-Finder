@@ -5,6 +5,7 @@ export interface PersistedTripCourse {
   golfCourseApiId?: string | null;
   courseRating?: number | null;
   slope?: number | null;
+  location?: { lat: number; lng: number } | null;
 }
 
 export type GolfCourseLookup =
@@ -47,3 +48,22 @@ export const storedTeeRating = (
   typeof course?.courseRating === 'number' && typeof course?.slope === 'number'
     ? { courseRating: course.courseRating, slopeRating: course.slope }
     : null;
+
+export const weatherParamsForCourse = (
+  course?: PersistedTripCourse | null
+): URLSearchParams | null => {
+  if (
+    typeof course?.location?.lat !== 'number' ||
+    typeof course.location.lng !== 'number'
+  ) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    lat: String(course.location.lat),
+    lng: String(course.location.lng),
+  });
+  const name = trimmed(course.name);
+  if (name) params.set('name', name);
+  return params;
+};
