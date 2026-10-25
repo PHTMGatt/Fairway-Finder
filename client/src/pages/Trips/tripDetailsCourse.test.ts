@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { resolveGolfCourseLookup, storedTeeRating } from './tripDetailsCourse';
+import {
+  resolveGolfCourseLookup,
+  storedTeeRating,
+  weatherParamsForCourse,
+} from './tripDetailsCourse';
 
 describe('Trip Details course enrichment', () => {
   it('uses an explicit GolfCourseAPI id without fuzzy searching', () => {
@@ -43,5 +47,17 @@ describe('Trip Details course enrichment', () => {
       slopeRating: 131,
     });
     expect(storedTeeRating({ courseRating: 72.4, slope: null })).toBeNull();
+  });
+
+  it('builds weather lookup parameters from persisted course coordinates', () => {
+    const params = weatherParamsForCourse({
+      name: 'Arcadia Bluffs',
+      location: { lat: 44.508, lng: -86.242 },
+    });
+
+    expect(params?.toString()).toBe(
+      'lat=44.508&lng=-86.242&name=Arcadia+Bluffs'
+    );
+    expect(weatherParamsForCourse({ name: 'Legacy Links' })).toBeNull();
   });
 });
