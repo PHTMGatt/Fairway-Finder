@@ -113,7 +113,7 @@ export default `
     addTrip(input: TripInput!): Trip
     deleteTrip(tripId: ID!): Trip
     addCourseToTrip(tripId: ID!, courseName: String!): Trip
-    removeCourseFromTrip(courseName: String!): Trip
+    removeCourseFromTrip(tripId: ID!, courseName: String!): Trip
     addPlayer(tripId: ID!, name: String!): Trip
     removePlayer(tripId: ID!, name: String!): Trip
     updateScore(tripId: ID!, player: String!, hole: Int!, score: Int!): Trip
