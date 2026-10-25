@@ -85,11 +85,7 @@ const PlanTrip: React.FC = () => {
       const newId = data?.addTrip?._id;
       if (!newId) throw new Error('Trip creation failed.');
 
-      // Keep the location hint during the transition; Trip Details will stop
-      // relying on route/localStorage state in the next data-flow slice.
-      navigate(`/trip/${newId}`, {
-        state: { city: searchCity.trim() },
-      });
+      navigate(`/trip/${newId}`);
     } catch (err: any) {
       setSubmitError(err.message || 'Something went wrong.');
     }
