@@ -39,3 +39,6 @@ Thumbs.db
 # ————— Local Claude Code Settings —————
 .claude/settings.local.json
 .claude/launch.json
+
+# ————— Playwright MCP Logs —————
+.playwright-mcp/
