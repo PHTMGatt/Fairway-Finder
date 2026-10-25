@@ -19,6 +19,7 @@ import {
   TeeRating,
   resolveGolfCourseLookup,
   storedTeeRating,
+  weatherParamsForCourse,
 } from './tripDetailsCourse';
 import './TripDetails.css';
 
@@ -34,7 +35,6 @@ interface WeatherData {
 interface TripCourse extends PersistedTripCourse {
   _id?: string;
   address?: string | null;
-  location?: { lat: number; lng: number } | null;
   rating?: number | null;
 }
 
@@ -56,15 +56,9 @@ interface GolfCourseAPIResponse {
   };
 }
 
-const routeWeatherCity = (): string => {
-  const value = window.history.state?.usr?.city;
-  return typeof value === 'string' ? value.trim() : '';
-};
-
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
-  const [initialWeatherCity] = useState(routeWeatherCity);
-  const [weatherCity, setWeatherCity] = useState(initialWeatherCity);
+  const [weatherCity, setWeatherCity] = useState('');
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
   const [weatherError, setWeatherError] = useState<string>('');
@@ -79,16 +73,11 @@ const TripDetails: React.FC = () => {
   const trip = data?.trip;
   const course: TripCourse | undefined = trip?.courses?.[0];
 
-  const fetchWeather = useCallback(async (city: string) => {
-    const normalizedCity = city.trim();
-    if (!normalizedCity) return;
-
+  const fetchWeather = useCallback(async (params: URLSearchParams) => {
     setWeatherLoading(true);
     setWeatherError('');
     try {
-      const response = await fetch(
-        `/api/weather?city=${encodeURIComponent(normalizedCity)}`
-      );
+      const response = await fetch(`/api/weather?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch weather');
       setWeatherData(await response.json());
     } catch (weatherRequestError: unknown) {
@@ -164,10 +153,9 @@ const TripDetails: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (initialWeatherCity) {
-      void fetchWeather(initialWeatherCity);
-    }
-  }, [fetchWeather, initialWeatherCity]);
+    const params = weatherParamsForCourse(course);
+    if (params) void fetchWeather(params);
+  }, [course?.location?.lat, course?.location?.lng, course?.name, fetchWeather]);
 
   useEffect(() => {
     if (course) {
@@ -179,14 +167,15 @@ const TripDetails: React.FC = () => {
 
   const handleCitySubmit = (e: FormEvent) => {
     e.preventDefault();
+    const city = weatherCity.trim();
 
-    if (!weatherCity.trim()) {
+    if (!city) {
       setShowAlert(true);
       return;
     }
 
     setShowAlert(false);
-    void fetchWeather(weatherCity);
+    void fetchWeather(new URLSearchParams({ city }));
   };
 
   if (!tripId) {
@@ -296,7 +285,11 @@ const TripDetails: React.FC = () => {
                 </p>
               </>
             ) : (
-              <p>No weather data. Enter a location above.</p>
+              <p>
+                {course?.location
+                  ? 'No weather data available right now.'
+                  : 'No saved course location. Enter a weather location above.'}
+              </p>
             )}
           </div>
         </div>
