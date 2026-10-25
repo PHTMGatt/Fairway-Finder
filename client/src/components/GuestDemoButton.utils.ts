@@ -1,4 +1,4 @@
-export const GUEST_DEMO_NOTE = 'Stays on this device and is deleted after 24 hours.';
+export const GUEST_DEMO_NOTE = 'Temporary demo data is automatically deleted after 24 hours.';
 
 interface StartGuestSessionData {
   startGuestSession?: {
