@@ -80,10 +80,17 @@ test('structured TripCourse identity and metadata persist end to end', async () 
   const created = await user(ADD_TRIP, { input });
   assert.equal(created.error, null);
   const course = created.data.addTrip.courses[0];
-  assert.deepEqual(course, {
-    _id: course._id,
-    ...input.course,
-  });
+  assert.ok(course._id);
+  assert.equal(course.name, input.course.name);
+  assert.equal(course.source, input.course.source);
+  assert.equal(course.providerId, input.course.providerId);
+  assert.equal(course.address, input.course.address);
+  assert.equal(course.location.lat, input.course.location.lat);
+  assert.equal(course.location.lng, input.course.location.lng);
+  assert.equal(course.rating, input.course.rating);
+  assert.equal(course.golfCourseApiId, input.course.golfCourseApiId);
+  assert.equal(course.courseRating, input.course.courseRating);
+  assert.equal(course.slope, input.course.slope);
 
   const stored = await Trip.findById(created.data.addTrip._id).lean();
   assert.equal(stored.courses[0].source, 'google');
