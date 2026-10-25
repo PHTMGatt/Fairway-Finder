@@ -274,17 +274,18 @@ const resolvers: IResolvers<any, Context> = {
       return updated;
     },
 
-    removeCourseFromTrip: async (_p, { courseName }, context) => {
-      const profile = await getCurrentProfile(context);
-      const trip = await Trip.findOneAndUpdate(
-        { _id: { $in: profile.trips }, 'courses.name': courseName },
-        { $pull: { courses: { name: courseName } } },
-        { new: true, runValidators: true }
+    removeCourseFromTrip: async (_p, { tripId, courseId }, context) => {
+      const { trip } = await requireOwnedTrip(tripId, context);
+      const courseIndex = trip.courses.findIndex(
+        (course) => course._id.toString() === courseId
       );
 
-      if (!trip) {
-        throw new UserInputError('Course not found on one of your trips');
+      if (courseIndex === -1) {
+        throw new UserInputError('Course not found on this trip');
       }
+
+      trip.courses.splice(courseIndex, 1);
+      await trip.save();
       return trip;
     },
 
