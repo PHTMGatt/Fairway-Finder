@@ -2,6 +2,10 @@
 
 import { Router, Request, Response } from 'express';
 import fetch from 'node-fetch';
+import {
+  parseWeatherRequest,
+  WeatherRequestQuery,
+} from '../utils/weatherLocation.js';
 
 const router = Router();
 
@@ -53,26 +57,36 @@ const geocodeCity = async (city: string): Promise<GeocodingResult | null> => {
 
 /**
  * GET /api/weather?city=Detroit
+ * GET /api/weather?lat=44.508&lng=-86.242&name=Arcadia%20Bluffs
  *
- * Uses Open-Meteo geocoding + current weather. The response intentionally
- * matches the shape the existing React pages expect, so the UI does not need
- * provider-specific logic or an API key.
+ * Uses persisted coordinates directly when available, while retaining the
+ * existing city geocoding contract for manual lookups and legacy clients.
+ * The response intentionally matches the shape existing React pages expect.
  */
 router.get(
   '/weather',
   async (
-    req: Request<object, any, object, { city?: string }>,
+    req: Request<object, any, object, WeatherRequestQuery>,
     res: Response
   ) => {
-    const city = req.query.city?.trim();
-    if (!city) {
-      return res.status(400).json({ error: 'Query parameter "city" is required' });
+    const requested = parseWeatherRequest(req.query);
+    if (requested.kind === 'invalid') {
+      return res.status(400).json({ error: requested.error });
     }
 
     try {
-      const location = await geocodeCity(city);
-      if (!location) {
-        return res.status(404).json({ error: 'City not found' });
+      let location: GeocodingResult | null;
+      if (requested.kind === 'coordinates') {
+        location = {
+          name: requested.name,
+          latitude: requested.latitude,
+          longitude: requested.longitude,
+        };
+      } else {
+        location = await geocodeCity(requested.city);
+        if (!location) {
+          return res.status(404).json({ error: 'City not found' });
+        }
       }
 
       const url = new URL('https://api.open-meteo.com/v1/forecast');
