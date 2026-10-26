@@ -37,6 +37,34 @@ export const checkText = (value: string, field: string, label: string, max: numb
 };
 
 /**
+ * Require a strict YYYY-MM-DD value that also exists on the calendar. UTC is used so
+ * validation cannot change with the server timezone.
+ */
+export const checkISODate = (value: string, field: string, label: string) => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) {
+    throw new UserInputError(`${label} must be a valid YYYY-MM-DD date`, {
+      invalidArgs: [field],
+    });
+  }
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    throw new UserInputError(`${label} must be a valid YYYY-MM-DD date`, {
+      invalidArgs: [field],
+    });
+  }
+};
+
+/**
  * Note; Require a number within [min, max]; integers only when integer is true.
  */
 export const checkRange = (
