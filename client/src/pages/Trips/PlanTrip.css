@@ -140,6 +140,11 @@
   box-shadow: 0 6px 14px rgba(30, 80, 46, 0.16);
 }
 
+.plan-trip__btn:focus-visible {
+  outline: 3px solid rgba(47, 111, 66, 0.22);
+  outline-offset: 2px;
+}
+
 .plan-trip__btn:disabled {
   cursor: not-allowed;
   opacity: 0.52;
@@ -149,6 +154,19 @@
   grid-column: 1 / -1;
   justify-self: start;
   min-width: 140px;
+}
+
+.plan-trip__save-guidance {
+  grid-column: 1 / -1;
+  margin: -0.25rem 0 0;
+  color: #6b776f;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.plan-trip__save-guidance.is-ready {
+  color: #2f6840;
+  font-weight: 700;
 }
 
 .plan-trip__results {
@@ -178,7 +196,8 @@
 .plan-trip__result-item:focus-visible {
   border-color: #7e9d85;
   background: #f3f8f4;
-  outline: none;
+  outline: 3px solid rgba(47, 111, 66, 0.14);
+  outline-offset: 1px;
 }
 
 .plan-trip__result-item.selected {
