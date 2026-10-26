@@ -146,3 +146,49 @@ test('TripInput rejects creation when neither course nor courseName is provided'
   assert.equal(result.error?.message, 'A course is required');
   assert.equal(await Trip.countDocuments({ name: 'No course trip' }), 0);
 });
+
+test('structured TripCourse rejects impossible coordinates and display ratings', async () => {
+  const cases = [
+    [{ location: { lat: 91, lng: -86 } }, 'Course latitude must be between -90 and 90'],
+    [{ location: { lat: 44, lng: -181 } }, 'Course longitude must be between -180 and 180'],
+    [{ rating: -0.1 }, 'Course display rating must be between 0 and 5'],
+    [{ rating: 5.1 }, 'Course display rating must be between 0 and 5'],
+  ];
+
+  for (const [index, [coursePatch, message]] of cases.entries()) {
+    const name = `Invalid numeric course ${index}`;
+    const result = await user(ADD_TRIP, {
+      input: {
+        name,
+        date: '2026-11-12',
+        course: { name: 'Bad Data Links', ...coursePatch },
+      },
+    });
+
+    assert.equal(result.error?.message, message);
+    assert.equal(await Trip.countDocuments({ name }), 0);
+  }
+});
+
+test('structured TripCourse caps optional provider metadata before persistence', async () => {
+  const cases = [
+    [{ source: 's'.repeat(41) }, 'Course source must be 1 to 40 characters'],
+    [{ providerId: 'p'.repeat(201) }, 'Course provider ID must be 1 to 200 characters'],
+    [{ address: 'a'.repeat(301) }, 'Course address must be 1 to 300 characters'],
+    [{ golfCourseApiId: 'g'.repeat(101) }, 'Golf course API ID must be 1 to 100 characters'],
+  ];
+
+  for (const [index, [coursePatch, message]] of cases.entries()) {
+    const name = `Invalid text course ${index}`;
+    const result = await user(ADD_TRIP, {
+      input: {
+        name,
+        date: '2026-11-13',
+        course: { name: 'Oversized Links', ...coursePatch },
+      },
+    });
+
+    assert.equal(result.error?.message, message);
+    assert.equal(await Trip.countDocuments({ name }), 0);
+  }
+});
