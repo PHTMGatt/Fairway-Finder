@@ -6,6 +6,14 @@ interface StartGuestSessionData {
   } | null;
 }
 
+export interface GuestDemoNavigation {
+  destination: string;
+  options: {
+    replace: true;
+    state?: unknown;
+  };
+}
+
 export const extractGuestToken = (data: unknown): string | null => {
   if (!data || typeof data !== 'object') return null;
   const session = (data as StartGuestSessionData).startGuestSession;
@@ -13,3 +21,14 @@ export const extractGuestToken = (data: unknown): string | null => {
     ? session.token
     : null;
 };
+
+export const getGuestDemoNavigation = (
+  destination = '/plan-trip',
+  state?: unknown
+): GuestDemoNavigation => ({
+  destination,
+  options: {
+    replace: true,
+    ...(state === undefined ? {} : { state }),
+  },
+});
