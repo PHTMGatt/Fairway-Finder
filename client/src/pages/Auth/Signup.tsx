@@ -4,16 +4,12 @@ import { useMutation } from '@apollo/client';
 import Auth from '../../utils/auth';
 import { ADD_PROFILE } from '../../utils/mutations';
 import { useAuth } from './AuthContext';
-import './Signup.css';
+import './Auth.css';
 
-// Note; Mirrors the server rule for new passwords
 const PASSWORD_MIN_LENGTH = 8;
 
 const Signup: React.FC = () => {
-  // Note; Invite links look like /signup?invite=CODE, so prefill the code from the URL
   const [searchParams] = useSearchParams();
-
-  // Note; Track name/email/password/invite code and potential error
   const [formValues, setFormValues] = useState({
     name: '',
     email: '',
@@ -21,21 +17,15 @@ const Signup: React.FC = () => {
     inviteCode: searchParams.get('invite')?.trim() ?? '',
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  // Note; Apollo mutation for creating a new profile
   const [addProfile, { loading }] = useMutation(ADD_PROFILE);
-
-  // Note; Refresh auth context after signup
   const { refreshAuth } = useAuth();
 
-  // Note; Handle changes in any of the input fields
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
     setErrorMessage(null);
   };
 
-  // Note; Submit the signup mutation
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -56,27 +46,32 @@ const Signup: React.FC = () => {
       });
       const token = data?.addProfile?.token;
       if (token) {
-        Auth.login(token);   // Note; Save token to localStorage
-        refreshAuth();       // Note; Update context to logged-in
+        Auth.login(token);
+        refreshAuth();
       } else {
         setErrorMessage('Signup failed.');
       }
-    } catch (err: any) {
+    } catch (error: unknown) {
+      const graphQlErrors =
+        typeof error === 'object' && error !== null && 'graphQLErrors' in error
+          ? (error as { graphQLErrors?: { message?: string }[] }).graphQLErrors
+          : undefined;
       const message =
-        err?.graphQLErrors?.[0]?.message || err.message || 'Signup failed.';
+        graphQlErrors?.[0]?.message ||
+        (error instanceof Error ? error.message : '') ||
+        'Signup failed.';
       setErrorMessage(message);
     }
   };
 
-  // Note; Redirect if already authenticated
   if (Auth.loggedIn()) {
     return <Navigate to="/saved-trips" replace />;
   }
 
   return (
     <main className="auth-page">
-      <div className="auth-card">
-        <h4 className="auth-header">Sign Up</h4>
+      <section className="auth-card" aria-labelledby="signup-title">
+        <h1 id="signup-title" className="auth-header">Create an Account</h1>
         <div className="auth-body">
           <p className="auth-note">
             Fairway Finder accounts are invite-only. Enter the code from your invite.
@@ -124,12 +119,8 @@ const Signup: React.FC = () => {
               value={formValues.password}
               onChange={handleChange}
             />
-            <button
-              type="submit"
-              className="auth-btn"
-              disabled={loading}
-            >
-              {loading ? 'Creating…' : 'Create account'}
+            <button type="submit" className="auth-btn" disabled={loading}>
+              {loading ? 'Creating…' : 'Create Account'}
             </button>
           </form>
           {errorMessage && (
@@ -139,7 +130,7 @@ const Signup: React.FC = () => {
             Already have an account? <Link to="/login">Log in</Link>
           </p>
         </div>
-      </div>
+      </section>
     </main>
   );
 };
