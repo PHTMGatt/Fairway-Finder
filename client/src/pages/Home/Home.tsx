@@ -20,7 +20,7 @@ const toolIcons: Record<string, ReactNode> = {
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const isLoggedIn = Auth.loggedIn();
-  const primaryActions = getHomePrimaryActions();
+  const primaryActions = getHomePrimaryActions(isLoggedIn);
   const tools = getHomeTools();
 
   const { loading, error, data } = useQuery(QUERY_TRIPS, {
