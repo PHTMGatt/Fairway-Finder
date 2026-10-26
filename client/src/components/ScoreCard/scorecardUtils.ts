@@ -1,3 +1,8 @@
+export type ScorecardView = 'front9' | 'back9' | 'threehole';
+
+export const getInitialScorecardView = (viewportWidth?: number): ScorecardView =>
+  typeof viewportWidth === 'number' && viewportWidth <= 600 ? 'threehole' : 'front9';
+
 export const scorecardErrorMessage = (error: unknown): string => {
   if (error instanceof Error && error.message.trim()) return error.message;
   return 'Could not save scorecard changes. Please try again.';
