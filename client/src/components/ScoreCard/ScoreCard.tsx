@@ -3,7 +3,12 @@ import React, { FormEvent, useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_TRIP } from '../../utils/queries';
 import { ADD_PLAYER, REMOVE_PLAYER, UPDATE_SCORE } from '../../utils/mutations';
-import { scorecardErrorMessage, scoreFromDraft } from './scorecardUtils';
+import {
+  getInitialScorecardView,
+  scorecardErrorMessage,
+  scoreFromDraft,
+  ScorecardView,
+} from './scorecardUtils';
 import './ScoreCard.css';
 
 interface PlayerSubdoc {
@@ -96,7 +101,9 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'front9' | 'back9' | 'threehole'>('front9');
+  const [viewMode, setViewMode] = useState<ScorecardView>(() =>
+    getInitialScorecardView(typeof window === 'undefined' ? undefined : window.innerWidth)
+  );
   const [threeHoleIndex, setThreeHoleIndex] = useState(0);
 
   const getHoleNumbers = (): number[] => {
