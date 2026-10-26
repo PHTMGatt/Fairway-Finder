@@ -21,6 +21,11 @@ export interface TeeRating {
 const trimmed = (value?: string | null) => value?.trim() || '';
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+export const secondaryTripCourses = <T>(courses: T[]): T[] => courses.slice(1);
+
+export const courseRemovalPrompt = (courseName: string): string =>
+  `Remove ${courseName} from this trip? This will not delete the trip.`;
+
 export const resolveGolfCourseLookup = (
   course?: PersistedTripCourse | null
 ): GolfCourseLookup => {
