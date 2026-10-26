@@ -92,6 +92,14 @@ export const REMOVE_COURSE_FROM_TRIP = gql`
       courses {
         _id
         name
+        source
+        providerId
+        address
+        location { lat lng }
+        rating
+        golfCourseApiId
+        courseRating
+        slope
       }
     }
   }
