@@ -1,7 +1,8 @@
 // client/src/pages/Courses/CourseFinder.tsx
 
 import React, { FormEvent, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import GuestDemoButton from '../../components/GuestDemoButton';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
 import { useAuth } from '../Auth/AuthContext';
 import { CourseSearchResult } from '../Trips/planTripCourse';
@@ -84,7 +85,8 @@ const CourseFinder: React.FC = () => {
 
       {!isLoggedIn && (
         <p className="course-finder__note">
-          You can browse courses now. Log in or start Guest Demo before saving one into a trip.
+          Browse first, then choose a course below to continue in Guest Demo, or{' '}
+          <Link to="/login">log in</Link> to save it to your account.
         </p>
       )}
 
@@ -106,6 +108,7 @@ const CourseFinder: React.FC = () => {
             : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                 query
               )}`;
+          const planState = { city: city.trim(), course };
 
           return (
             <li key={course.place_id} className="course-card">
@@ -127,7 +130,7 @@ const CourseFinder: React.FC = () => {
                   >
                     Open in Maps
                   </a>
-                  {isLoggedIn && (
+                  {isLoggedIn ? (
                     <button
                       type="button"
                       className="course-card__plan"
@@ -135,6 +138,14 @@ const CourseFinder: React.FC = () => {
                     >
                       Plan a Trip
                     </button>
+                  ) : (
+                    <GuestDemoButton
+                      className="course-card__plan"
+                      label="Plan as Guest"
+                      showNote={false}
+                      destination="/plan-trip"
+                      navigationState={planState}
+                    />
                   )}
                 </div>
               </div>
