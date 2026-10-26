@@ -131,26 +131,31 @@ test("someone else's trip looks the same as a missing one, and is not an auth er
   assert.equal((await alice(TRIP, { id: tripId })).data?.trip?.name, 'Pebble', 'owner still sees it');
 });
 
-test('course removal targets one owned trip and one embedded course id', async () => {
+test('course removal targets one owned trip and one embedded secondary course id', async () => {
   const firstTripId = await newTrip('Course target A');
   const secondTripId = await newTrip('Course target B');
+
+  assert.equal((await alice(ADD_COURSE, { t: firstTripId, c: 'Shared secondary' })).error, null);
+  assert.equal((await alice(ADD_COURSE, { t: secondTripId, c: 'Shared secondary' })).error, null);
+
   const firstBefore = await Trip.findById(firstTripId).lean();
   const secondBefore = await Trip.findById(secondTripId).lean();
-  const firstCourseId = firstBefore.courses[0]._id.toString();
+  const firstSecondaryId = firstBefore.courses[1]._id.toString();
 
-  assert.equal(firstBefore.courses[0].name, 'Links');
-  assert.equal(secondBefore.courses[0].name, 'Links');
+  assert.equal(firstBefore.courses[1].name, 'Shared secondary');
+  assert.equal(secondBefore.courses[1].name, 'Shared secondary');
 
-  const removed = await alice(REMOVE_COURSE, { t: firstTripId, c: firstCourseId });
+  const removed = await alice(REMOVE_COURSE, { t: firstTripId, c: firstSecondaryId });
   assert.equal(removed.error, null);
 
   const [firstAfter, secondAfter] = await Promise.all([
     Trip.findById(firstTripId).lean(),
     Trip.findById(secondTripId).lean(),
   ]);
-  assert.equal(firstAfter.courses.length, 0, 'target trip lost only the requested course');
-  assert.equal(secondAfter.courses.length, 1, 'same-named course on another trip remains');
-  assert.equal(secondAfter.courses[0].name, 'Links');
+  assert.equal(firstAfter.courses.length, 1, 'target trip lost only the requested secondary course');
+  assert.equal(firstAfter.courses[0].name, 'Links');
+  assert.equal(secondAfter.courses.length, 2, 'same-named secondary course on another trip remains');
+  assert.equal(secondAfter.courses[1].name, 'Shared secondary');
 });
 
 test('course removal enforces trip ownership before touching a course', async () => {
