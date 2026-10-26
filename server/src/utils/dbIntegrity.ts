@@ -16,10 +16,21 @@ interface TripCourseSnapshot {
   slope?: number | null;
 }
 
+interface ScoreSnapshot {
+  hole?: number | null;
+  score?: number | null;
+}
+
+interface PlayerSnapshot {
+  name?: string | null;
+  scores?: ScoreSnapshot[];
+}
+
 interface TripReferenceSnapshot {
   _id: IdLike | string;
   date?: string | null;
   courses?: TripCourseSnapshot[];
+  players?: PlayerSnapshot[];
 }
 
 interface DanglingReference {
@@ -55,6 +66,14 @@ export interface TripDataIntegrityReport {
   invalidLocationTripIds: string[];
   invalidDisplayRatingTripIds: string[];
   invalidSlopeTripIds: string[];
+}
+
+export interface TripPlayerIntegrityReport {
+  trips: number;
+  duplicatePlayerTrips: number;
+  malformedScorecardTrips: number;
+  duplicatePlayerTripIds: string[];
+  malformedScorecardTripIds: string[];
 }
 
 const asId = (value: IdLike | string): string => value.toString();
@@ -114,6 +133,31 @@ const hasInvalidSlope = (course: TripCourseSnapshot): boolean =>
     !Number.isInteger(course.slope) ||
     course.slope < 55 ||
     course.slope > 155);
+
+const hasMalformedScorecard = (player: PlayerSnapshot): boolean => {
+  const scores = player.scores ?? [];
+  if (scores.length !== 18) return true;
+
+  const seenHoles = new Set<number>();
+  for (const entry of scores) {
+    if (
+      typeof entry.hole !== 'number' ||
+      !Number.isInteger(entry.hole) ||
+      entry.hole < 1 ||
+      entry.hole > 18 ||
+      typeof entry.score !== 'number' ||
+      !Number.isInteger(entry.score) ||
+      entry.score < 0 ||
+      entry.score > 30 ||
+      seenHoles.has(entry.hole)
+    ) {
+      return true;
+    }
+    seenHoles.add(entry.hole);
+  }
+
+  return seenHoles.size !== 18;
+};
 
 export const analyzeTripReferenceIntegrity = (
   profiles: ProfileReferenceSnapshot[],
@@ -243,5 +287,44 @@ export const analyzeTripDataIntegrity = (
     invalidLocationTripIds,
     invalidDisplayRatingTripIds,
     invalidSlopeTripIds,
+  };
+};
+
+export const analyzeTripPlayerIntegrity = (
+  trips: TripReferenceSnapshot[]
+): TripPlayerIntegrityReport => {
+  const duplicatePlayerTripIds: string[] = [];
+  const malformedScorecardTripIds: string[] = [];
+
+  for (const trip of trips) {
+    const tripId = asId(trip._id);
+    const players = trip.players ?? [];
+    const seenNames = new Set<string>();
+    let duplicatePlayer = false;
+    let malformedScorecard = false;
+
+    for (const player of players) {
+      const normalizedName = trimmed(player.name).toLowerCase();
+      if (normalizedName) {
+        if (seenNames.has(normalizedName)) duplicatePlayer = true;
+        else seenNames.add(normalizedName);
+      }
+
+      malformedScorecard ||= hasMalformedScorecard(player);
+    }
+
+    if (duplicatePlayer) duplicatePlayerTripIds.push(tripId);
+    if (malformedScorecard) malformedScorecardTripIds.push(tripId);
+  }
+
+  duplicatePlayerTripIds.sort((left, right) => left.localeCompare(right));
+  malformedScorecardTripIds.sort((left, right) => left.localeCompare(right));
+
+  return {
+    trips: trips.length,
+    duplicatePlayerTrips: duplicatePlayerTripIds.length,
+    malformedScorecardTrips: malformedScorecardTripIds.length,
+    duplicatePlayerTripIds,
+    malformedScorecardTripIds,
   };
 };
