@@ -155,7 +155,7 @@ const TripDetails: React.FC = () => {
   useEffect(() => {
     const params = weatherParamsForCourse(course);
     if (params) void fetchWeather(params);
-  }, [course?.location?.lat, course?.location?.lng, course?.name, fetchWeather]);
+  }, [course, fetchWeather]);
 
   useEffect(() => {
     if (course) {
