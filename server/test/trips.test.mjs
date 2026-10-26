@@ -104,6 +104,34 @@ test('players are unique per trip and capped at 24; courses capped at 20', async
   assert.equal(trip.courses.length, 20);
 });
 
+test('player names are trimmed before storage and duplicate checks', async () => {
+  const tripId = await newTrip('Player normalization');
+
+  assert.equal((await alice(ADD_PLAYER, { t: tripId, n: ' Ann ' })).error, null);
+  assert.equal(
+    (await alice(ADD_PLAYER, { t: tripId, n: 'Ann' })).error?.message,
+    'That player is already on this trip'
+  );
+
+  const stored = await Trip.findById(tripId).lean();
+  assert.deepEqual(stored.players.map((player) => player.name), ['Ann']);
+});
+
+test('concurrent duplicate player adds create only one player', async () => {
+  const tripId = await newTrip('Concurrent player uniqueness');
+
+  const results = await Promise.all(
+    Array.from({ length: 8 }, () => alice(ADD_PLAYER, { t: tripId, n: 'Ann' }))
+  );
+
+  const stored = await Trip.findById(tripId).lean();
+  assert.equal(stored.players.filter((player) => player.name === 'Ann').length, 1);
+  assert.equal(results.filter((result) => !result.error).length, 1);
+  for (const result of results.filter((result) => result.error)) {
+    assert.equal(result.error?.message, 'That player is already on this trip');
+  }
+});
+
 test('concurrent player adds cannot exceed the cap', async () => {
   const tripId = await newTrip();
   for (let i = 1; i <= 20; i++) await alice(ADD_PLAYER, { t: tripId, n: `P${i}` });
