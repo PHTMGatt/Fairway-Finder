@@ -84,7 +84,7 @@ const toDuplicateKeyError = (err: any) => {
     : new UserInputError('Email already in use', { invalidArgs: ['email'] });
 };
 
-const profileOwnsTrip =(profile: { trips: any[] }, tripId: string) =>
+const profileOwnsTrip = (profile: { trips: any[] }, tripId: string) =>
   profile.trips.some((id) => id.toString() === tripId);
 
 const requireOwnedTrip = async (tripId: string, context: Context) => {
@@ -291,15 +291,48 @@ const resolvers: IResolvers<any, Context> = {
       });
 
       profile.trips.push(trip._id as any);
-      await profile.save();
+      try {
+        await profile.save();
+      } catch (error) {
+        // The Trip was created first. If linking it to the owner fails, remove
+        // the unowned document so an application-level failure does not create
+        // another orphan Trip.
+        try {
+          await Trip.deleteOne({ _id: trip._id });
+        } catch (cleanupError) {
+          console.error(
+            'Failed to clean up Trip after profile link failure:',
+            cleanupError instanceof Error ? cleanupError.message : cleanupError
+          );
+        }
+        throw error;
+      }
       return trip;
     },
 
     deleteTrip: async (_p, { tripId }, context) => {
       const { profile, trip } = await requireOwnedTrip(tripId, context);
+      const originalTripRefs = [...profile.trips];
       profile.trips = profile.trips.filter((id) => id.toString() !== tripId) as any;
       await profile.save();
-      await trip.deleteOne();
+
+      try {
+        await trip.deleteOne();
+      } catch (error) {
+        // The ownership reference is removed first so a successful delete does
+        // not leave a dangling profile ref. If the Trip delete itself fails,
+        // restore the known-good ownership list before surfacing the failure.
+        profile.trips = originalTripRefs as any;
+        try {
+          await profile.save();
+        } catch (restoreError) {
+          console.error(
+            'Failed to restore Trip ownership after delete failure:',
+            restoreError instanceof Error ? restoreError.message : restoreError
+          );
+        }
+        throw error;
+      }
       return trip;
     },
 
