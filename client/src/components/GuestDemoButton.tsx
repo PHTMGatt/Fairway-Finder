@@ -4,7 +4,11 @@ import { useNavigate } from 'react-router-dom';
 import Auth from '../utils/auth';
 import { START_GUEST_SESSION } from '../utils/mutations';
 import { useAuth } from '../pages/Auth/AuthContext';
-import { extractGuestToken, GUEST_DEMO_NOTE } from './GuestDemoButton.utils';
+import {
+  extractGuestToken,
+  GUEST_DEMO_NOTE,
+  getGuestDemoNavigation,
+} from './GuestDemoButton.utils';
 import './GuestDemoButton.css';
 
 interface StartGuestSessionData {
@@ -15,9 +19,19 @@ interface StartGuestSessionData {
 
 interface GuestDemoButtonProps {
   className?: string;
+  destination?: string;
+  navigationState?: unknown;
+  showNote?: boolean;
+  label?: string;
 }
 
-const GuestDemoButton: React.FC<GuestDemoButtonProps> = ({ className = '' }) => {
+const GuestDemoButton: React.FC<GuestDemoButtonProps> = ({
+  className = '',
+  destination = '/plan-trip',
+  navigationState,
+  showNote = true,
+  label = 'Try as Guest',
+}) => {
   const [startGuestSession, { loading }] = useMutation<StartGuestSessionData>(START_GUEST_SESSION);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { refreshAuth } = useAuth();
@@ -32,7 +46,8 @@ const GuestDemoButton: React.FC<GuestDemoButtonProps> = ({ className = '' }) => 
 
       Auth.login(token);
       refreshAuth();
-      navigate('/plan-trip', { replace: true });
+      const next = getGuestDemoNavigation(destination, navigationState);
+      navigate(next.destination, next.options);
     } catch (error: unknown) {
       setErrorMessage(
         error instanceof Error && error.message
@@ -50,9 +65,9 @@ const GuestDemoButton: React.FC<GuestDemoButtonProps> = ({ className = '' }) => 
         onClick={handleStartGuest}
         disabled={loading}
       >
-        {loading ? 'Starting Guest Demo…' : 'Try as Guest'}
+        {loading ? 'Starting Guest Demo…' : label}
       </button>
-      <p className="guest-demo__note">{GUEST_DEMO_NOTE}</p>
+      {showNote && <p className="guest-demo__note">{GUEST_DEMO_NOTE}</p>}
       {errorMessage && (
         <p className="guest-demo__error" role="alert">
           {errorMessage}
