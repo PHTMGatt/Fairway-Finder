@@ -64,19 +64,6 @@ export const ADD_TRIP = gql`
   }
 `;
 
-export const ADD_COURSE_TO_TRIP = gql`
-  mutation AddCourseToTrip($tripId: ID!, $courseName: String!) {
-    addCourseToTrip(tripId: $tripId, courseName: $courseName) {
-      _id
-      name
-      courses {
-        _id
-        name
-      }
-    }
-  }
-`;
-
 export const REMOVE_COURSE_FROM_TRIP = gql`
   mutation RemoveCourseFromTrip($tripId: ID!, $courseId: ID!) {
     removeCourseFromTrip(tripId: $tripId, courseId: $courseId) {
