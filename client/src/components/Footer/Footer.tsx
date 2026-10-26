@@ -26,7 +26,19 @@ const Footer: React.FC = memo(() => {
             </button>
           )}
         </div>
-        <p className="footer__copy">&copy; {new Date().getFullYear()} Fairway Finder</p>
+        <div className="footer__meta">
+          <p className="footer__copy">&copy; {new Date().getFullYear()} Fairway Finder</p>
+          <p className="footer__attribution">
+            Fallback map/course data:{' '}
+            <a
+              href="https://www.openstreetmap.org/copyright"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              © OpenStreetMap contributors
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );
