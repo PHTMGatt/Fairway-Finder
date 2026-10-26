@@ -1,20 +1,27 @@
 // client/src/pages/Courses/CourseFinder.tsx
 
 import React, { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useMutation } from '@apollo/client';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import GuestDemoButton from '../../components/GuestDemoButton';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import { ADD_COURSE_TO_TRIP } from '../../utils/mutations';
 import { useAuth } from '../Auth/AuthContext';
-import { CourseSearchResult } from '../Trips/planTripCourse';
+import { CourseSearchResult, toTripCourseInput } from '../Trips/planTripCourse';
+import { readAddToTripId } from './courseFinderMode';
 import './CourseFinder.css';
 
 const CourseFinder: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isLoggedIn } = useAuth();
+  const addToTripId = isLoggedIn ? readAddToTripId(location.state) : null;
   const [city, setCity] = useState<string>('');
   const [courses, setCourses] = useState<CourseSearchResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [addingCourseId, setAddingCourseId] = useState<string | null>(null);
   const [error, setError] = useState<string>('');
+  const [addCourseToTrip] = useMutation(ADD_COURSE_TO_TRIP);
 
   const handleSearch = async (e: FormEvent) => {
     e.preventDefault();
@@ -55,13 +62,43 @@ const CourseFinder: React.FC = () => {
     });
   };
 
+  const addCourse = async (course: CourseSearchResult) => {
+    if (!addToTripId) return;
+
+    setAddingCourseId(course.place_id);
+    setError('');
+    try {
+      await addCourseToTrip({
+        variables: {
+          tripId: addToTripId,
+          course: toTripCourseInput(course),
+        },
+      });
+      navigate(`/trip/${addToTripId}`);
+    } catch (addError: unknown) {
+      setError(
+        addError instanceof Error && addError.message
+          ? addError.message
+          : 'Could not add that course to the trip.'
+      );
+    } finally {
+      setAddingCourseId(null);
+    }
+  };
+
   return (
     <main className="course-finder">
       <header className="course-finder__header">
-        <p className="course-finder__eyebrow">Course discovery</p>
-        <h1 className="course-finder__title">Find a course</h1>
+        <p className="course-finder__eyebrow">
+          {addToTripId ? 'Add to trip' : 'Course discovery'}
+        </p>
+        <h1 className="course-finder__title">
+          {addToTripId ? 'Add another course' : 'Find a course'}
+        </h1>
         <p className="course-finder__subtitle">
-          Search by city, compare nearby courses, and send the exact selection into a saved trip.
+          {addToTripId
+            ? 'Search by city and add the exact course selection to this saved trip.'
+            : 'Search by city, compare nearby courses, and send the exact selection into a saved trip.'}
         </p>
       </header>
 
@@ -71,17 +108,24 @@ const CourseFinder: React.FC = () => {
           onChange={setCity}
           placeholder="City, state"
           inputClassName="course-finder__input"
-          disabled={loading}
+          disabled={loading || Boolean(addingCourseId)}
           ariaLabel="Course search city"
         />
         <button
           className="course-finder__btn"
           type="submit"
-          disabled={loading}
+          disabled={loading || Boolean(addingCourseId)}
         >
           {loading ? 'Searching…' : 'Find Courses'}
         </button>
       </form>
+
+      {addToTripId && (
+        <p className="course-finder__note">
+          Adding to your existing trip.{' '}
+          <Link to={`/trip/${addToTripId}`}>Back to trip</Link>
+        </p>
+      )}
 
       {!isLoggedIn && (
         <p className="course-finder__note">
@@ -91,7 +135,11 @@ const CourseFinder: React.FC = () => {
       )}
 
       {loading && <p className="course-finder__status">Loading courses…</p>}
-      {error && <p className="course-finder__status course-finder__status--error">{error}</p>}
+      {error && (
+        <p className="course-finder__status course-finder__status--error" role="alert">
+          {error}
+        </p>
+      )}
 
       <ul className="course-finder__results">
         {courses.map((course) => {
@@ -109,6 +157,7 @@ const CourseFinder: React.FC = () => {
                 query
               )}`;
           const planState = { city: city.trim(), course };
+          const isAddingThisCourse = addingCourseId === course.place_id;
 
           return (
             <li key={course.place_id} className="course-card">
@@ -130,7 +179,16 @@ const CourseFinder: React.FC = () => {
                   >
                     Open in Maps
                   </a>
-                  {isLoggedIn ? (
+                  {addToTripId ? (
+                    <button
+                      type="button"
+                      className="course-card__plan"
+                      disabled={Boolean(addingCourseId)}
+                      onClick={() => void addCourse(course)}
+                    >
+                      {isAddingThisCourse ? 'Adding…' : 'Add to Trip'}
+                    </button>
+                  ) : isLoggedIn ? (
                     <button
                       type="button"
                       className="course-card__plan"
