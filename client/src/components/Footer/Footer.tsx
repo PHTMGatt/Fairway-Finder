@@ -1,6 +1,6 @@
 // client/src/components/Footer/Footer.tsx
 import React, { memo, useCallback } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Footer.css';
 
 const Footer: React.FC = memo(() => {
@@ -24,11 +24,8 @@ const Footer: React.FC = memo(() => {
               ← Go Back
             </button>
           )}
-          <Link to="/handicap" className="footer__link">
-            Handicap
-          </Link>
         </div>
-        <p className="footer__copy">&copy; {new Date().getFullYear()} Fairway Finder Golf Co.</p>
+        <p className="footer__copy">&copy; {new Date().getFullYear()} Fairway Finder</p>
       </div>
     </footer>
   );
