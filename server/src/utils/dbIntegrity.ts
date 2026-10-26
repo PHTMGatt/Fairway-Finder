@@ -7,8 +7,19 @@ interface ProfileReferenceSnapshot {
   trips?: Array<IdLike | string>;
 }
 
+interface TripCourseSnapshot {
+  name?: string | null;
+  source?: string | null;
+  providerId?: string | null;
+  location?: { lat?: number; lng?: number } | null;
+  rating?: number | null;
+  slope?: number | null;
+}
+
 interface TripReferenceSnapshot {
   _id: IdLike | string;
+  date?: string | null;
+  courses?: TripCourseSnapshot[];
 }
 
 interface DanglingReference {
@@ -30,7 +41,79 @@ export interface TripReferenceIntegrityReport {
   multiOwnedTripIds: string[];
 }
 
+export interface TripDataIntegrityReport {
+  trips: number;
+  tripsWithoutCourses: number;
+  invalidDateTrips: number;
+  duplicateCourseTrips: number;
+  invalidLocationTrips: number;
+  invalidDisplayRatingTrips: number;
+  invalidSlopeTrips: number;
+  tripIdsWithoutCourses: string[];
+  invalidDateTripIds: string[];
+  duplicateCourseTripIds: string[];
+  invalidLocationTripIds: string[];
+  invalidDisplayRatingTripIds: string[];
+  invalidSlopeTripIds: string[];
+}
+
 const asId = (value: IdLike | string): string => value.toString();
+const trimmed = (value?: string | null) => value?.trim() ?? '';
+
+const isValidISODate = (value?: string | null): boolean => {
+  if (!value) return false;
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
+};
+
+const courseIdentity = (course: TripCourseSnapshot): string | null => {
+  const source = trimmed(course.source);
+  const providerId = trimmed(course.providerId);
+  if (source && providerId) return `provider:${source}\u0000${providerId}`;
+
+  const name = trimmed(course.name).toLowerCase();
+  return name ? `name:${name}` : null;
+};
+
+const hasInvalidLocation = (course: TripCourseSnapshot): boolean => {
+  if (course.location == null) return false;
+  const { lat, lng } = course.location;
+  return (
+    typeof lat !== 'number' ||
+    !Number.isFinite(lat) ||
+    lat < -90 ||
+    lat > 90 ||
+    typeof lng !== 'number' ||
+    !Number.isFinite(lng) ||
+    lng < -180 ||
+    lng > 180
+  );
+};
+
+const hasInvalidDisplayRating = (course: TripCourseSnapshot): boolean =>
+  course.rating != null &&
+  (typeof course.rating !== 'number' ||
+    !Number.isFinite(course.rating) ||
+    course.rating < 0 ||
+    course.rating > 5);
+
+const hasInvalidSlope = (course: TripCourseSnapshot): boolean =>
+  course.slope != null &&
+  (typeof course.slope !== 'number' ||
+    !Number.isInteger(course.slope) ||
+    course.slope < 55 ||
+    course.slope > 155);
 
 export const analyzeTripReferenceIntegrity = (
   profiles: ProfileReferenceSnapshot[],
@@ -93,5 +176,72 @@ export const analyzeTripReferenceIntegrity = (
     dangling,
     orphanTripIds,
     multiOwnedTripIds,
+  };
+};
+
+export const analyzeTripDataIntegrity = (
+  trips: TripReferenceSnapshot[]
+): TripDataIntegrityReport => {
+  const tripIdsWithoutCourses: string[] = [];
+  const invalidDateTripIds: string[] = [];
+  const duplicateCourseTripIds: string[] = [];
+  const invalidLocationTripIds: string[] = [];
+  const invalidDisplayRatingTripIds: string[] = [];
+  const invalidSlopeTripIds: string[] = [];
+
+  for (const trip of trips) {
+    const tripId = asId(trip._id);
+    const courses = trip.courses ?? [];
+
+    if (courses.length === 0) tripIdsWithoutCourses.push(tripId);
+    if (!isValidISODate(trip.date)) invalidDateTripIds.push(tripId);
+
+    const seenCourseIdentities = new Set<string>();
+    let hasDuplicateCourse = false;
+    let invalidLocation = false;
+    let invalidDisplayRating = false;
+    let invalidSlope = false;
+
+    for (const course of courses) {
+      const identity = courseIdentity(course);
+      if (identity) {
+        if (seenCourseIdentities.has(identity)) hasDuplicateCourse = true;
+        else seenCourseIdentities.add(identity);
+      }
+
+      invalidLocation ||= hasInvalidLocation(course);
+      invalidDisplayRating ||= hasInvalidDisplayRating(course);
+      invalidSlope ||= hasInvalidSlope(course);
+    }
+
+    if (hasDuplicateCourse) duplicateCourseTripIds.push(tripId);
+    if (invalidLocation) invalidLocationTripIds.push(tripId);
+    if (invalidDisplayRating) invalidDisplayRatingTripIds.push(tripId);
+    if (invalidSlope) invalidSlopeTripIds.push(tripId);
+  }
+
+  const sorted = (values: string[]) => values.sort((left, right) => left.localeCompare(right));
+
+  sorted(tripIdsWithoutCourses);
+  sorted(invalidDateTripIds);
+  sorted(duplicateCourseTripIds);
+  sorted(invalidLocationTripIds);
+  sorted(invalidDisplayRatingTripIds);
+  sorted(invalidSlopeTripIds);
+
+  return {
+    trips: trips.length,
+    tripsWithoutCourses: tripIdsWithoutCourses.length,
+    invalidDateTrips: invalidDateTripIds.length,
+    duplicateCourseTrips: duplicateCourseTripIds.length,
+    invalidLocationTrips: invalidLocationTripIds.length,
+    invalidDisplayRatingTrips: invalidDisplayRatingTripIds.length,
+    invalidSlopeTrips: invalidSlopeTripIds.length,
+    tripIdsWithoutCourses,
+    invalidDateTripIds,
+    duplicateCourseTripIds,
+    invalidLocationTripIds,
+    invalidDisplayRatingTripIds,
+    invalidSlopeTripIds,
   };
 };
