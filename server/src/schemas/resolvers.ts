@@ -153,6 +153,15 @@ const normalizeTripCourse = (input: TripCourseInput) => {
       LIMITS.courseDisplayRating
     );
   }
+  if (typeof input.slope === 'number') {
+    checkRange(
+      input.slope,
+      'course.slope',
+      'Course slope rating',
+      LIMITS.courseSlopeRating,
+      true
+    );
+  }
 
   return {
     name: input.name.trim(),
@@ -168,6 +177,39 @@ const normalizeTripCourse = (input: TripCourseInput) => {
     ...(typeof input.slope === 'number' ? { slope: input.slope } : {}),
   };
 };
+
+type NormalizedTripCourse = ReturnType<typeof normalizeTripCourse>;
+
+const sameTripCourseIdentity = (
+  existing: { name?: string; source?: string; providerId?: string },
+  incoming: NormalizedTripCourse
+) => {
+  if (incoming.source && incoming.providerId) {
+    return existing.source === incoming.source && existing.providerId === incoming.providerId;
+  }
+
+  return existing.name?.trim().toLowerCase() === incoming.name.trim().toLowerCase();
+};
+
+const courseNotAlreadyPresentFilter = (course: NormalizedTripCourse) =>
+  course.source && course.providerId
+    ? {
+        courses: {
+          $not: {
+            $elemMatch: {
+              source: course.source,
+              providerId: course.providerId,
+            },
+          },
+        },
+      }
+    : {
+        courses: {
+          $not: {
+            $elemMatch: { name: course.name },
+          },
+        },
+      };
 
 const transformTrip = (trip: any) => {
   const transformedPlayers = trip.players.map((p: any) => {
@@ -384,15 +426,32 @@ const resolvers: IResolvers<any, Context> = {
         throw new UserInputError('A course is required', { invalidArgs: ['course'] });
       }
       const normalizedCourse = normalizeTripCourse(selectedCourse);
-      await requireOwnedTrip(tripId, context);
+      const { trip } = await requireOwnedTrip(tripId, context);
 
-      // Note; The cap stays in the update filter so concurrent adds cannot exceed it.
+      if (trip.courses.some((existing) => sameTripCourseIdentity(existing, normalizedCourse))) {
+        throw new UserInputError('That course is already on this trip');
+      }
+
+      // The duplicate predicate and cap both live in the write filter. This keeps
+      // concurrent adds from creating duplicate provider-course snapshots.
       const updated = await Trip.findOneAndUpdate(
-        { _id: tripId, [`courses.${LIMITS.coursesPerTrip - 1}`]: { $exists: false } },
+        {
+          _id: tripId,
+          [`courses.${LIMITS.coursesPerTrip - 1}`]: { $exists: false },
+          ...courseNotAlreadyPresentFilter(normalizedCourse),
+        },
         { $push: { courses: normalizedCourse } },
         { new: true, runValidators: true }
       );
       if (!updated) {
+        const current = await Trip.findById(tripId);
+        if (
+          current?.courses.some((existing) =>
+            sameTripCourseIdentity(existing, normalizedCourse)
+          )
+        ) {
+          throw new UserInputError('That course is already on this trip');
+        }
         throw new UserInputError(`A trip can have at most ${LIMITS.coursesPerTrip} courses`);
       }
       return updated;
