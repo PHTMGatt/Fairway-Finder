@@ -2,7 +2,11 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { ScoreInput } from './ScoreCard';
-import { scorecardErrorMessage, scoreFromDraft } from './scorecardUtils';
+import {
+  getInitialScorecardView,
+  scorecardErrorMessage,
+  scoreFromDraft,
+} from './scorecardUtils';
 
 describe('score entry guardrails', () => {
   it('renders a hole score input capped at 30', () => {
@@ -26,5 +30,15 @@ describe('score entry guardrails', () => {
   it('normalizes mutation failures into an inline save message', () => {
     expect(scorecardErrorMessage(new Error('Trip not found'))).toBe('Trip not found');
     expect(scorecardErrorMessage({})).toBe('Could not save scorecard changes. Please try again.');
+  });
+});
+
+describe('scorecard responsive defaults', () => {
+  it('starts phones in the compact 3-hole view and larger screens on Front 9', () => {
+    expect(getInitialScorecardView(320)).toBe('threehole');
+    expect(getInitialScorecardView(390)).toBe('threehole');
+    expect(getInitialScorecardView(600)).toBe('threehole');
+    expect(getInitialScorecardView(601)).toBe('front9');
+    expect(getInitialScorecardView(undefined)).toBe('front9');
   });
 });
