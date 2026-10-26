@@ -10,6 +10,7 @@
     "dev": "concurrently \"npm run watch:build\" \"npm run watch:serve\"",
     "start": "node dist/server.js",
     "invite": "node dist/scripts/createInvite.js",
+    "integrity": "npm run build && node dist/scripts/checkIntegrity.js",
     "test": "tsc && node --test test/*.test.mjs"
   },
   "dependencies": {
