@@ -2,7 +2,7 @@
 
 import { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { AuthProvider } from './pages/Auth/AuthContext';
 
 import App from './App';
@@ -12,7 +12,6 @@ import Login from './pages/Auth/Login';
 import ErrorPage from './pages/Error/Error';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const Dashboard = lazy(() => import('./pages/DashBoard/DashBoard'));
 const CourseFinder = lazy(() => import('./pages/Courses/CourseFinder'));
 const MapRouting = lazy(() => import('./pages/Routes/MapRouting'));
 const PlanTrip = lazy(() => import('./pages/Trips/PlanTrip'));
@@ -36,7 +35,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
-      { path: 'me', element: deferred(<Dashboard />) },
+      { path: 'me', element: <Navigate to="/saved-trips" replace /> },
       { path: 'saved-trips', element: deferred(<SavedTrips />) },
       { path: 'plan-trip', element: deferred(<PlanTrip />) },
       { path: 'courses', element: deferred(<CourseFinder />) },
