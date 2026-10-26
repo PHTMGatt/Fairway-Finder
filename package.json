@@ -18,6 +18,7 @@
     "lint:all": "eslint . --ext .ts,.tsx,.js,.jsx --format table",
     "deploy:prep": "npm install && npm run build && npm run lint:all",
     "invite": "cd server && npm run build && node dist/scripts/createInvite.js",
+    "integrity": "cd server && npm run integrity",
     "seed": "node -e \"console.error('Seed command retired: no server seed script is configured.'); process.exit(1)\"",
     "test": "cd server && npm test"
   },
