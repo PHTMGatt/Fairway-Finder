@@ -7,9 +7,10 @@ import React, {
   FormEvent,
   useCallback,
 } from 'react';
-import { useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
+import { REMOVE_COURSE_FROM_TRIP } from '../../utils/mutations';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import { FaCalendarAlt, FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
 import { Alert } from 'react-bootstrap';
@@ -17,7 +18,9 @@ import ScoreCard from '../../components/ScoreCard/ScoreCard';
 import {
   PersistedTripCourse,
   TeeRating,
+  courseRemovalPrompt,
   resolveGolfCourseLookup,
+  secondaryTripCourses,
   storedTeeRating,
   weatherParamsForCourse,
 } from './tripDetailsCourse';
@@ -99,13 +102,16 @@ const TripDetails: React.FC = () => {
   const [weatherLoading, setWeatherLoading] = useState(false);
   const [weatherError, setWeatherError] = useState('');
   const [golfApiError, setGolfApiError] = useState('');
+  const [courseActionError, setCourseActionError] = useState('');
+  const [removingCourseId, setRemovingCourseId] = useState<string | null>(null);
   const [teeRating, setTeeRating] = useState<TeeRating | null>(null);
   const [showAlert, setShowAlert] = useState(false);
 
-  const { loading, error, data } = useQuery(QUERY_TRIP, {
+  const { loading, error, data, refetch } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
     skip: !tripId,
   });
+  const [removeCourseFromTrip] = useMutation(REMOVE_COURSE_FROM_TRIP);
   const trip = data?.trip;
   const courses: TripCourse[] = trip?.courses ?? [];
   const course = courses[0];
@@ -212,6 +218,30 @@ const TripDetails: React.FC = () => {
     void fetchWeather(params);
   };
 
+  const handleRemoveSecondaryCourse = async (selectedCourse: TripCourse) => {
+    if (!tripId || !selectedCourse._id) return;
+
+    const courseName = selectedCourse.name?.trim() || 'this course';
+    if (!window.confirm(courseRemovalPrompt(courseName))) return;
+
+    setCourseActionError('');
+    setRemovingCourseId(selectedCourse._id);
+    try {
+      await removeCourseFromTrip({
+        variables: { tripId, courseId: selectedCourse._id },
+      });
+      await refetch();
+    } catch (removeError: unknown) {
+      setCourseActionError(
+        removeError instanceof Error && removeError.message
+          ? removeError.message
+          : 'Could not remove that course from the trip.'
+      );
+    } finally {
+      setRemovingCourseId(null);
+    }
+  };
+
   if (!tripId) return <p className="trip-details__status">No trip ID provided.</p>;
   if (loading) return <p className="trip-details__status">Loading trip details…</p>;
   if (error || !trip) {
@@ -222,7 +252,7 @@ const TripDetails: React.FC = () => {
     );
   }
 
-  const additionalCourses = courses.slice(1);
+  const additionalCourses = secondaryTripCourses(courses);
   const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
   const forecast = weatherData?.forecast ?? null;
   const routeDestination = [course?.name, course?.address].filter(Boolean).join(' ') || course?.name || '';
@@ -267,6 +297,11 @@ const TripDetails: React.FC = () => {
             {golfApiError && (
               <p className="trip-details__inline-error">{golfApiError}</p>
             )}
+            {courseActionError && (
+              <p className="trip-details__inline-error" role="alert">
+                {courseActionError}
+              </p>
+            )}
 
             {additionalCourses.length > 0 && (
               <div className="trip-details__additional-courses">
@@ -274,21 +309,34 @@ const TripDetails: React.FC = () => {
                 <ul>
                   {additionalCourses.map((additionalCourse, index) => {
                     const additionalMapsUrl = mapsUrlForCourse(additionalCourse);
+                    const isRemoving = removingCourseId === additionalCourse._id;
                     return (
                       <li key={additionalCourse._id ?? `${additionalCourse.name}-${index}`}>
                         <div>
                           <strong>{additionalCourse.name || 'Unnamed course'}</strong>
                           {additionalCourse.address && <span>{additionalCourse.address}</span>}
                         </div>
-                        {additionalMapsUrl && (
-                          <a
-                            href={additionalMapsUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Maps
-                          </a>
-                        )}
+                        <div className="trip-details__course-row-actions">
+                          {additionalMapsUrl && (
+                            <a
+                              href={additionalMapsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Maps
+                            </a>
+                          )}
+                          {additionalCourse._id && (
+                            <button
+                              type="button"
+                              className="trip-details__remove-course"
+                              disabled={Boolean(removingCourseId)}
+                              onClick={() => void handleRemoveSecondaryCourse(additionalCourse)}
+                            >
+                              {isRemoving ? 'Removing…' : 'Remove'}
+                            </button>
+                          )}
+                        </div>
                       </li>
                     );
                   })}
