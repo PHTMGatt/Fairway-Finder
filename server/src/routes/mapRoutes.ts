@@ -2,6 +2,7 @@
 
 import { Router, Request, Response } from 'express';
 import { fetchWithTimeout as fetch } from '../services/http.js';
+import { geocodeNominatim } from '../services/nominatim.js';
 
 const router = Router();
 
@@ -40,33 +41,8 @@ const geocodeGoogle = async (query: string): Promise<Coordinates | null> => {
   return payload.results?.[0]?.geometry?.location ?? null;
 };
 
-const geocodeOpenStreetMap = async (
-  query: string
-): Promise<Coordinates | null> => {
-  const url = new URL('https://nominatim.openstreetmap.org/search');
-  url.searchParams.set('q', query);
-  url.searchParams.set('format', 'jsonv2');
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('countrycodes', 'us');
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      'User-Agent': 'Fairway-Finder/1.0',
-      Accept: 'application/json',
-    },
-  });
-  if (!response.ok) return null;
-
-  const payload: any = await response.json();
-  const result = Array.isArray(payload) ? payload[0] : null;
-  const lat = Number(result?.lat);
-  const lng = Number(result?.lon);
-
-  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
-};
-
 const geocode = async (query: string): Promise<Coordinates | null> =>
-  (await geocodeGoogle(query)) ?? (await geocodeOpenStreetMap(query));
+  (await geocodeGoogle(query)) ?? (await geocodeNominatim(query));
 
 const travelMode = (mode: string) => {
   switch (mode.toLowerCase()) {
@@ -177,8 +153,8 @@ const directionsOpenStreetMap = async (
   mode: string
 ): Promise<RouteShape[] | null> => {
   const [start, end] = await Promise.all([
-    geocodeOpenStreetMap(origin),
-    geocodeOpenStreetMap(destination),
+    geocodeNominatim(origin),
+    geocodeNominatim(destination),
   ]);
 
   if (!start || !end) return null;
@@ -401,7 +377,7 @@ const placesOpenStreetMap = async ({
 
   let center = location;
   if (!center && city) {
-    center = await geocodeOpenStreetMap(`${city}, USA`);
+    center = await geocodeNominatim(`${city}, USA`);
   }
   if (!center) return null;
 
