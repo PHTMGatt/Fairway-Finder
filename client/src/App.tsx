@@ -1,6 +1,5 @@
 // client/src/App.tsx
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useMemo } from 'react';
 import './App.css';
 import {
@@ -77,9 +76,9 @@ const App: React.FC = () => {
   const layout = (
     <div className="app-layout">
       <Header />
-      <main className="app-content">
+      <div className="app-content">
         <Outlet />
-      </main>
+      </div>
       <Footer />
     </div>
   );
