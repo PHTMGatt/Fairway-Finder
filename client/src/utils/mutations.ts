@@ -64,6 +64,26 @@ export const ADD_TRIP = gql`
   }
 `;
 
+export const ADD_COURSE_TO_TRIP = gql`
+  mutation AddCourseToTrip($tripId: ID!, $course: TripCourseInput!) {
+    addCourseToTrip(tripId: $tripId, course: $course) {
+      _id
+      courses {
+        _id
+        name
+        source
+        providerId
+        address
+        location { lat lng }
+        rating
+        golfCourseApiId
+        courseRating
+        slope
+      }
+    }
+  }
+`;
+
 export const REMOVE_COURSE_FROM_TRIP = gql`
   mutation RemoveCourseFromTrip($tripId: ID!, $courseId: ID!) {
     removeCourseFromTrip(tripId: $tripId, courseId: $courseId) {
