@@ -8,10 +8,10 @@ import React, {
   useCallback,
 } from 'react';
 import { useQuery } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
 import { Alert } from 'react-bootstrap';
 import ScoreCard from '../../components/ScoreCard/ScoreCard';
 import {
@@ -194,6 +194,7 @@ const TripDetails: React.FC = () => {
 
   const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
   const mapsQuery = [course?.name, course?.address].filter(Boolean).join(' ');
+  const routeDestination = mapsQuery || course?.name || '';
   const hasGooglePlace = course?.source === 'google' && course?.providerId;
   const mapsUrl = course?.name
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery || course.name)}${
@@ -255,15 +256,26 @@ const TripDetails: React.FC = () => {
                 Course rating {teeRating.courseRating} · Slope {teeRating.slopeRating}
               </p>
             )}
-            {mapsUrl && (
-              <a
-                className="trip-card__link"
-                href={mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaMapMarkerAlt /> Open in Maps
-              </a>
+            {course?.name && (
+              <div className="trip-card__actions">
+                {mapsUrl && (
+                  <a
+                    className="trip-card__link"
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FaMapMarkerAlt /> Open in Maps
+                  </a>
+                )}
+                <Link
+                  className="trip-card__link"
+                  to="/routing"
+                  state={{ destination: routeDestination }}
+                >
+                  <FaRoute /> Plan Route
+                </Link>
+              </div>
             )}
           </div>
         </div>

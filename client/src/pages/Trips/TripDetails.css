@@ -1,6 +1,5 @@
 /* client/src/pages/Trips/TripDetails.css */
 
-/* ===== Container ===== */
 .trip-details {
   max-width: 900px;
   margin: 3rem auto;
@@ -14,7 +13,6 @@
   gap: 3rem;
 }
 
-/* ===== Title & Label ===== */
 .trip-details__title {
   text-align: center;
   font-size: 2.5rem;
@@ -29,12 +27,10 @@
   margin: 0.5rem 0 2rem;
 }
 
-/* ===== Bootstrap Alert Positioning ===== */
 .trip-details__alert {
   margin-bottom: 1.5rem;
 }
 
-/* ===== Weather Form ===== */
 .trip-details__weather-form {
   display: grid;
   grid:
@@ -61,17 +57,15 @@
   font-weight: 600;
 }
 
-/* ===== Top Cards Grid ===== */
 .trip-details__top {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  align-items: stretch;               /* stretch cards to same height */
+  align-items: stretch;
   gap: 2.5rem;
 }
 
-/* ===== Trip Card ===== */
 .trip-card {
-  display: flex;                      /* flex column layout */
+  display: flex;
   flex-direction: column;
   border-radius: 12px;
   overflow: hidden;
@@ -81,9 +75,8 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* ===== Card Header ===== */
 .trip-card__header {
-  flex: 0 0 auto;                     /* fixed header height */
+  flex: 0 0 auto;
   background: linear-gradient(to right, #81c784, #66bb6a);
   color: #fff;
   padding: 0.75rem 1rem;
@@ -91,27 +84,55 @@
   font-size: 1.2rem;
 }
 
-/* ===== Card Body ===== */
 .trip-card__body {
-  flex: 1 1 auto;                     /* grow to fill remaining space */
+  flex: 1 1 auto;
   padding: 1.5rem;
-  display: flex;                      
+  display: flex;
   flex-direction: column;
-  justify-content: flex-start;        /* keep content at top */
+  justify-content: flex-start;
   line-height: 1.6;
-  overflow-y: auto;                   /* scroll if overflow */
+  overflow-y: auto;
 }
 
-/* space out paragraphs and icons */
 .trip-card__body p {
   margin: 0 0 0.75rem;
 }
+
 .trip-card__body svg {
   vertical-align: middle;
-  margin-right: 0.5rem;
+  margin-right: 0.35rem;
 }
 
-/* ===== Scorecard Section ===== */
+.trip-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+}
+
+.trip-card__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid #8aa894;
+  border-radius: 8px;
+  background: #fff;
+  color: #285238;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.trip-card__link:hover {
+  transform: translateY(-1px);
+  border-color: #527c60;
+  color: #1f462d;
+  box-shadow: 0 4px 12px rgba(31, 70, 45, 0.1);
+}
+
 .trip-details__scorecard {
   background: rgba(255,255,255,0.8);
   border: 1px solid rgba(109,194,255,0.3);
@@ -126,17 +147,31 @@
   color: #064e3b;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 600px) {
-  .trip-details__top {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ===== Status/Error Text ===== */
 .trip-details__status {
   text-align: center;
   color: #b00020;
   margin: 1rem 0;
   font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .trip-details {
+    margin: 1.5rem 0.5rem 2.5rem;
+    padding: 1.25rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .trip-details__weather-form,
+  .trip-details__top {
+    grid-template-columns: 1fr;
+  }
+
+  .trip-card__actions,
+  .trip-card__link {
+    width: 100%;
+  }
+
+  .trip-details__scorecard {
+    padding: 1rem;
+  }
 }

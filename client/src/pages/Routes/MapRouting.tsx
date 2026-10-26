@@ -1,15 +1,17 @@
 // client/src/pages/Routes/MapRouting.tsx
 
 import React, { useState, FormEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
-import { canPlanRoute, createInitialRoutePlannerState } from './routePlanner';
+import { canPlanRoute, readRoutePlannerPrefill } from './routePlanner';
 import './MapRouting.css';
 
 type FilterType = 'golf_course' | 'restaurant' | 'gas_station' | 'rest_area';
 
 const MapRouting: React.FC = () => {
-  const initialState = createInitialRoutePlannerState();
+  const location = useLocation();
+  const [initialState] = useState(() => readRoutePlannerPrefill(location.state));
   const [origin, setOrigin] = useState(initialState.origin);
   const [destination, setDestination] = useState(initialState.destination);
   const [filters, setFilters] = useState<FilterType[]>([]);
@@ -41,9 +43,11 @@ const MapRouting: React.FC = () => {
 
   return (
     <main className="map-routing">
-      <h2 className="map-routing__title">Route Planner</h2>
+      <h1 className="map-routing__title">Route Planner</h1>
       <p className="map-routing__intro">
-        Enter where you are starting and where you are headed. Fairway Finder only loads a route after you ask for one.
+        {destination
+          ? 'Your saved course is ready. Add where you are starting, then plan the route.'
+          : 'Enter where you are starting and where you are headed. Fairway Finder only loads a route after you ask for one.'}
       </p>
 
       <form className="map-routing__form" onSubmit={handleSubmit}>
@@ -115,7 +119,11 @@ const MapRouting: React.FC = () => {
         ) : (
           <div className="map-routing__empty">
             <strong>No route loaded yet.</strong>
-            <span>Choose a start and destination, then select Plan Route.</span>
+            <span>
+              {destination
+                ? 'Add your starting point, then select Plan Route.'
+                : 'Choose a start and destination, then select Plan Route.'}
+            </span>
           </div>
         )}
       </div>
