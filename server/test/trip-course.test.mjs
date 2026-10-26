@@ -28,6 +28,13 @@ const ADD_TRIP = `mutation($input: TripInput!) {
   }
 }`;
 
+const ADD_STRUCTURED_COURSE = `mutation($tripId: ID!, $course: TripCourseInput!) {
+  addCourseToTrip(tripId: $tripId, course: $course) {
+    _id
+    courses { ${COURSE_FIELDS} }
+  }
+}`;
+
 const TRIP = `query($id: ID!) {
   trip(id: $id) {
     _id
@@ -219,4 +226,38 @@ test('TripInput requires a real YYYY-MM-DD calendar date for new trips', async (
   });
   assert.equal(leapDay.error, null);
   assert.equal(leapDay.data.addTrip.date, '2028-02-29');
+});
+
+test('existing trips can add a second canonical course snapshot', async () => {
+  const created = await user(ADD_TRIP, {
+    input: {
+      name: 'Two course trip',
+      date: '2026-11-15',
+      course: { name: 'First Links', source: 'google', providerId: 'first-place' },
+    },
+  });
+  assert.equal(created.error, null);
+
+  const secondCourse = {
+    name: 'Second Links',
+    source: 'google',
+    providerId: 'second-place',
+    address: '200 Fairway Dr, Traverse City, MI',
+    location: { lat: 44.7631, lng: -85.6206 },
+    rating: 4.6,
+  };
+  const added = await user(ADD_STRUCTURED_COURSE, {
+    tripId: created.data.addTrip._id,
+    course: secondCourse,
+  });
+
+  assert.equal(added.error, null);
+  assert.equal(added.data.addCourseToTrip.courses.length, 2);
+  assert.equal(added.data.addCourseToTrip.courses[1].providerId, 'second-place');
+  assert.equal(added.data.addCourseToTrip.courses[1].address, secondCourse.address);
+  assert.deepEqual(added.data.addCourseToTrip.courses[1].location, secondCourse.location);
+
+  const stored = await Trip.findById(created.data.addTrip._id).lean();
+  assert.equal(stored.courses[1].providerId, 'second-place');
+  assert.equal(stored.courses[1].rating, 4.6);
 });
