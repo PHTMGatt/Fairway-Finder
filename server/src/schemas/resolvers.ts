@@ -112,18 +112,58 @@ const optionalText = (value?: string | null) => {
 const normalizeTripCourse = (input: TripCourseInput) => {
   checkText(input.name, 'courseName', 'Course name', LIMITS.courseName);
 
+  const source = optionalText(input.source);
+  const providerId = optionalText(input.providerId);
+  const address = optionalText(input.address);
+  const golfCourseApiId = optionalText(input.golfCourseApiId);
+
+  if (source) checkText(source, 'course.source', 'Course source', LIMITS.courseSource);
+  if (providerId) {
+    checkText(providerId, 'course.providerId', 'Course provider ID', LIMITS.courseProviderId);
+  }
+  if (address) checkText(address, 'course.address', 'Course address', LIMITS.courseAddress);
+  if (golfCourseApiId) {
+    checkText(
+      golfCourseApiId,
+      'course.golfCourseApiId',
+      'Golf course API ID',
+      LIMITS.golfCourseApiId
+    );
+  }
+
+  if (input.location) {
+    checkRange(
+      input.location.lat,
+      'course.location.lat',
+      'Course latitude',
+      LIMITS.courseLatitude
+    );
+    checkRange(
+      input.location.lng,
+      'course.location.lng',
+      'Course longitude',
+      LIMITS.courseLongitude
+    );
+  }
+  if (typeof input.rating === 'number') {
+    checkRange(
+      input.rating,
+      'course.rating',
+      'Course display rating',
+      LIMITS.courseDisplayRating
+    );
+  }
+
   return {
     name: input.name.trim(),
-    ...(optionalText(input.source) ? { source: optionalText(input.source) } : {}),
-    ...(optionalText(input.providerId) ? { providerId: optionalText(input.providerId) } : {}),
-    ...(optionalText(input.address) ? { address: optionalText(input.address) } : {}),
+    ...(source ? { source } : {}),
+    ...(providerId ? { providerId } : {}),
+    ...(address ? { address } : {}),
     ...(input.location
       ? { location: { lat: input.location.lat, lng: input.location.lng } }
       : {}),
     ...(typeof input.rating === 'number' ? { rating: input.rating } : {}),
-    ...(optionalText(input.golfCourseApiId)
-      ? { golfCourseApiId: optionalText(input.golfCourseApiId) }
-      : {}),
+    ...(golfCourseApiId ? { golfCourseApiId } : {}),
     ...(typeof input.courseRating === 'number' ? { courseRating: input.courseRating } : {}),
     ...(typeof input.slope === 'number' ? { slope: input.slope } : {}),
   };
