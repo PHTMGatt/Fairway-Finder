@@ -1,6 +1,6 @@
 // client/src/pages/Weather/Weather.tsx
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { FormEvent, useState } from 'react';
 import {
   WiDaySunny,
   WiCloudy,
@@ -12,20 +12,10 @@ import {
   WiRaindrops,
   WiStrongWind,
 } from 'react-icons/wi';
+import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
 import ToggleSwitch from '../../components/ToggleSwitch/ToggleSwitch';
 import './Weather.css';
 
-/**
- * Shape of the data we pull from our /api/weather proxy:
- * - tempF      raw temperature in °F (server uses units=imperial)
- * - humidity   relative humidity %
- * - precipitation  rain or snow volume (mm in last 1h)
- * - windSpeed  wind speed (mph)
- * - iconCode   OpenWeather icon code (e.g. "01d", "01n")
- * - main       high-level condition (Clear, Clouds, etc.)
- * - description detailed text
- * - name       city name
- */
 interface WeatherInfo {
   tempF: number;
   humidity: number;
@@ -37,46 +27,39 @@ interface WeatherInfo {
   name: string;
 }
 
-// Map OpenWeather “main” to a day-time icon
 const iconMap: Record<string, JSX.Element> = {
-  Clear:        <WiDaySunny    className="weather-icon" />,
-  Clouds:       <WiCloudy      className="weather-icon" />,
-  Rain:         <WiRain        className="weather-icon" />,
-  Drizzle:      <WiRain        className="weather-icon" />,
+  Clear: <WiDaySunny className="weather-icon" />,
+  Clouds: <WiCloudy className="weather-icon" />,
+  Rain: <WiRain className="weather-icon" />,
+  Drizzle: <WiRain className="weather-icon" />,
   Thunderstorm: <WiThunderstorm className="weather-icon" />,
-  Snow:         <WiSnow        className="weather-icon" />,
-  Mist:         <WiFog         className="weather-icon" />,
-  Smoke:        <WiFog         className="weather-icon" />,
-  Haze:         <WiFog         className="weather-icon" />,
-  Dust:         <WiFog         className="weather-icon" />,
-  Fog:          <WiFog         className="weather-icon" />,
-  Sand:         <WiFog         className="weather-icon" />,
-  Ash:          <WiFog         className="weather-icon" />,
-  Squall:       <WiCloudy      className="weather-icon" />,
-  Tornado:      <WiThunderstorm className="weather-icon" />,
+  Snow: <WiSnow className="weather-icon" />,
+  Mist: <WiFog className="weather-icon" />,
+  Smoke: <WiFog className="weather-icon" />,
+  Haze: <WiFog className="weather-icon" />,
+  Dust: <WiFog className="weather-icon" />,
+  Fog: <WiFog className="weather-icon" />,
+  Sand: <WiFog className="weather-icon" />,
+  Ash: <WiFog className="weather-icon" />,
+  Squall: <WiCloudy className="weather-icon" />,
+  Tornado: <WiThunderstorm className="weather-icon" />,
 };
 
-/** Convert Fahrenheit → Celsius */
-const fahrenheitToCelsius = (f: number) =>
-  Math.round(((f - 32) * 5) / 9);
+const fahrenheitToCelsius = (fahrenheit: number) =>
+  Math.round(((fahrenheit - 32) * 5) / 9);
 
 const Weather: React.FC = () => {
-  // controlled inputs & flags
   const [city, setCity] = useState<string>('');
   const [isFahrenheit, setIsFahrenheit] = useState<boolean>(true);
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  /** update input */
-  const handleCityChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setCity(e.target.value);
-
-  /** fetch from our server proxy */
-  const handleSearch = async () => {
+  const handleSearch = async (event: FormEvent) => {
+    event.preventDefault();
     const name = city.trim();
     if (!name) {
-      setError('Please enter a city name.');
+      setError('Please enter a city or town.');
       setWeather(null);
       return;
     }
@@ -86,63 +69,58 @@ const Weather: React.FC = () => {
     setWeather(null);
 
     try {
-      const res = await fetch(
-        `/api/weather?city=${encodeURIComponent(name)}`
-      );
-      if (!res.ok) throw new Error('Failed to fetch weather');
-      const data = await res.json();
+      const response = await fetch(`/api/weather?city=${encodeURIComponent(name)}`);
+      if (!response.ok) throw new Error('Weather is unavailable right now.');
+      const data = await response.json();
 
-      console.log('Raw weather data (°F):', data.main.temp, data);
-
-      // validate
       if (!data.weather?.[0] || data.main?.temp == null) {
-        throw new Error('Incomplete weather data');
+        throw new Error('Weather is unavailable right now.');
       }
 
       setWeather({
-        tempF: data.main.temp,
-        humidity: data.main.humidity,
-        precipitation: data.rain?.['1h'] ?? data.snow?.['1h'] ?? 0,
-        windSpeed: data.wind.speed,
-        iconCode: data.weather[0].icon,
-        main: data.weather[0].main,
-        description: data.weather[0].description,
-        name: data.name,
+        tempF: Number(data.main.temp),
+        humidity: Number(data.main.humidity),
+        precipitation: Number(data.rain?.['1h'] ?? data.snow?.['1h'] ?? 0),
+        windSpeed: Number(data.wind?.speed ?? 0),
+        iconCode: String(data.weather[0].icon || ''),
+        main: String(data.weather[0].main || 'Clouds'),
+        description: String(data.weather[0].description || 'Current conditions'),
+        name: String(data.name || name),
       });
-    } catch (err: any) {
-      setError(err.message || 'Failed to load weather.');
+    } catch (requestError: unknown) {
+      setError(
+        requestError instanceof Error && requestError.message
+          ? requestError.message
+          : 'Weather is unavailable right now.'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  /** pick day vs night icon */
   const renderIcon = () => {
     if (!weather) return null;
-    // night codes end in “n”
     return weather.iconCode.endsWith('n')
       ? <WiStars className="weather-icon" />
       : iconMap[weather.main] || <WiCloudy className="weather-icon" />;
   };
 
-  /** which temp to show */
   const displayTemp = weather == null
     ? null
     : isFahrenheit
-    ? Math.round(weather.tempF)                      // raw °F
-    : fahrenheitToCelsius(weather.tempF);            // to °C
+      ? Math.round(weather.tempF)
+      : fahrenheitToCelsius(weather.tempF);
 
   return (
     <main className="weather-page">
-      <div className="weather-card">
+      <header className="weather-page__header">
+        <p className="weather-page__eyebrow">Quick tool</p>
+        <h1>Weather</h1>
+        <p>Check current golf conditions for any U.S. city or town.</p>
+      </header>
 
-        {/* ===== Search Panel ===== */}
-        <section className="weather-card__search">
-          <h2 className="weather-card__title">Weather Forecast</h2>
-          <p className="weather-card__desc">
-            Enter a city to view precipitation, humidity, wind, and more.
-          </p>
-
+      <section className="weather-card" aria-label="Weather lookup">
+        <div className="weather-card__search">
           <div className="weather-card__toggle">
             <ToggleSwitch
               id="unitToggle"
@@ -152,64 +130,66 @@ const Weather: React.FC = () => {
             />
           </div>
 
-          <div className="weather-card__input-group">
-            <input
-              type="text"
-              className="weather-card__input"
-              placeholder="Enter city"
+          <form className="weather-card__input-group" onSubmit={handleSearch}>
+            <LocationAutocomplete
               value={city}
-              onChange={handleCityChange}
-            />
-            <button
-              className="weather-card__btn"
-              onClick={handleSearch}
+              onChange={setCity}
+              placeholder="City, state"
+              inputClassName="weather-card__input"
               disabled={loading}
-            >
+              ariaLabel="Weather location"
+            />
+            <button className="weather-card__btn" type="submit" disabled={loading}>
               {loading ? 'Checking…' : 'Check Weather'}
             </button>
-          </div>
+          </form>
 
           {error && (
-            <p className="trip-details__status" style={{ color: '#b00020' }}>
-              ❌ {error}
+            <p className="weather-card__error" role="alert">
+              {error}
             </p>
           )}
-        </section>
+        </div>
 
-        {/* ===== Result Panel ===== */}
-        {weather && displayTemp !== null && (
-          <section className="weather-card__result">
-            <div className="weather-result">
-              <div className="weather-result__icon-wrapper">
-                {renderIcon()}
-              </div>
-              <h3 className="weather-result__city">{weather.name}</h3>
-              <p className="weather-result__desc">
-                {weather.description}
-              </p>
+        {weather && displayTemp !== null ? (
+          <div className="weather-card__result">
+            <div className="weather-result__icon-wrapper" aria-hidden="true">
+              {renderIcon()}
+            </div>
+            <div className="weather-result__summary">
+              <h2 className="weather-result__city">{weather.name}</h2>
+              <p className="weather-result__desc">{weather.description}</p>
               <p className="weather-result__temp">
                 {displayTemp}°{isFahrenheit ? 'F' : 'C'}
               </p>
+            </div>
 
-              <div className="weather-result__details">
-                <div className="detail">
-                  <WiRain className="detail-icon" />
-                  <span>Precip: <strong>{weather.precipitation} mm</strong></span>
-                </div>
-                <div className="detail">
-                  <WiRaindrops className="detail-icon" />
-                  <span>Humidity: <strong>{weather.humidity}%</strong></span>
-                </div>
-                <div className="detail">
-                  <WiStrongWind className="detail-icon" />
-                  <span>Wind: <strong>{weather.windSpeed} mph</strong></span>
-                </div>
+            <div className="weather-result__details">
+              <div className="weather-detail">
+                <WiRain className="weather-detail__icon" aria-hidden="true" />
+                <span>Precipitation</span>
+                <strong>{weather.precipitation} mm</strong>
+              </div>
+              <div className="weather-detail">
+                <WiRaindrops className="weather-detail__icon" aria-hidden="true" />
+                <span>Humidity</span>
+                <strong>{weather.humidity}%</strong>
+              </div>
+              <div className="weather-detail">
+                <WiStrongWind className="weather-detail__icon" aria-hidden="true" />
+                <span>Wind</span>
+                <strong>{weather.windSpeed} mph</strong>
               </div>
             </div>
-          </section>
+          </div>
+        ) : (
+          <div className="weather-card__empty">
+            <WiCloudy aria-hidden="true" />
+            <strong>No weather loaded yet</strong>
+            <span>Search a location to see current conditions.</span>
+          </div>
         )}
-
-      </div>
+      </section>
     </main>
   );
 };
