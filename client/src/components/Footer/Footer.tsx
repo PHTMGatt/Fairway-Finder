@@ -1,6 +1,7 @@
 // client/src/components/Footer/Footer.tsx
 import React, { memo, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getFooterBackTarget } from './footerNavigation';
 import './Footer.css';
 
 const Footer: React.FC = memo(() => {
@@ -8,12 +9,12 @@ const Footer: React.FC = memo(() => {
   const navigate = useNavigate();
 
   const handleGoBack = useCallback(() => {
-    if (window.history.length > 1) {
+    if (getFooterBackTarget(location.key) === -1) {
       navigate(-1);
     } else {
       navigate('/');
     }
-  }, [navigate]);
+  }, [location.key, navigate]);
 
   return (
     <footer className="footer">
