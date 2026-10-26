@@ -1,164 +1,243 @@
-/* 'src/pages/Trips/PlanTrip.css' */
+/* client/src/pages/Trips/PlanTrip.css */
 
-/* Container: brighter gradient, rounded corners, subtle glow */
 .plan-trip {
-  margin: 2rem auto;
-  max-width: 600px;
-  background: linear-gradient(145deg, #e3f5ff 0%, #d0f0ff 50%, #f9fcff 100%);
-  padding: 2rem 1.5rem;
-  border-radius: 16px;
-  box-shadow:
-    0 4px 10px rgba(109, 194, 255, 0.2),
-    0 8px 20px rgba(109, 194, 255, 0.15);
-  border: 1px solid #b3e5fc;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Animated background stripes (very subtle) */
-.plan-trip::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(255, 255, 255, 0.05) 0,
-    rgba(255, 255, 255, 0.05) 2px,
-    transparent 2px,
-    transparent 4px
-  );
-  animation: moveStripes 8s linear infinite;
-  pointer-events: none;
-}
-@keyframes moveStripes {
-  to { transform: translate(25%, 25%); }
-}
-
-/* Title: bigger, bold, gentle “pulse” */
-.plan-trip__title {
-  margin-bottom: 1.5rem;
-  font-size: 2rem;
-  text-align: center;
-  color: #064e3b;
-  font-weight: 700;
-  position: relative;
-  z-index: 1;
-  animation: pulseTitle 2s ease-out infinite;
-}
-@keyframes pulseTitle {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-}
-
-/* Icon styling: a small bounce */
-.plan-trip__icon {
-  margin-right: 0.5rem;
-  color: #4eb6f5;
-  animation: bounceIcon 1.5s infinite;
-  vertical-align: middle;
-}
-@keyframes bounceIcon {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-/* Shared form styling */
-.plan-trip__form {
+  width: min(760px, calc(100% - 2rem));
+  margin: 2.5rem auto 4rem;
   display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-  position: relative;
-  z-index: 1;
+  flex-direction: column;
+  gap: 1.25rem;
+  color: #21382a;
 }
 
-/* Inputs: rounded, subtle shadow on focus */
-.plan-trip__input {
-  flex: 1 1 auto;
-  padding: 0.75rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+.plan-trip__header {
+  padding: 0.5rem 0 0.75rem;
 }
+
+.plan-trip__eyebrow {
+  margin: 0 0 0.35rem;
+  color: #5a7561;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.plan-trip__title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0;
+  color: #173820;
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: -0.035em;
+}
+
+.plan-trip__icon {
+  color: #2f6f42;
+  font-size: 0.85em;
+}
+
+.plan-trip__intro {
+  max-width: 650px;
+  margin: 0.75rem 0 0;
+  color: #65736a;
+  line-height: 1.6;
+}
+
+.plan-trip__section {
+  padding: 1.35rem;
+  border: 1px solid #d8e2da;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(22, 51, 29, 0.05);
+}
+
+.plan-trip__step-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.plan-trip__step-heading h2 {
+  margin: 0;
+  color: #1f3d28;
+  font-size: 1.2rem;
+}
+
+.plan-trip__step-heading p {
+  margin: 0.25rem 0 0;
+  color: #748078;
+  font-size: 0.92rem;
+}
+
+.plan-trip__step-number {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: #e5f1e8;
+  color: #28593a;
+  font-weight: 800;
+}
+
+.plan-trip__form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: start;
+}
+
+.plan-trip__details-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 0.65fr);
+  gap: 0.85rem;
+}
+
+.plan-trip__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  color: #405248;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.plan-trip__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #bac8bd;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f3326;
+  font-size: 1rem;
+}
+
 .plan-trip__input:focus {
-  border-color: #4eb6f5;
-  box-shadow: 0 0 8px rgba(78, 182, 245, 0.3);
+  outline: 3px solid rgba(47, 111, 66, 0.16);
+  outline-offset: 1px;
+  border-color: #5f8569;
+}
+
+.plan-trip__btn {
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+  border: 1px solid #245e36;
+  border-radius: 8px;
+  background: #245e36;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.plan-trip__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #1e502e;
+  box-shadow: 0 6px 14px rgba(30, 80, 46, 0.16);
+}
+
+.plan-trip__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.plan-trip__btn--save {
+  grid-column: 1 / -1;
+  justify-self: start;
+  min-width: 140px;
+}
+
+.plan-trip__results {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.plan-trip__result-item {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #d5dfd7;
+  border-radius: 9px;
+  background: #fbfdfb;
+  color: #273c2d;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.plan-trip__result-item:hover,
+.plan-trip__result-item:focus-visible {
+  border-color: #7e9d85;
+  background: #f3f8f4;
   outline: none;
 }
 
-/* Buttons: gradient, hover pop, shadow */
-.plan-trip__btn {
-  flex: 0 0 auto;
-  background: linear-gradient(to right, #4eb6f5, #6dc2ff);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  cursor: pointer;
-  font-weight: 700;
-  font-size: 1rem;
-  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
-}
-.plan-trip__btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(78, 182, 245, 0.4);
-  background: linear-gradient(to right, #66c2f5, #5bb2ed);
-}
-
-/* Course selection list more lively */
-.plan-trip__results {
-  list-style: none;
-  padding-left: 1rem;
-  margin-bottom: 1rem;
-  z-index: 1;
-  position: relative;
-}
-.plan-trip__result-item {
-  margin: 0.5rem 0;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 6px;
-  transition: background 0.2s, transform 0.15s;
-}
-.plan-trip__result-item:hover {
-  background: rgba(78, 182, 245, 0.1);
-  transform: scale(1.01);
-}
 .plan-trip__result-item.selected {
-  background: rgba(78, 182, 245, 0.3);
-  font-weight: 700;
+  border-color: #2f6f42;
+  background: #eaf4ec;
+  box-shadow: 0 0 0 2px rgba(47, 111, 66, 0.1);
 }
 
-/* Selected course confirmation: bigger and bolder */
-.plan-trip__confirmation {
-  margin-bottom: 1rem;
-  color: #064e3b;
-  font-weight: 700;
-  font-size: 1.1rem;
-  z-index: 1;
-  position: relative;
+.plan-trip__result-item span,
+.plan-trip__result-item small {
+  color: #69766e;
+  font-weight: 400;
 }
 
-/* Spacing for Bootstrap Alerts */
+.plan-trip__selection {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-left: 4px solid #3d8050;
+  border-radius: 0 8px 8px 0;
+  background: #f0f7f2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.plan-trip__selection > span,
+.plan-trip__selection small {
+  color: #66746b;
+  font-size: 0.82rem;
+}
+
+.plan-trip__hint {
+  margin: 0.85rem 0 0;
+  color: #77827a;
+  font-size: 0.9rem;
+}
+
 .plan-trip__alert {
-  margin-bottom: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(109, 194, 255, 0.2);
-  position: relative;
-  z-index: 1;
+  margin: 0.85rem 0 0;
 }
 
-/* Hide the old plain‐text error if accidentally used */
-.plan-trip__error {
-  display: none;
-}
+@media (max-width: 620px) {
+  .plan-trip {
+    width: min(100% - 1rem, 760px);
+    margin-top: 1.5rem;
+  }
 
-/* Make the entire container content appear “above” the stripe animation */
-.plan-trip > * {
-  position: relative;
-  z-index: 1;
+  .plan-trip__section {
+    padding: 1rem;
+  }
+
+  .plan-trip__form,
+  .plan-trip__details-form {
+    grid-template-columns: 1fr;
+  }
+
+  .plan-trip__btn,
+  .plan-trip__btn--save {
+    width: 100%;
+    justify-self: stretch;
+  }
 }
