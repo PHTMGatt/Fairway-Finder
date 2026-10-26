@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { dist } from './helpers.mjs';
 
-const { analyzeTripReferenceIntegrity } = await dist('utils/dbIntegrity.js');
+const { analyzeTripReferenceIntegrity, buildDanglingReferenceCleanupPreview } = await dist('utils/dbIntegrity.js');
 
 const id = (value) => ({ toString: () => value });
 
@@ -44,4 +44,23 @@ test('duplicate refs inside one profile are reported but do not count as multipl
   assert.equal(report.duplicateReferences, 1);
   assert.equal(report.multiOwnedTrips, 0);
   assert.deepEqual(report.multiOwnedTripIds, []);
+});
+
+test('cleanup preview groups only dangling trip references by profile without producing writes', () => {
+  const report = analyzeTripReferenceIntegrity(
+    [
+      { _id: id('p2'), trips: [id('missing-b'), id('live')] },
+      { _id: id('p1'), trips: [id('missing-a'), id('missing-c')] },
+    ],
+    [{ _id: id('live') }]
+  );
+
+  assert.deepEqual(buildDanglingReferenceCleanupPreview(report), {
+    affectedProfiles: 2,
+    danglingReferences: 3,
+    pulls: [
+      { profileId: 'p1', tripIds: ['missing-a', 'missing-c'] },
+      { profileId: 'p2', tripIds: ['missing-b'] },
+    ],
+  });
 });
