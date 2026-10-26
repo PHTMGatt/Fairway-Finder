@@ -4,6 +4,7 @@ import React, { useState, FormEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import { hasGoogleMapsKey } from '../../utils/mapCapability';
 import { canPlanRoute, readRoutePlannerPrefill } from './routePlanner';
 import './MapRouting.css';
 
@@ -16,6 +17,9 @@ const MapRouting: React.FC = () => {
   const [destination, setDestination] = useState(initialState.destination);
   const [filters, setFilters] = useState<FilterType[]>([]);
   const [submitted, setSubmitted] = useState(initialState.submitted);
+  const interactiveMapAvailable = hasGoogleMapsKey(
+    import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+  );
 
   const toggleFilter = (type: FilterType) => {
     setFilters((prev) =>
@@ -40,6 +44,9 @@ const MapRouting: React.FC = () => {
   };
 
   const readyToPlan = canPlanRoute(origin, destination);
+  const externalDirectionsUrl = readyToPlan
+    ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin.trim())}&destination=${encodeURIComponent(destination.trim())}`
+    : '';
 
   return (
     <main className="map-routing">
@@ -70,43 +77,49 @@ const MapRouting: React.FC = () => {
         </button>
       </form>
 
-      <div className="map-routing__filters" aria-label="Route points of interest">
-        <button
-          type="button"
-          onClick={() => toggleFilter('golf_course')}
-          className={`filter-btn ${filters.includes('golf_course') ? 'active' : ''}`}
-          aria-pressed={filters.includes('golf_course')}
-        >
-          ⛳ Golf
-        </button>
-        <button
-          type="button"
-          onClick={() => toggleFilter('restaurant')}
-          className={`filter-btn ${filters.includes('restaurant') ? 'active' : ''}`}
-          aria-pressed={filters.includes('restaurant')}
-        >
-          🍔 Food
-        </button>
-        <button
-          type="button"
-          onClick={() => toggleFilter('gas_station')}
-          className={`filter-btn ${filters.includes('gas_station') ? 'active' : ''}`}
-          aria-pressed={filters.includes('gas_station')}
-        >
-          ⛽ Gas
-        </button>
-        <button
-          type="button"
-          onClick={() => toggleFilter('rest_area')}
-          className={`filter-btn ${filters.includes('rest_area') ? 'active' : ''}`}
-          aria-pressed={filters.includes('rest_area')}
-        >
-          💤 Rest
-        </button>
-      </div>
+      {interactiveMapAvailable ? (
+        <div className="map-routing__filters" aria-label="Route points of interest">
+          <button
+            type="button"
+            onClick={() => toggleFilter('golf_course')}
+            className={`filter-btn ${filters.includes('golf_course') ? 'active' : ''}`}
+            aria-pressed={filters.includes('golf_course')}
+          >
+            ⛳ Golf
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleFilter('restaurant')}
+            className={`filter-btn ${filters.includes('restaurant') ? 'active' : ''}`}
+            aria-pressed={filters.includes('restaurant')}
+          >
+            🍔 Food
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleFilter('gas_station')}
+            className={`filter-btn ${filters.includes('gas_station') ? 'active' : ''}`}
+            aria-pressed={filters.includes('gas_station')}
+          >
+            ⛽ Gas
+          </button>
+          <button
+            type="button"
+            onClick={() => toggleFilter('rest_area')}
+            className={`filter-btn ${filters.includes('rest_area') ? 'active' : ''}`}
+            aria-pressed={filters.includes('rest_area')}
+          >
+            💤 Rest
+          </button>
+        </div>
+      ) : (
+        <p className="map-routing__intro">
+          Interactive map tiles are unavailable in this environment. Directions can still open in Google Maps.
+        </p>
+      )}
 
       <div className={`map-routing__map${submitted ? '' : ' map-routing__map--empty'}`}>
-        {submitted ? (
+        {submitted && interactiveMapAvailable ? (
           <>
             <div className="map-overlay">Drag the map to explore your route</div>
             <GoogleMapView
@@ -118,12 +131,29 @@ const MapRouting: React.FC = () => {
           </>
         ) : (
           <div className="map-routing__empty">
-            <strong>No route loaded yet.</strong>
+            <strong>
+              {submitted && !interactiveMapAvailable
+                ? 'Interactive map unavailable.'
+                : 'No route loaded yet.'}
+            </strong>
             <span>
-              {destination
-                ? 'Add your starting point, then select Plan Route.'
-                : 'Choose a start and destination, then select Plan Route.'}
+              {submitted && !interactiveMapAvailable
+                ? 'Use the external directions link below.'
+                : destination
+                  ? 'Add your starting point, then select Plan Route.'
+                  : 'Choose a start and destination, then select Plan Route.'}
             </span>
+            {submitted && externalDirectionsUrl && (
+              <a
+                className="map-routing__btn"
+                href={externalDirectionsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: 'none' }}
+              >
+                Open directions in Google Maps
+              </a>
+            )}
           </div>
         )}
       </div>
