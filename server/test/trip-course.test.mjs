@@ -192,3 +192,31 @@ test('structured TripCourse caps optional provider metadata before persistence',
     assert.equal(await Trip.countDocuments({ name }), 0);
   }
 });
+
+test('TripInput requires a real YYYY-MM-DD calendar date for new trips', async () => {
+  const invalidDates = ['not-a-date', '2026-02-30', '2026-13-01', '26-11-14'];
+
+  for (const [index, date] of invalidDates.entries()) {
+    const name = `Invalid date trip ${index}`;
+    const result = await user(ADD_TRIP, {
+      input: {
+        name,
+        date,
+        course: { name: 'Date Check Links' },
+      },
+    });
+
+    assert.equal(result.error?.message, 'Trip date must be a valid YYYY-MM-DD date');
+    assert.equal(await Trip.countDocuments({ name }), 0);
+  }
+
+  const leapDay = await user(ADD_TRIP, {
+    input: {
+      name: 'Valid leap day trip',
+      date: '2028-02-29',
+      course: { name: 'Leap Links' },
+    },
+  });
+  assert.equal(leapDay.error, null);
+  assert.equal(leapDay.data.addTrip.date, '2028-02-29');
+});
