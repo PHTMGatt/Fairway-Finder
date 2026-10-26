@@ -239,7 +239,11 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
 
       {players.length ? (
         <div className="scorecard__table-wrapper">
-          <table className="scorecard__table">
+          <table
+            className={`scorecard__table${
+              viewMode === 'threehole' ? ' scorecard__table--compact' : ''
+            }`}
+          >
             <thead>
               <tr>
                 <th>Player</th>
