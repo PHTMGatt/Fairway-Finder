@@ -17,7 +17,9 @@ export const fetchWithTimeout = async (
   try {
     return await fetch(url, {
       ...init,
-      signal: controller.signal,
+      // node-fetch v2 carries its own AbortSignal declaration; Node 20's
+      // runtime signal is compatible even though the bundled TS shapes differ.
+      signal: controller.signal as unknown as NonNullable<RequestInit['signal']>,
     });
   } finally {
     clearTimeout(timeout);
