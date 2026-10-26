@@ -99,6 +99,11 @@
   font-size: 0.9rem;
 }
 
+.course-finder__note a {
+  color: #245e36;
+  font-weight: 700;
+}
+
 .course-finder__status--error {
   color: #a52d2d;
 }
@@ -151,7 +156,12 @@
 .course-card__actions {
   display: flex;
   flex-wrap: wrap;
+  align-items: start;
   gap: 0.55rem;
+}
+
+.course-card__actions .guest-demo {
+  width: auto;
 }
 
 .course-card__link {
@@ -178,7 +188,8 @@
   }
 
   .course-finder__btn,
-  .course-card__actions > * {
+  .course-card__actions > *,
+  .course-card__actions .guest-demo {
     width: 100%;
   }
 }
