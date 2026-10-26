@@ -8,7 +8,7 @@ A modern, full-stack golf trip planner. Search and save courses, plan driving ro
 ## 📸 Screenshot
 
 <p align="center">
-  <img src="client/src/assets/images/GHRM.png" alt="Fairway Finder Screenshot" width="600" />
+  <img src="docs/portfolio/cover.webp" alt="Fairway Finder application" width="900" />
 </p>
 
 ---
@@ -86,10 +86,10 @@ Planning a golf trip often means juggling multiple tools—course details, direc
 
 - **Primary Developer:** [Bryen Gatt](https://github.com/PHTMGatt)  
 - **Contributors:**  
-  • [Jarred Hampton](https://github.com/Jarred13D)  
-  • [Jared Owens](https://github.com/jaredowens)  
-  • [Hunter West](https://github.com/Frankthedestro)  
-  • [Nicholas Dear](https://github.com/n6dd)
+  • Jarred Hampton  
+  • Jared Owens  
+  • Hunter West  
+  • Nicholas Dear
 
 ---
 
