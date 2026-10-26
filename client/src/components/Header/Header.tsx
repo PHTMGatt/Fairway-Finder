@@ -5,6 +5,7 @@ import { FaFlag } from 'react-icons/fa';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import Auth from '../../utils/auth';
 import { getGuestBannerState } from './guestBanner';
+import { getHeaderNavigation } from './headerNavigation';
 import './Header.css';
 
 const Header: React.FC = () => {
@@ -13,6 +14,7 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const [now, setNow] = useState(Date.now());
   const guestBanner = getGuestBannerState(Auth.getSessionInfo(), now);
+  const navigation = getHeaderNavigation(isLoggedIn);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -38,38 +40,30 @@ const Header: React.FC = () => {
 
   return (
     <header className="header header--bg">
-      <Link to="/" className="header__icon-link" aria-label="Fairway Finder home">
-        <span className="header__home-icon" aria-hidden="true">
-          <FaFlag />
-        </span>
-      </Link>
+      <div className="header__main">
+        <Link to="/" className="header__brand" aria-label="Fairway Finder home">
+          <span className="header__home-icon" aria-hidden="true">
+            <FaFlag />
+          </span>
+          <span className="header__logo">FAIRWAY FINDER</span>
+        </Link>
 
-      <Link to="/" className="header__logo">
-        FAIRWAY FINDER
-      </Link>
-
-      <div className="header__spacer" />
-
-      <div className="header__actions">
-        {isLoggedIn ? (
-          <>
-            <Link to="/saved-trips" className="header__btn">
-              My Trips
+        <nav className="header__actions" aria-label="Primary navigation">
+          {navigation.map((item, index) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`header__btn${isLoggedIn && index === 0 ? ' header__btn--primary' : ''}`}
+            >
+              {item.label}
             </Link>
-            <button onClick={handleLogout} className="header__btn">
+          ))}
+          {isLoggedIn && (
+            <button onClick={handleLogout} className="header__btn header__btn--quiet">
               Log Out
             </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="header__btn">
-              Log In
-            </Link>
-            <Link to="/signup" className="header__btn">
-              Invite Sign Up
-            </Link>
-          </>
-        )}
+          )}
+        </nav>
       </div>
 
       {guestBanner && !guestBanner.expired && (
