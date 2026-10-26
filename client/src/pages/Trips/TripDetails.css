@@ -145,7 +145,7 @@
   background: #f8faf8;
 }
 
-.trip-details__additional-courses li > div {
+.trip-details__additional-courses li > div:first-child {
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -164,8 +164,14 @@
   white-space: nowrap;
 }
 
-.trip-details__additional-courses a {
+.trip-details__course-row-actions {
   flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.trip-details__additional-courses a {
   color: #245e36;
   font-size: 0.86rem;
   font-weight: 800;
@@ -174,6 +180,28 @@
 
 .trip-details__additional-courses a:hover {
   text-decoration: underline;
+}
+
+.trip-details__remove-course {
+  min-height: 36px;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #dfb7b7;
+  border-radius: 8px;
+  background: #fff;
+  color: #9a3030;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.trip-details__remove-course:hover:not(:disabled) {
+  border-color: #c96c6c;
+  background: #fff4f4;
+}
+
+.trip-details__remove-course:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .trip-details__card-actions {
@@ -368,12 +396,21 @@
 
 @media (max-width: 420px) {
   .trip-details__additional-courses li {
-    align-items: flex-start;
+    align-items: stretch;
     flex-direction: column;
   }
 
   .trip-details__additional-courses span {
     white-space: normal;
+  }
+
+  .trip-details__course-row-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .trip-details__remove-course {
+    min-height: 44px;
   }
 
   .trip-details__weather-form {
