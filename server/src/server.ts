@@ -7,6 +7,7 @@ import compression from 'compression';
 import dotenv from 'dotenv';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
+import { getMissingCoreEnvironment, getProviderCapabilities } from './utils/runtimeEnvironment.js';
 
 dotenv.config({
   path: path.resolve(
@@ -16,27 +17,28 @@ dotenv.config({
 });
 
 const {
-  MONGODB_URI,
   PORT = '3001',
-  PLACES_API_KEY,
-  JWT_SECRET_KEY,
-  GOLF_API_KEY,
   NODE_ENV = 'development',
   TRUST_PROXY,
   DEBUG_CLIENT_IP,
 } = process.env;
 
-if (!MONGODB_URI || !PLACES_API_KEY || !JWT_SECRET_KEY || !GOLF_API_KEY) {
-  console.error('❌ Missing required environment variables');
+const missingCoreEnvironment = getMissingCoreEnvironment(process.env);
+if (missingCoreEnvironment.length) {
+  console.error(
+    `❌ Missing required environment variables: ${missingCoreEnvironment.join(', ')}`
+  );
   process.exit(1);
 }
+
+const providerCapabilities = getProviderCapabilities(process.env);
 
 if (NODE_ENV !== 'production') {
   console.log(`🔑 Environment loaded:
   • MongoDB URI: configured
   • Server Port: ${PORT}
-  • Places Key: configured
-  • Golf Key: configured
+  • Places Provider: ${providerCapabilities.google ? 'configured' : 'fallback-only'}
+  • Golf Provider: ${providerCapabilities.golf ? 'configured' : 'unavailable'}
   • JWT Secret: configured`);
 }
 

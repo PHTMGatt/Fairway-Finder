@@ -5,16 +5,9 @@ import fetch from 'node-fetch';
 
 const router = Router();
 
-const GOOGLE_API_KEY = process.env.PLACES_API_KEY;
-const GOLF_API_KEY = process.env.GOLF_API_KEY;
+const GOOGLE_API_KEY = process.env.PLACES_API_KEY?.trim();
+const GOLF_API_KEY = process.env.GOLF_API_KEY?.trim();
 const GOLF_API_BASE = 'https://api.golfcourseapi.com/v1';
-
-if (!GOOGLE_API_KEY) {
-  throw new Error('Missing PLACES_API_KEY in server environment');
-}
-if (!GOLF_API_KEY) {
-  throw new Error('Missing GOLF_API_KEY in server environment');
-}
 
 interface CourseQuery {
   city?: string;
@@ -36,6 +29,8 @@ export interface Course {
 }
 
 const geocodeGoogle = async (query: string): Promise<Coordinates | null> => {
+  if (!GOOGLE_API_KEY) return null;
+
   const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
   url.searchParams.set('address', query);
   url.searchParams.set('key', GOOGLE_API_KEY);
@@ -86,6 +81,8 @@ const searchPlacesNew = async (
   limit: number,
   maxDistanceMiles?: number
 ): Promise<Course[] | null> => {
+  if (!GOOGLE_API_KEY) return null;
+
   const headers = {
     'Content-Type': 'application/json',
     'X-Goog-Api-Key': GOOGLE_API_KEY,
@@ -162,6 +159,8 @@ const searchPlacesLegacy = async (
   limit: number,
   maxDistanceMiles?: number
 ): Promise<Course[]> => {
+  if (!GOOGLE_API_KEY) return [];
+
   const location = await geocodeCity(city);
   if (!location) return [];
 
@@ -269,6 +268,8 @@ const searchGolfCourseApi = async (
   city: string,
   limit: number
 ): Promise<Course[]> => {
+  if (!GOLF_API_KEY) return [];
+
   const url = new URL(`${GOLF_API_BASE}/search`);
   url.searchParams.set('search_query', city.split(',')[0].trim());
 
