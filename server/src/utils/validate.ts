@@ -18,6 +18,7 @@ export const LIMITS = {
   courseLatitude: { min: -90, max: 90 },
   courseLongitude: { min: -180, max: 180 },
   courseDisplayRating: { min: 0, max: 5 },
+  courseSlopeRating: { min: 55, max: 155 },
   playerName: 40,
   coursesPerTrip: 20,
   playersPerTrip: 24,
