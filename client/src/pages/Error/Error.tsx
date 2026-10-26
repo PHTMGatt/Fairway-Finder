@@ -1,41 +1,45 @@
-// src/pages/Error/Error.tsx
-
 import React from 'react';
-import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
+import { Link, isRouteErrorResponse, useRouteError } from 'react-router-dom';
+import Auth from '../../utils/auth';
 import './Error.css';
 
-// Note; Shape of error object from React Router
 interface RouteError {
   statusText?: string;
   message?: string;
 }
 
 const ErrorPage: React.FC = () => {
-  // Note; Retrieve the error thrown during routing
   const error = useRouteError() as RouteError;
-
-  // Note; Derive a user‐friendly message
   const errorInfo = isRouteErrorResponse(error)
     ? `${error.status} ${error.statusText}`
-    : error.statusText || error.message || 'Unknown error';
+    : error.statusText || error.message || 'The requested page could not be loaded.';
+  const isLoggedIn = Auth.loggedIn();
 
   return (
-    <div className="error-page">
-      {/* Note; Main error heading */}
-      <h1 className="error-page__title">
-        Whoops! You’ve hit a sand trap!
-      </h1>
+    <main className="error-page">
+      <section className="error-page__card" aria-labelledby="error-title">
+        <p className="error-page__eyebrow">Fairway Finder</p>
+        <h1 id="error-title" className="error-page__title">
+          That page is off course.
+        </h1>
+        <p className="error-page__desc">
+          The page may have moved, the link may be stale, or something failed while loading.
+        </p>
+        <p className="error-page__info" role="status">{errorInfo}</p>
 
-      {/* Note; Brief apology */}
-      <p className="error-page__desc">
-        Sorry, something went off course.
-      </p>
-
-      {/* Note; Detailed error info */}
-      <p className="error-page__info">
-        <i>{errorInfo}</i>
-      </p>
-    </div>
+        <div className="error-page__actions">
+          <Link to="/" className="error-page__action error-page__action--primary">
+            Go Home
+          </Link>
+          <Link
+            to={isLoggedIn ? '/plan-trip' : '/courses'}
+            className="error-page__action"
+          >
+            {isLoggedIn ? 'Plan a Trip' : 'Browse Courses'}
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 };
 
