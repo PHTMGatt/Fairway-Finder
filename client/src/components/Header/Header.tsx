@@ -1,10 +1,10 @@
 import { useApolloClient } from '@apollo/client';
 import { Link, useNavigate } from 'react-router-dom';
 import { MouseEvent, useEffect, useState } from 'react';
+import { FaFlag } from 'react-icons/fa';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import Auth from '../../utils/auth';
 import { getGuestBannerState } from './guestBanner';
-import golfGif from '../../assets/images/golf2.gif';
 import './Header.css';
 
 const Header: React.FC = () => {
@@ -38,8 +38,10 @@ const Header: React.FC = () => {
 
   return (
     <header className="header header--bg">
-      <Link to="/" className="header__icon-link">
-        <img src={golfGif} alt="Home" className="header__gif-icon" />
+      <Link to="/" className="header__icon-link" aria-label="Fairway Finder home">
+        <span className="header__home-icon" aria-hidden="true">
+          <FaFlag />
+        </span>
       </Link>
 
       <Link to="/" className="header__logo">
@@ -64,7 +66,7 @@ const Header: React.FC = () => {
               Log In
             </Link>
             <Link to="/signup" className="header__btn">
-              Sign Up
+              Invite Sign Up
             </Link>
           </>
         )}
