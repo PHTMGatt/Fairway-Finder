@@ -86,10 +86,10 @@ Planning a golf trip often means juggling multiple tools—course details, direc
 
 - **Primary Developer:** [Bryen Gatt](https://github.com/PHTMGatt)  
 - **Contributors:**  
-  • Jarred Hampton  
-  • Jared Owens  
-  • Hunter West  
-  • Nicholas Dear
+  • [Jarred Hampton](https://github.com/Jarred13D)  
+  • [Jared Owens](https://github.com/jaredowens)  
+  • [Hunter West](https://github.com/Frankthedestro)  
+  • [Nicholas Dear](https://github.com/n6dd)
 
 ---
 
