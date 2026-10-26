@@ -1,21 +1,19 @@
 // client/src/pages/Routes/MapRouting.tsx
 
-import React, { useState, useEffect, FormEvent } from 'react';
+import React, { useState, FormEvent } from 'react';
 import GoogleMapView from '../../components/MapView/GoogleMapView';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import { canPlanRoute, createInitialRoutePlannerState } from './routePlanner';
 import './MapRouting.css';
 
 type FilterType = 'golf_course' | 'restaurant' | 'gas_station' | 'rest_area';
 
 const MapRouting: React.FC = () => {
-  const [origin, setOrigin] = useState('Detroit, Michigan');
-  const [destination, setDestination] = useState('Ann Arbor, Michigan');
+  const initialState = createInitialRoutePlannerState();
+  const [origin, setOrigin] = useState(initialState.origin);
+  const [destination, setDestination] = useState(initialState.destination);
   const [filters, setFilters] = useState<FilterType[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-
-  useEffect(() => {
-    setSubmitted(true);
-  }, []);
+  const [submitted, setSubmitted] = useState(initialState.submitted);
 
   const toggleFilter = (type: FilterType) => {
     setFilters((prev) =>
@@ -23,33 +21,48 @@ const MapRouting: React.FC = () => {
     );
   };
 
+  const handleOriginChange = (value: string) => {
+    setOrigin(value);
+    setSubmitted(false);
+  };
+
+  const handleDestinationChange = (value: string) => {
+    setDestination(value);
+    setSubmitted(false);
+  };
+
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!origin.trim() || !destination.trim()) return;
+    if (!canPlanRoute(origin, destination)) return;
     setSubmitted(true);
   };
+
+  const readyToPlan = canPlanRoute(origin, destination);
 
   return (
     <main className="map-routing">
       <h2 className="map-routing__title">Route Planner</h2>
+      <p className="map-routing__intro">
+        Enter where you are starting and where you are headed. Fairway Finder only loads a route after you ask for one.
+      </p>
 
       <form className="map-routing__form" onSubmit={handleSubmit}>
         <LocationAutocomplete
           value={origin}
-          onChange={setOrigin}
-          placeholder="Start Location"
+          onChange={handleOriginChange}
+          placeholder="Start location"
           inputClassName="map-routing__input"
           ariaLabel="Route start location"
         />
         <LocationAutocomplete
           value={destination}
-          onChange={setDestination}
-          placeholder="End Location"
+          onChange={handleDestinationChange}
+          placeholder="Destination"
           inputClassName="map-routing__input"
           ariaLabel="Route destination"
         />
-        <button className="map-routing__btn" type="submit">
-          Go
+        <button className="map-routing__btn" type="submit" disabled={!readyToPlan}>
+          Plan Route
         </button>
       </form>
 
@@ -88,15 +101,22 @@ const MapRouting: React.FC = () => {
         </button>
       </div>
 
-      <div className="map-routing__map">
-        <div className="map-overlay">Drag the map to explore your route</div>
-        {submitted && (
-          <GoogleMapView
-            origin={origin}
-            destination={destination}
-            maxDistance="30"
-            filters={filters}
-          />
+      <div className={`map-routing__map${submitted ? '' : ' map-routing__map--empty'}`}>
+        {submitted ? (
+          <>
+            <div className="map-overlay">Drag the map to explore your route</div>
+            <GoogleMapView
+              origin={origin}
+              destination={destination}
+              maxDistance="30"
+              filters={filters}
+            />
+          </>
+        ) : (
+          <div className="map-routing__empty">
+            <strong>No route loaded yet.</strong>
+            <span>Choose a start and destination, then select Plan Route.</span>
+          </div>
         )}
       </div>
     </main>
