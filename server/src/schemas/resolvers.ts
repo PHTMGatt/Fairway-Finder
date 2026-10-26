@@ -8,7 +8,7 @@ import Trip from '../models/Trip.js';
 import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
 import { signToken } from '../utils/auth.js';
 import { enforceRateLimit, guestLimiter, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
-import { LIMITS, checkRange, checkText } from '../utils/validate.js';
+import { LIMITS, checkISODate, checkRange, checkText } from '../utils/validate.js';
 import {
   GUEST_MAX_TRIPS,
   createGuestProfile,
@@ -310,6 +310,7 @@ const resolvers: IResolvers<any, Context> = {
     addTrip: async (_p, { input }, context) => {
       checkText(input.name, 'name', 'Trip name', LIMITS.tripName);
       checkText(input.date, 'date', 'Trip date', LIMITS.tripDate);
+      checkISODate(input.date, 'date', 'Trip date');
 
       const selectedCourse: TripCourseInput | null = input.course
         ?? (typeof input.courseName === 'string' ? { name: input.courseName } : null);
