@@ -30,6 +30,15 @@ export interface TripReferenceIntegrityReport {
   multiOwnedTripIds: string[];
 }
 
+export interface DanglingReferenceCleanupPreview {
+  affectedProfiles: number;
+  danglingReferences: number;
+  pulls: Array<{
+    profileId: string;
+    tripIds: string[];
+  }>;
+}
+
 const asId = (value: IdLike | string): string => value.toString();
 
 export const analyzeTripReferenceIntegrity = (
@@ -93,5 +102,30 @@ export const analyzeTripReferenceIntegrity = (
     dangling,
     orphanTripIds,
     multiOwnedTripIds,
+  };
+};
+
+export const buildDanglingReferenceCleanupPreview = (
+  report: TripReferenceIntegrityReport
+): DanglingReferenceCleanupPreview => {
+  const tripIdsByProfile = new Map<string, string[]>();
+
+  for (const reference of report.dangling) {
+    const tripIds = tripIdsByProfile.get(reference.profileId) ?? [];
+    if (!tripIds.includes(reference.tripId)) tripIds.push(reference.tripId);
+    tripIdsByProfile.set(reference.profileId, tripIds);
+  }
+
+  const pulls = Array.from(tripIdsByProfile.entries())
+    .map(([profileId, tripIds]) => ({
+      profileId,
+      tripIds: [...tripIds].sort(),
+    }))
+    .sort((left, right) => left.profileId.localeCompare(right.profileId));
+
+  return {
+    affectedProfiles: pulls.length,
+    danglingReferences: report.dangling.length,
+    pulls,
   };
 };
