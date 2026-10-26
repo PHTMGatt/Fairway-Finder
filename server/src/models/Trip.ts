@@ -107,6 +107,26 @@ const tripSchema = new Schema<TripDoc>(
   }
 )
 
+// The first course is the trip's canonical location/context for routing and weather.
+// New trips can establish it, and later saves can edit secondary courses, but an
+// existing Trip cannot silently delete or replace its primary course.
+tripSchema.pre('save', async function () {
+  if (this.isNew || !this.isModified('courses')) return
+
+  const persisted = await this.model('Trip')
+    .findById(this._id)
+    .select('courses._id')
+    .lean<{ courses?: Array<{ _id: Types.ObjectId }> }>()
+
+  const persistedPrimaryId = persisted?.courses?.[0]?._id?.toString()
+  if (!persistedPrimaryId) return
+
+  const currentPrimaryId = this.courses?.[0]?._id?.toString()
+  if (currentPrimaryId !== persistedPrimaryId) {
+    throw new Error('The primary course cannot be removed from a trip')
+  }
+})
+
 // Note; TTL index: MongoDB deletes a guest trip once expiresAt passes. Only isGuest trips are
 // considered, so a permanent trip is never deleted even if it has an expiresAt.
 tripSchema.index(
