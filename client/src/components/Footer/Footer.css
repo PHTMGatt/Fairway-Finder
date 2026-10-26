@@ -1,12 +1,4 @@
 /* client/src/components/Footer/Footer.css */
-body {
-  margin: 0;
-  padding: 0;
-  background: #f4f8f5;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
-}
-
 .footer {
   margin-top: 2rem;
   padding: 1rem;
@@ -30,8 +22,7 @@ body {
   gap: 0.75rem;
 }
 
-.footer__back,
-.footer__link {
+.footer__back {
   min-height: 38px;
   display: inline-flex;
   align-items: center;
@@ -43,20 +34,17 @@ body {
   color: #294431;
   font-size: 0.9rem;
   font-weight: 700;
-  text-decoration: none;
   cursor: pointer;
   transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.footer__back:hover,
-.footer__link:hover {
+.footer__back:hover {
   transform: translateY(-1px);
   border-color: #718f78;
   box-shadow: 0 4px 12px rgba(30, 65, 39, 0.08);
 }
 
-.footer__back:focus-visible,
-.footer__link:focus-visible {
+.footer__back:focus-visible {
   outline: 3px solid rgba(47, 111, 66, 0.25);
   outline-offset: 2px;
 }
@@ -76,6 +64,10 @@ body {
 
   .footer__actions {
     justify-content: center;
-    flex-wrap: wrap;
+  }
+
+  .footer__back {
+    width: 100%;
+    min-height: 44px;
   }
 }
