@@ -2,7 +2,7 @@
 // Note; Express route proxy for GolfCourseAPI — handles search + detail fetch
 
 import express, { Request, Response } from 'express';
-import fetch from 'node-fetch';
+import { fetchWithTimeout as fetch } from '../services/http.js';
 
 const router = express.Router();
 
