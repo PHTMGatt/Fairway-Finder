@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  courseRemovalPrompt,
   resolveGolfCourseLookup,
+  secondaryTripCourses,
   storedTeeRating,
   weatherParamsForCourse,
 } from './tripDetailsCourse';
@@ -61,5 +63,24 @@ describe('Trip Details course enrichment', () => {
     );
     expect(weatherParamsForCourse(course, '10/30/2026')?.has('date')).toBe(false);
     expect(weatherParamsForCourse({ name: 'Legacy Links' })).toBeNull();
+  });
+});
+
+describe('Trip Details secondary-course management', () => {
+  it('excludes the primary course from the removable secondary-course list', () => {
+    const courses = [
+      { _id: 'primary', name: 'Primary Links' },
+      { _id: 'second', name: 'Second Links' },
+      { _id: 'third', name: 'Third Links' },
+    ];
+
+    expect(secondaryTripCourses(courses)).toEqual([courses[1], courses[2]]);
+    expect(secondaryTripCourses(courses)).not.toContain(courses[0]);
+  });
+
+  it('uses a deliberate destructive confirmation message', () => {
+    expect(courseRemovalPrompt('Second Links')).toBe(
+      'Remove Second Links from this trip? This will not delete the trip.'
+    );
   });
 });
