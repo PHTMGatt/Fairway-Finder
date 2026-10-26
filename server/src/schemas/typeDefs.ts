@@ -139,7 +139,8 @@ export default `
 
     addTrip(input: TripInput!): Trip
     deleteTrip(tripId: ID!): Trip
-    addCourseToTrip(tripId: ID!, courseName: String!): Trip
+    "Add a canonical course snapshot to an owned trip; courseName remains for legacy clients."
+    addCourseToTrip(tripId: ID!, course: TripCourseInput, courseName: String): Trip
     removeCourseFromTrip(tripId: ID!, courseId: ID!): Trip
     addPlayer(tripId: ID!, name: String!): Trip
     removePlayer(tripId: ID!, name: String!): Trip
