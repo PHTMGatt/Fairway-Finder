@@ -6,7 +6,7 @@ import { LOGIN_USER } from '../../utils/mutations';
 import GuestDemoButton from '../../components/GuestDemoButton';
 import { useAuth } from './AuthContext';
 import { getLoginReasonMessage } from './loginReason';
-import './Login.css';
+import './Auth.css';
 
 const Login: React.FC = () => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
@@ -56,8 +56,8 @@ const Login: React.FC = () => {
 
   return (
     <main className="auth-page">
-      <div className="auth-card">
-        <h4 className="auth-header">Log In</h4>
+      <section className="auth-card" aria-labelledby="login-title">
+        <h1 id="login-title" className="auth-header">Log In</h1>
         <div className="auth-body">
           {reasonMessage && (
             <div className="auth-info" role="status">
@@ -70,6 +70,8 @@ const Login: React.FC = () => {
               type="email"
               className="auth-input"
               placeholder="Email"
+              aria-label="Email"
+              autoComplete="email"
               value={credentials.email}
               onChange={handleChange}
             />
@@ -78,20 +80,24 @@ const Login: React.FC = () => {
               type="password"
               className="auth-input"
               placeholder="Password"
+              aria-label="Password"
+              autoComplete="current-password"
               value={credentials.password}
               onChange={handleChange}
             />
             <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? 'Logging in…' : 'Submit'}
+              {loading ? 'Logging in…' : 'Log In'}
             </button>
           </form>
-          {errorMessage && <div className="auth-error">{errorMessage}</div>}
+          {errorMessage && (
+            <div className="auth-error" role="alert">{errorMessage}</div>
+          )}
           <div className="auth-divider" aria-hidden="true">
             <span>or</span>
           </div>
           <GuestDemoButton className="auth-btn" />
         </div>
-      </div>
+      </section>
     </main>
   );
 };
