@@ -7,7 +7,7 @@ import { scorecardErrorMessage, scoreFromDraft } from './scorecardUtils';
 describe('score entry guardrails', () => {
   it('renders a hole score input capped at 30', () => {
     const markup = renderToStaticMarkup(
-      React.createElement(ScoreInput, { value: 4, onCommit: () => undefined })
+      React.createElement(ScoreInput, { value: 4, onCommit: () => true })
     );
     expect(markup).toContain('min="0"');
     expect(markup).toContain('max="30"');
