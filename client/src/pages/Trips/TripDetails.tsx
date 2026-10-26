@@ -11,7 +11,7 @@ import { useQuery } from '@apollo/client';
 import { Link, useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
-import { FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
 import { Alert } from 'react-bootstrap';
 import ScoreCard from '../../components/ScoreCard/ScoreCard';
 import {
@@ -60,11 +60,11 @@ const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const [weatherCity, setWeatherCity] = useState('');
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
-  const [weatherError, setWeatherError] = useState<string>('');
-  const [golfApiError, setGolfApiError] = useState<string>('');
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState('');
+  const [golfApiError, setGolfApiError] = useState('');
   const [teeRating, setTeeRating] = useState<TeeRating | null>(null);
-  const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [showAlert, setShowAlert] = useState(false);
 
   const { loading, error, data } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
@@ -116,9 +116,7 @@ const TripDetails: React.FC = () => {
         const search = await fetch(
           `/api/golf/search?search_query=${encodeURIComponent(lookup.query)}`
         );
-        if (!search.ok) {
-          throw new Error('Unable to search golf course details');
-        }
+        if (!search.ok) throw new Error('Unable to search golf course details');
 
         const searchJson = await search.json();
         const firstResult = searchJson.courses?.[0];
@@ -130,9 +128,7 @@ const TripDetails: React.FC = () => {
       }
 
       const details = await fetch(`/api/golf/${encodeURIComponent(courseId)}`);
-      if (!details.ok) {
-        throw new Error('Unable to load golf course details');
-      }
+      if (!details.ok) throw new Error('Unable to load golf course details');
 
       const fullData: GolfCourseAPIResponse = await details.json();
       const firstTee = fullData.tees.male?.[0];
@@ -158,15 +154,12 @@ const TripDetails: React.FC = () => {
   }, [course, fetchWeather]);
 
   useEffect(() => {
-    if (course) {
-      void loadTeeRating(course);
-    } else {
-      setTeeRating(null);
-    }
+    if (course) void loadTeeRating(course);
+    else setTeeRating(null);
   }, [course, loadTeeRating]);
 
-  const handleCitySubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleCitySubmit = (event: FormEvent) => {
+    event.preventDefault();
     const city = weatherCity.trim();
 
     if (!city) {
@@ -178,16 +171,12 @@ const TripDetails: React.FC = () => {
     void fetchWeather(new URLSearchParams({ city }));
   };
 
-  if (!tripId) {
-    return <p className="trip-details__status">❌ No trip ID provided.</p>;
-  }
-  if (loading) {
-    return <p className="trip-details__status">Loading trip details…</p>;
-  }
+  if (!tripId) return <p className="trip-details__status">No trip ID provided.</p>;
+  if (loading) return <p className="trip-details__status">Loading trip details…</p>;
   if (error || !trip) {
     return (
-      <p className="trip-details__status">
-        ❌ Error loading trip: {error?.message}
+      <p className="trip-details__status trip-details__status--error">
+        Error loading trip: {error?.message || 'Trip not found'}
       </p>
     );
   }
@@ -203,115 +192,146 @@ const TripDetails: React.FC = () => {
           : ''
       }`
     : '';
+  const hasSavedLocation = Boolean(course?.location);
 
   return (
-    <div className="trip-details">
-      <h2 className="trip-details__title">{trip.name}</h2>
-      <p className="trip-details__label">
-        Date: <strong>{trip.date || 'N/A'}</strong>
-      </p>
+    <main className="trip-details">
+      <header className="trip-details__hero">
+        <p className="trip-details__eyebrow">Trip hub</p>
+        <h1 className="trip-details__title">{trip.name}</h1>
+        <div className="trip-details__meta">
+          <span>
+            <FaCalendarAlt aria-hidden="true" /> {trip.date || 'Date not set'}
+          </span>
+          {course?.name && <span>{course.name}</span>}
+        </div>
+      </header>
 
-      {showAlert && (
-        <Alert
-          variant="danger"
-          onClose={() => setShowAlert(false)}
-          dismissible
-          className="trip-details__alert"
-        >
-          Please enter a weather location.
-        </Alert>
-      )}
-
-      <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
-        <input
-          type="text"
-          className="trip-details__weather-input"
-          placeholder="Weather location (city, state)..."
-          value={weatherCity}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setWeatherCity(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="trip-details__weather-btn"
-          disabled={weatherLoading}
-        >
-          {weatherLoading ? 'Loading…' : 'Update Weather'}
-        </button>
-      </form>
-
-      {weatherError && <p className="trip-details__status">❌ {weatherError}</p>}
-      {golfApiError && <p className="trip-details__status">❌ {golfApiError}</p>}
-
-      <section className="trip-details__top">
-        <div className="trip-card">
-          <div className="trip-card__header">Course Info</div>
-          <div className="trip-card__body">
-            <h3 className="trip-card__course-name">
+      <section className="trip-details__overview" aria-label="Trip overview">
+        <article className="trip-details__card">
+          <div className="trip-details__card-header">Course</div>
+          <div className="trip-details__card-body">
+            <h2 className="trip-details__course-name">
               {course?.name ?? 'No course selected'}
-            </h3>
-            <p>{course?.address ?? 'No address available'}</p>
-            {typeof course?.rating === 'number' && <p>⭐ {course.rating}</p>}
-            {teeRating && (
-              <p>
-                Course rating {teeRating.courseRating} · Slope {teeRating.slopeRating}
-              </p>
+            </h2>
+            <p className="trip-details__muted">
+              {course?.address ?? 'No address available'}
+            </p>
+            <div className="trip-details__facts">
+              {typeof course?.rating === 'number' && (
+                <span>★ {course.rating} Google rating</span>
+              )}
+              {teeRating && (
+                <span>
+                  Rating {teeRating.courseRating} · Slope {teeRating.slopeRating}
+                </span>
+              )}
+            </div>
+            {golfApiError && (
+              <p className="trip-details__inline-error">{golfApiError}</p>
             )}
+
             {course?.name && (
-              <div className="trip-card__actions">
+              <div className="trip-details__card-actions">
                 {mapsUrl && (
                   <a
-                    className="trip-card__link"
+                    className="trip-details__action-link"
                     href={mapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FaMapMarkerAlt /> Open in Maps
+                    <FaMapMarkerAlt aria-hidden="true" /> Open in Maps
                   </a>
                 )}
                 <Link
-                  className="trip-card__link"
+                  className="trip-details__action-link trip-details__action-link--primary"
                   to="/routing"
                   state={{ destination: routeDestination }}
                 >
-                  <FaRoute /> Plan Route
+                  <FaRoute aria-hidden="true" /> Plan Route
                 </Link>
               </div>
             )}
           </div>
-        </div>
+        </article>
 
-        <div className="trip-card">
-          <div className="trip-card__header">Current Weather</div>
-          <div className="trip-card__body">
+        <article className="trip-details__card">
+          <div className="trip-details__card-header">Weather</div>
+          <div className="trip-details__card-body">
             {weatherLoading ? (
-              <p>Loading weather…</p>
+              <p className="trip-details__muted">Loading weather…</p>
             ) : weatherData ? (
-              <>
-                <p><strong>{weatherData.name}</strong></p>
-                <p>{weatherData.weather[0].description}</p>
-                <p><strong>{Math.round(weatherData.main.temp)}°F</strong></p>
-                <p>
-                  <WiRain /> {precip} mm &nbsp;
-                  <WiRaindrops /> {weatherData.main.humidity}% &nbsp;
-                  <WiStrongWind /> {weatherData.wind.speed} mph
-                </p>
-              </>
+              <div className="trip-details__weather-summary">
+                <div>
+                  <strong>{weatherData.name}</strong>
+                  <span>{weatherData.weather[0]?.description || 'Current conditions'}</span>
+                </div>
+                <strong className="trip-details__temperature">
+                  {Math.round(weatherData.main.temp)}°F
+                </strong>
+                <div className="trip-details__weather-facts">
+                  <span><WiRain aria-hidden="true" /> {precip} mm</span>
+                  <span><WiRaindrops aria-hidden="true" /> {weatherData.main.humidity}%</span>
+                  <span><WiStrongWind aria-hidden="true" /> {weatherData.wind.speed} mph</span>
+                </div>
+              </div>
             ) : (
-              <p>
-                {course?.location
-                  ? 'No weather data available right now.'
-                  : 'No saved course location. Enter a weather location above.'}
+              <p className="trip-details__muted">
+                {hasSavedLocation
+                  ? 'Current weather is unavailable right now.'
+                  : 'This older trip has no saved course coordinates yet.'}
               </p>
             )}
+
+            {weatherError && (
+              <p className="trip-details__inline-error">{weatherError}</p>
+            )}
+
+            <details className="trip-details__weather-override" open={!hasSavedLocation}>
+              <summary>
+                {hasSavedLocation ? 'Check another location' : 'Enter a weather location'}
+              </summary>
+              {showAlert && (
+                <Alert
+                  variant="danger"
+                  onClose={() => setShowAlert(false)}
+                  dismissible
+                  className="trip-details__alert"
+                >
+                  Please enter a weather location.
+                </Alert>
+              )}
+              <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
+                <input
+                  type="text"
+                  className="trip-details__weather-input"
+                  placeholder="City, state"
+                  value={weatherCity}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setWeatherCity(event.target.value)
+                  }
+                />
+                <button
+                  type="submit"
+                  className="trip-details__weather-btn"
+                  disabled={weatherLoading}
+                >
+                  {weatherLoading ? 'Loading…' : 'Update Weather'}
+                </button>
+              </form>
+            </details>
           </div>
-        </div>
+        </article>
       </section>
 
       <section className="trip-details__scorecard">
-        <h3>Scorecard</h3>
+        <div className="trip-details__section-heading">
+          <p className="trip-details__eyebrow">Game day</p>
+          <h2>Players & scorecard</h2>
+        </div>
         <ScoreCard tripId={tripId} />
       </section>
-    </div>
+    </main>
   );
 };
 
