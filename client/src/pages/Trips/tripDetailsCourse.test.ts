@@ -49,15 +49,17 @@ describe('Trip Details course enrichment', () => {
     expect(storedTeeRating({ courseRating: 72.4, slope: null })).toBeNull();
   });
 
-  it('builds weather lookup parameters from persisted course coordinates', () => {
-    const params = weatherParamsForCourse({
+  it('builds weather lookup parameters from persisted course coordinates and trip date', () => {
+    const course = {
       name: 'Arcadia Bluffs',
       location: { lat: 44.508, lng: -86.242 },
-    });
+    };
+    const params = weatherParamsForCourse(course, '2026-10-30');
 
     expect(params?.toString()).toBe(
-      'lat=44.508&lng=-86.242&name=Arcadia+Bluffs'
+      'lat=44.508&lng=-86.242&name=Arcadia+Bluffs&date=2026-10-30'
     );
+    expect(weatherParamsForCourse(course, '10/30/2026')?.has('date')).toBe(false);
     expect(weatherParamsForCourse({ name: 'Legacy Links' })).toBeNull();
   });
 });

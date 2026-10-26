@@ -19,6 +19,7 @@ export interface TeeRating {
 }
 
 const trimmed = (value?: string | null) => value?.trim() || '';
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
 export const resolveGolfCourseLookup = (
   course?: PersistedTripCourse | null
@@ -33,9 +34,6 @@ export const resolveGolfCourseLookup = (
     if (providerId) return { kind: 'details', id: providerId };
   }
 
-  // Canonical provider-backed courses must not be silently re-identified by a
-  // fuzzy cross-provider name search. Name lookup remains only for old trips
-  // that predate provider identity storage.
   if (trimmed(course.source) || trimmed(course.providerId)) return null;
 
   const name = trimmed(course.name);
@@ -50,7 +48,8 @@ export const storedTeeRating = (
     : null;
 
 export const weatherParamsForCourse = (
-  course?: PersistedTripCourse | null
+  course?: PersistedTripCourse | null,
+  tripDate?: string | null
 ): URLSearchParams | null => {
   if (
     typeof course?.location?.lat !== 'number' ||
@@ -65,5 +64,7 @@ export const weatherParamsForCourse = (
   });
   const name = trimmed(course.name);
   if (name) params.set('name', name);
+  const date = trimmed(tripDate);
+  if (ISO_DATE.test(date)) params.set('date', date);
   return params;
 };

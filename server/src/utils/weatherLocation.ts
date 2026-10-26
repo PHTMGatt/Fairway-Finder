@@ -3,6 +3,7 @@ export interface WeatherRequestQuery {
   lat?: string;
   lng?: string;
   name?: string;
+  date?: string;
 }
 
 export type ParsedWeatherRequest =

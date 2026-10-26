@@ -23,6 +23,15 @@ import {
 } from './tripDetailsCourse';
 import './TripDetails.css';
 
+interface TripForecastData {
+  date: string;
+  weather: { description: string }[];
+  tempMax: number;
+  tempMin: number;
+  precipitation: number;
+  windSpeed: number;
+}
+
 interface WeatherData {
   name: string;
   main: { temp: number; humidity: number };
@@ -30,6 +39,8 @@ interface WeatherData {
   wind: { speed: number };
   rain?: { '1h': number };
   snow?: { '1h': number };
+  forecastStatus?: 'available' | 'outside-window';
+  forecast?: TripForecastData | null;
 }
 
 interface TripCourse extends PersistedTripCourse {
@@ -55,6 +66,17 @@ interface GolfCourseAPIResponse {
     }[];
   };
 }
+
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const displayDate = (value: string) => {
+  if (!ISO_DATE.test(value)) return value;
+  return new Date(`${value}T12:00:00`).toLocaleDateString([], {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
 
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
@@ -149,9 +171,9 @@ const TripDetails: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const params = weatherParamsForCourse(course);
+    const params = weatherParamsForCourse(course, trip?.date);
     if (params) void fetchWeather(params);
-  }, [course, fetchWeather]);
+  }, [course, fetchWeather, trip?.date]);
 
   useEffect(() => {
     if (course) void loadTeeRating(course);
@@ -168,7 +190,11 @@ const TripDetails: React.FC = () => {
     }
 
     setShowAlert(false);
-    void fetchWeather(new URLSearchParams({ city }));
+    const params = new URLSearchParams({ city });
+    if (typeof trip?.date === 'string' && ISO_DATE.test(trip.date)) {
+      params.set('date', trip.date);
+    }
+    void fetchWeather(params);
   };
 
   if (!tripId) return <p className="trip-details__status">No trip ID provided.</p>;
@@ -182,6 +208,7 @@ const TripDetails: React.FC = () => {
   }
 
   const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
+  const forecast = weatherData?.forecast ?? null;
   const mapsQuery = [course?.name, course?.address].filter(Boolean).join(' ');
   const routeDestination = mapsQuery || course?.name || '';
   const hasGooglePlace = course?.source === 'google' && course?.providerId;
@@ -264,21 +291,44 @@ const TripDetails: React.FC = () => {
               <div className="trip-details__weather-summary">
                 <div>
                   <strong>{weatherData.name}</strong>
-                  <span>{weatherData.weather[0]?.description || 'Current conditions'}</span>
+                  <span>
+                    {forecast
+                      ? `Trip forecast · ${displayDate(forecast.date)}`
+                      : weatherData.weather[0]?.description || 'Current conditions'}
+                  </span>
                 </div>
-                <strong className="trip-details__temperature">
-                  {Math.round(weatherData.main.temp)}°F
-                </strong>
-                <div className="trip-details__weather-facts">
-                  <span><WiRain aria-hidden="true" /> {precip} mm</span>
-                  <span><WiRaindrops aria-hidden="true" /> {weatherData.main.humidity}%</span>
-                  <span><WiStrongWind aria-hidden="true" /> {weatherData.wind.speed} mph</span>
-                </div>
+                {forecast ? (
+                  <>
+                    <strong className="trip-details__temperature">
+                      {Math.round(forecast.tempMax)}° / {Math.round(forecast.tempMin)}°F
+                    </strong>
+                    <div className="trip-details__weather-facts">
+                      <span><WiRain aria-hidden="true" /> {forecast.precipitation} mm</span>
+                      <span><WiStrongWind aria-hidden="true" /> {forecast.windSpeed} mph max</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <strong className="trip-details__temperature">
+                      {Math.round(weatherData.main.temp)}°F
+                    </strong>
+                    <div className="trip-details__weather-facts">
+                      <span><WiRain aria-hidden="true" /> {precip} mm</span>
+                      <span><WiRaindrops aria-hidden="true" /> {weatherData.main.humidity}%</span>
+                      <span><WiStrongWind aria-hidden="true" /> {weatherData.wind.speed} mph</span>
+                    </div>
+                  </>
+                )}
+                {weatherData.forecastStatus === 'outside-window' && trip.date && (
+                  <p className="trip-details__muted">
+                    Trip-date forecast becomes available within 16 days. Showing current conditions for now.
+                  </p>
+                )}
               </div>
             ) : (
               <p className="trip-details__muted">
                 {hasSavedLocation
-                  ? 'Current weather is unavailable right now.'
+                  ? 'Weather is unavailable right now.'
                   : 'This older trip has no saved course coordinates yet.'}
               </p>
             )}

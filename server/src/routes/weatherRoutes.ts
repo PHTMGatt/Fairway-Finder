@@ -3,6 +3,10 @@
 import { Router, Request, Response } from 'express';
 import { fetchWithTimeout as fetch } from '../services/http.js';
 import {
+  normalizedForecastDate,
+  tripForecastForDate,
+} from '../utils/weatherForecast.js';
+import {
   parseWeatherRequest,
   WeatherRequestQuery,
 } from '../utils/weatherLocation.js';
@@ -55,14 +59,6 @@ const geocodeCity = async (city: string): Promise<GeocodingResult | null> => {
   return payload.results?.[0] ?? null;
 };
 
-/**
- * GET /api/weather?city=Detroit
- * GET /api/weather?lat=44.508&lng=-86.242&name=Arcadia%20Bluffs
- *
- * Uses persisted coordinates directly when available, while retaining the
- * existing city geocoding contract for manual lookups and legacy clients.
- * The response intentionally matches the shape existing React pages expect.
- */
 router.get(
   '/weather',
   async (
@@ -89,6 +85,7 @@ router.get(
         }
       }
 
+      const requestedDate = normalizedForecastDate(req.query.date);
       const url = new URL('https://api.open-meteo.com/v1/forecast');
       url.searchParams.set('latitude', String(location.latitude));
       url.searchParams.set('longitude', String(location.longitude));
@@ -96,6 +93,13 @@ router.get(
         'current',
         'temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,is_day'
       );
+      if (requestedDate) {
+        url.searchParams.set(
+          'daily',
+          'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max'
+        );
+        url.searchParams.set('forecast_days', '16');
+      }
       url.searchParams.set('temperature_unit', 'fahrenheit');
       url.searchParams.set('wind_speed_unit', 'mph');
       url.searchParams.set('precipitation_unit', 'mm');
@@ -117,6 +121,9 @@ router.get(
         Number(current.is_day) === 1
       );
       const precipitation = Number(current.precipitation ?? 0);
+      const tripForecast = requestedDate
+        ? tripForecastForDate(requestedDate, payload.daily)
+        : null;
 
       return res.json({
         name: location.name,
@@ -131,6 +138,21 @@ router.get(
         ...(condition.main === 'Snow'
           ? { snow: { '1h': precipitation } }
           : { rain: { '1h': precipitation } }),
+        ...(requestedDate
+          ? {
+              forecastStatus: tripForecast ? 'available' : 'outside-window',
+              forecast: tripForecast
+                ? {
+                    date: tripForecast.date,
+                    weather: [weatherCondition(tripForecast.weatherCode, true)],
+                    tempMax: tripForecast.tempMax,
+                    tempMin: tripForecast.tempMin,
+                    precipitation: tripForecast.precipitation,
+                    windSpeed: tripForecast.windSpeed,
+                  }
+                : null,
+            }
+          : {}),
       });
     } catch (err) {
       console.error('Weather proxy failed:', err instanceof Error ? err.message : err);
