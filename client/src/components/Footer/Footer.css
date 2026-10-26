@@ -49,10 +49,29 @@
   outline-offset: 2px;
 }
 
-.footer__copy {
+.footer__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  text-align: right;
+}
+
+.footer__copy,
+.footer__attribution {
   margin: 0;
   color: #738078;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+}
+
+.footer__attribution a {
+  color: #486451;
+  font-weight: 700;
+  text-underline-offset: 2px;
+}
+
+.footer__attribution a:hover {
+  color: #245e36;
 }
 
 @media (max-width: 620px) {
@@ -69,5 +88,10 @@
   .footer__back {
     width: 100%;
     min-height: 44px;
+  }
+
+  .footer__meta {
+    align-items: center;
+    text-align: center;
   }
 }
