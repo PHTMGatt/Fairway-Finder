@@ -18,12 +18,10 @@ import { APIProvider } from '@vis.gl/react-google-maps';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Auth from './utils/auth';
+import { hasGoogleMapsKey } from './utils/mapCapability';
 import { useAuth } from './pages/Auth/AuthContext';
 
-const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-if (!MAP_KEY) {
-  throw new Error('Missing VITE_GOOGLE_MAPS_API_KEY in environment variables');
-}
+const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || '';
 
 const httpLink = createHttpLink({
   uri:
@@ -76,17 +74,25 @@ const App: React.FC = () => {
     return client;
   }, [logoutUser, navigate]);
 
+  const layout = (
+    <div className="app-layout">
+      <Header />
+      <main className="app-content">
+        <Outlet />
+      </main>
+      <Footer />
+    </div>
+  );
+
   return (
     <ApolloProvider client={apolloClient}>
-      <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
-        <div className="app-layout">
-          <Header />
-          <main className="app-content">
-            <Outlet />
-          </main>
-          <Footer />
-        </div>
-      </APIProvider>
+      {hasGoogleMapsKey(MAP_KEY) ? (
+        <APIProvider apiKey={MAP_KEY} libraries={['geometry']}>
+          {layout}
+        </APIProvider>
+      ) : (
+        layout
+      )}
     </ApolloProvider>
   );
 };
