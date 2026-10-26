@@ -13,6 +13,7 @@ import {
   readPlanTripPrefill,
   toTripCourseInput,
 } from './planTripCourse';
+import { getPlanTripFormState } from './planTripForm';
 import './PlanTrip.css';
 
 const PlanTrip: React.FC = () => {
@@ -35,6 +36,13 @@ const PlanTrip: React.FC = () => {
 
   const [addTrip, { loading: savingTrip }] = useMutation(ADD_TRIP, {
     refetchQueries: [{ query: QUERY_TRIPS }],
+  });
+
+  const formState = getPlanTripFormState({
+    tripName,
+    tripDate,
+    hasSelectedCourse: Boolean(selectedCourse),
+    savingTrip,
   });
 
   if (!isLoggedIn) {
@@ -202,6 +210,7 @@ const PlanTrip: React.FC = () => {
               value={tripName}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setTripName(e.target.value)}
               autoComplete="off"
+              required
             />
           </label>
           <label className="plan-trip__field">
@@ -211,15 +220,24 @@ const PlanTrip: React.FC = () => {
               type="date"
               value={tripDate}
               onChange={(e: ChangeEvent<HTMLInputElement>) => setTripDate(e.target.value)}
+              required
             />
           </label>
           <button
             className="plan-trip__btn plan-trip__btn--save"
             type="submit"
-            disabled={savingTrip || !selectedCourse}
+            disabled={!formState.canSave}
+            aria-describedby="plan-trip-save-guidance"
           >
             {savingTrip ? 'Saving…' : 'Save Trip'}
           </button>
+          <p
+            id="plan-trip-save-guidance"
+            className={`plan-trip__save-guidance${formState.canSave ? ' is-ready' : ''}`}
+            aria-live="polite"
+          >
+            {formState.helperText}
+          </p>
         </form>
 
         {submitError && (
