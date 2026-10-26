@@ -78,6 +78,20 @@ const displayDate = (value: string) => {
   });
 };
 
+const mapsUrlForCourse = (selectedCourse?: TripCourse): string => {
+  if (!selectedCourse?.name) return '';
+
+  const query = [selectedCourse.name, selectedCourse.address].filter(Boolean).join(' ');
+  const hasGooglePlace = selectedCourse.source === 'google' && selectedCourse.providerId;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    query || selectedCourse.name
+  )}${
+    hasGooglePlace
+      ? `&query_place_id=${encodeURIComponent(selectedCourse.providerId as string)}`
+      : ''
+  }`;
+};
+
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
   const [weatherCity, setWeatherCity] = useState('');
@@ -93,7 +107,8 @@ const TripDetails: React.FC = () => {
     skip: !tripId,
   });
   const trip = data?.trip;
-  const course: TripCourse | undefined = trip?.courses?.[0];
+  const courses: TripCourse[] = trip?.courses ?? [];
+  const course = courses[0];
 
   const fetchWeather = useCallback(async (params: URLSearchParams) => {
     setWeatherLoading(true);
@@ -207,18 +222,11 @@ const TripDetails: React.FC = () => {
     );
   }
 
+  const additionalCourses = courses.slice(1);
   const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
   const forecast = weatherData?.forecast ?? null;
-  const mapsQuery = [course?.name, course?.address].filter(Boolean).join(' ');
-  const routeDestination = mapsQuery || course?.name || '';
-  const hasGooglePlace = course?.source === 'google' && course?.providerId;
-  const mapsUrl = course?.name
-    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery || course.name)}${
-        hasGooglePlace
-          ? `&query_place_id=${encodeURIComponent(course.providerId as string)}`
-          : ''
-      }`
-    : '';
+  const routeDestination = [course?.name, course?.address].filter(Boolean).join(' ') || course?.name || '';
+  const mapsUrl = mapsUrlForCourse(course);
   const hasSavedLocation = Boolean(course?.location);
 
   return (
@@ -228,8 +236,10 @@ const TripDetails: React.FC = () => {
         <h1 className="trip-details__title">{trip.name}</h1>
         <div className="trip-details__meta">
           <span>
-            <FaCalendarAlt aria-hidden="true" /> {trip.date || 'Date not set'}
+            <FaCalendarAlt aria-hidden="true" />{' '}
+            {trip.date ? displayDate(trip.date) : 'Date not set'}
           </span>
+          <span>{courses.length} {courses.length === 1 ? 'course' : 'courses'}</span>
           {course?.name && <span>{course.name}</span>}
         </div>
       </header>
@@ -258,18 +268,46 @@ const TripDetails: React.FC = () => {
               <p className="trip-details__inline-error">{golfApiError}</p>
             )}
 
-            {course?.name && (
-              <div className="trip-details__card-actions">
-                {mapsUrl && (
-                  <a
-                    className="trip-details__action-link"
-                    href={mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <FaMapMarkerAlt aria-hidden="true" /> Open in Maps
-                  </a>
-                )}
+            {additionalCourses.length > 0 && (
+              <div className="trip-details__additional-courses">
+                <h3>Also on this trip</h3>
+                <ul>
+                  {additionalCourses.map((additionalCourse, index) => {
+                    const additionalMapsUrl = mapsUrlForCourse(additionalCourse);
+                    return (
+                      <li key={additionalCourse._id ?? `${additionalCourse.name}-${index}`}>
+                        <div>
+                          <strong>{additionalCourse.name || 'Unnamed course'}</strong>
+                          {additionalCourse.address && <span>{additionalCourse.address}</span>}
+                        </div>
+                        {additionalMapsUrl && (
+                          <a
+                            href={additionalMapsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Maps
+                          </a>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+
+            <div className="trip-details__card-actions">
+              {mapsUrl && (
+                <a
+                  className="trip-details__action-link"
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaMapMarkerAlt aria-hidden="true" /> Open in Maps
+                </a>
+              )}
+              {course?.name && (
                 <Link
                   className="trip-details__action-link trip-details__action-link--primary"
                   to="/routing"
@@ -277,8 +315,19 @@ const TripDetails: React.FC = () => {
                 >
                   <FaRoute aria-hidden="true" /> Plan Route
                 </Link>
-              </div>
-            )}
+              )}
+              {courses.length < 20 ? (
+                <Link
+                  className="trip-details__action-link"
+                  to="/courses"
+                  state={{ addToTripId: tripId }}
+                >
+                  + Add another course
+                </Link>
+              ) : (
+                <span className="trip-details__limit-note">20-course limit reached</span>
+              )}
+            </div>
           </div>
         </article>
 
