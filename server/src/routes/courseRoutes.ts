@@ -2,6 +2,7 @@
 
 import { Router, Request, Response } from 'express';
 import { fetchWithTimeout as fetch } from '../services/http.js';
+import { geocodeNominatim } from '../services/nominatim.js';
 
 const router = Router();
 
@@ -47,34 +48,9 @@ const geocodeGoogle = async (query: string): Promise<Coordinates | null> => {
     : null;
 };
 
-const geocodeOpenStreetMap = async (
-  query: string
-): Promise<Coordinates | null> => {
-  const url = new URL('https://nominatim.openstreetmap.org/search');
-  url.searchParams.set('q', query);
-  url.searchParams.set('format', 'jsonv2');
-  url.searchParams.set('limit', '1');
-  url.searchParams.set('countrycodes', 'us');
-
-  const response = await fetch(url.toString(), {
-    headers: {
-      'User-Agent': 'Fairway-Finder/1.0',
-      Accept: 'application/json',
-    },
-  });
-  if (!response.ok) return null;
-
-  const payload: any = await response.json();
-  const first = Array.isArray(payload) ? payload[0] : null;
-  const lat = Number(first?.lat);
-  const lng = Number(first?.lon);
-
-  return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
-};
-
 const geocodeCity = async (city: string): Promise<Coordinates | null> =>
   (await geocodeGoogle(`${city}, USA`)) ??
-  (await geocodeOpenStreetMap(`${city}, USA`));
+  (await geocodeNominatim(`${city}, USA`));
 
 const searchPlacesNew = async (
   city: string,
@@ -213,7 +189,7 @@ const searchOpenStreetMap = async (
   limit: number,
   maxDistanceMiles?: number
 ): Promise<Course[]> => {
-  const center = await geocodeOpenStreetMap(`${city}, USA`);
+  const center = await geocodeNominatim(`${city}, USA`);
   if (!center) return [];
 
   const radius = Math.round(
