@@ -415,9 +415,10 @@ const resolvers: IResolvers<any, Context> = {
 
     addPlayer: async (_p, { tripId, name }, context) => {
       checkText(name, 'name', 'Player name', LIMITS.playerName);
+      const normalizedName = name.trim();
       const { trip } = await requireOwnedTrip(tripId, context);
-      // Note; Scores and handicaps are looked up by player name, so names must be unique per trip
-      if (trip.players.some((p) => p.name === name.trim())) {
+      // Note; Scores and handicaps are looked up by player name, so names must be unique per trip.
+      if (trip.players.some((p) => p.name === normalizedName)) {
         throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
       }
       const fullScores = Array.from({ length: 18 }, (_, i) => ({
@@ -425,13 +426,27 @@ const resolvers: IResolvers<any, Context> = {
         score: 0,
       }));
 
-      // Note; The cap is part of the update filter so concurrent adds can't exceed it
+      // Note; Keep both the player cap and name uniqueness in the same MongoDB filter so
+      // concurrent requests cannot race past either guard.
       const updated = await Trip.findOneAndUpdate(
-        { _id: tripId, [`players.${LIMITS.playersPerTrip - 1}`]: { $exists: false } },
-        { $push: { players: { name, scores: fullScores } } },
+        {
+          _id: tripId,
+          [`players.${LIMITS.playersPerTrip - 1}`]: { $exists: false },
+          'players.name': { $ne: normalizedName },
+        },
+        { $push: { players: { name: normalizedName, scores: fullScores } } },
         { new: true, runValidators: true }
       );
       if (!updated) {
+        // A concurrent request may have added the same name after the initial ownership read.
+        // Re-read only to preserve the existing duplicate-vs-cap error semantics.
+        const currentTrip = await Trip.findById(tripId);
+        if (!currentTrip) {
+          throw new UserInputError('Trip not found');
+        }
+        if (currentTrip.players.some((p) => p.name === normalizedName)) {
+          throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
+        }
         throw new UserInputError(`A trip can have at most ${LIMITS.playersPerTrip} players`);
       }
       return updated;
