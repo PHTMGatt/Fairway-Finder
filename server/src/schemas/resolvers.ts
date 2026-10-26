@@ -377,13 +377,19 @@ const resolvers: IResolvers<any, Context> = {
       return trip;
     },
 
-    addCourseToTrip: async (_p, { tripId, courseName }, context) => {
-      checkText(courseName, 'courseName', 'Course name', LIMITS.courseName);
+    addCourseToTrip: async (_p, { tripId, course, courseName }, context) => {
+      const selectedCourse: TripCourseInput | null = course
+        ?? (typeof courseName === 'string' ? { name: courseName } : null);
+      if (!selectedCourse) {
+        throw new UserInputError('A course is required', { invalidArgs: ['course'] });
+      }
+      const normalizedCourse = normalizeTripCourse(selectedCourse);
       await requireOwnedTrip(tripId, context);
-      // Note; The cap is part of the update filter so concurrent adds can't exceed it
+
+      // Note; The cap stays in the update filter so concurrent adds cannot exceed it.
       const updated = await Trip.findOneAndUpdate(
         { _id: tripId, [`courses.${LIMITS.coursesPerTrip - 1}`]: { $exists: false } },
-        { $push: { courses: { name: courseName } } },
+        { $push: { courses: normalizedCourse } },
         { new: true, runValidators: true }
       );
       if (!updated) {
