@@ -99,33 +99,45 @@ export const DELETE_TRIP = gql`
   }
 `;
 
+const SCORECARD_TRIP_FIELDS = gql`
+  fragment ScorecardTripFields on Trip {
+    _id
+    players {
+      name
+      score
+      total
+      handicap
+    }
+  }
+`;
+
 /** ——— SCORECARD MANAGEMENT MUTATIONS ——— **/
 
 export const ADD_PLAYER = gql`
   mutation AddPlayer($tripId: ID!, $name: String!) {
     addPlayer(tripId: $tripId, name: $name) {
-      _id
-      name
+      ...ScorecardTripFields
     }
   }
+  ${SCORECARD_TRIP_FIELDS}
 `;
 
 export const REMOVE_PLAYER = gql`
   mutation RemovePlayer($tripId: ID!, $name: String!) {
     removePlayer(tripId: $tripId, name: $name) {
-      _id
-      name
+      ...ScorecardTripFields
     }
   }
+  ${SCORECARD_TRIP_FIELDS}
 `;
 
 export const UPDATE_SCORE = gql`
   mutation UpdateScore($tripId: ID!, $player: String!, $hole: Int!, $score: Int!) {
     updateScore(tripId: $tripId, player: $player, hole: $hole, score: $score) {
-      _id
-      name
+      ...ScorecardTripFields
     }
   }
+  ${SCORECARD_TRIP_FIELDS}
 `;
 
 /** ——— HANDICAP MUTATIONS ——— **/
