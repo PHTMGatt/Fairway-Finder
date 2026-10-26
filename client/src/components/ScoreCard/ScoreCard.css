@@ -81,10 +81,13 @@
 
 .scorecard__table-wrapper {
   width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overscroll-behavior-x: contain;
   border: 1px solid #dde5df;
   border-radius: 10px;
   background: #fff;
+  -webkit-overflow-scrolling: touch;
 }
 
 .scorecard__table {
@@ -92,6 +95,10 @@
   min-width: 650px;
   border-collapse: collapse;
   font-size: 0.9rem;
+}
+
+.scorecard__table--compact {
+  min-width: 360px;
 }
 
 .scorecard__table th,
@@ -224,10 +231,27 @@
 
   .scorecard__btn {
     flex: 1 1 auto;
+    min-height: 44px;
   }
 
   .scorecard__add-player,
   .scorecard__add-btn {
     width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .scorecard__table--compact th,
+  .scorecard__table--compact td {
+    padding: 0.42rem 0.35rem;
+  }
+
+  .scorecard__table--compact .scorecard__input {
+    width: 2.75rem;
+    min-height: 36px;
+  }
+
+  .scorecard__table--compact .scorecard__remove {
+    padding-inline: 0.45rem;
   }
 }
