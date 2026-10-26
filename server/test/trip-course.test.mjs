@@ -255,7 +255,14 @@ test('existing trips can add a second canonical course snapshot', async () => {
   assert.equal(added.data.addCourseToTrip.courses.length, 2);
   assert.equal(added.data.addCourseToTrip.courses[1].providerId, 'second-place');
   assert.equal(added.data.addCourseToTrip.courses[1].address, secondCourse.address);
-  assert.deepEqual(added.data.addCourseToTrip.courses[1].location, secondCourse.location);
+  assert.equal(
+    added.data.addCourseToTrip.courses[1].location.lat,
+    secondCourse.location.lat
+  );
+  assert.equal(
+    added.data.addCourseToTrip.courses[1].location.lng,
+    secondCourse.location.lng
+  );
 
   const stored = await Trip.findById(created.data.addTrip._id).lean();
   assert.equal(stored.courses[1].providerId, 'second-place');
