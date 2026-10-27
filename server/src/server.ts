@@ -23,6 +23,7 @@ const {
   JWT_SECRET_KEY,
   GOLF_API_KEY,
   NODE_ENV = 'development',
+  CLIENT_ORIGIN,
 } = process.env;
 
 if (!MONGODB_URI || !PLACES_API_KEY || !JWT_SECRET_KEY || !GOLF_API_KEY) {
@@ -59,7 +60,8 @@ async function startServer() {
     await apollo.start();
 
     const app = express();
-    app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+    const corsOrigin = CLIENT_ORIGIN || (NODE_ENV === 'production' ? true : 'http://localhost:3000');
+    app.use(cors({ origin: corsOrigin, credentials: true }));
     app.use(express.json());
     app.use(compression());
 
