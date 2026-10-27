@@ -1,0 +1,45 @@
+name: Enforce three-branch policy
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove stale branches
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const keep = new Set(['main', 'chatgpt-forge', 'claude-forge']);
+            const { owner, repo } = context.repo;
+            const { data: repository } = await github.rest.repos.get({ owner, repo });
+            keep.add(repository.default_branch);
+
+            const branches = await github.paginate(github.rest.repos.listBranches, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+
+            for (const branch of branches) {
+              if (keep.has(branch.name)) {
+                core.info(`Keeping ${branch.name}`);
+                continue;
+              }
+
+              try {
+                await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branch.name}` });
+                core.info(`Deleted ${branch.name}`);
+              } catch (error) {
+                core.warning(`Could not delete ${branch.name}: ${error.message}`);
+              }
+            }
