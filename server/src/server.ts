@@ -60,7 +60,7 @@ async function startServer() {
     await apollo.start();
 
     const app = express();
-    const corsOrigin = CLIENT_ORIGIN || (NODE_ENV === 'production' ? true : 'http://localhost:3000');
+    const corsOrigin = CLIENT_ORIGIN || (NODE_ENV === 'production' ? false : 'http://localhost:3000');
     app.use(cors({ origin: corsOrigin, credentials: true }));
     app.use(express.json());
     app.use(compression());
