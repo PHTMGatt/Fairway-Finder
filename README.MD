@@ -8,7 +8,7 @@ A modern, full-stack golf trip planner. Search and save courses, plan driving ro
 ## 📸 Screenshot
 
 <p align="center">
-  <img src="client/src/assets/images/GHRM.png" alt="Fairway Finder Screenshot" width="600" />
+  <img src="https://raw.githubusercontent.com/PHTMGatt/12-React-Portfolio/main/src/assets/photos/Fairway%20Finder.png" alt="Fairway Finder application" width="900" />
 </p>
 
 ---
