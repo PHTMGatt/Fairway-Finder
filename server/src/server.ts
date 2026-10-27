@@ -71,7 +71,7 @@ async function startServer() {
     app.use('/api', golfRoutes);
     app.use('/api', locationRoutes);
 
-    app.get('/health', (_req, res: Response) => res.send('OK'));
+    app.get('/health', (_req, res: Response) => res.status(200).json({ status: 'ok' }));
 
     app.use(
       '/graphql',
