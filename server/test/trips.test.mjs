@@ -111,6 +111,24 @@ test('concurrent player adds cannot exceed the cap', async () => {
   assert.equal((await Trip.findById(tripId).lean()).players.length, 24);
 });
 
+test('concurrent duplicate player adds store the player only once', async () => {
+  const tripId = await newTrip('Concurrent duplicate');
+  const results = await Promise.all(
+    Array.from({ length: 8 }, () => alice(ADD_PLAYER, { t: tripId, n: '  Same Player  ' }))
+  );
+
+  assert.equal(results.filter((result) => !result.error).length, 1, 'exactly one add succeeds');
+  assert.equal(
+    results.filter((result) => result.error?.message === 'That player is already on this trip').length,
+    7,
+    'all racing duplicates get the duplicate-player error'
+  );
+
+  const stored = await Trip.findById(tripId).lean();
+  assert.equal(stored.players.length, 1);
+  assert.equal(stored.players[0].name, 'Same Player', 'stored player name is normalized');
+});
+
 test("someone else's trip looks the same as a missing one, and is not an auth error", async () => {
   const { data } = await alice(ADD_TRIP, { input: { name: 'Pebble', date: '2026-11-01', courseName: 'Links' } });
   const tripId = data.addTrip._id;
