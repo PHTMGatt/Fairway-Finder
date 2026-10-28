@@ -1,98 +1,39 @@
-/* src/pages/Trips/SavedTrips.css */
+/* client/src/pages/Trips/SavedTrips.css */
 
-/* ===== Saved Trips Page ===== */
 .saved-trips {
-  max-width: 1000px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background: rgba(234, 250, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(109, 194, 255, 0.15);
+  width: min(1000px, calc(100% - 2rem));
+  margin: 2.5rem auto 4rem;
+  padding: 0;
+  background: transparent;
 }
 
-/* ===== Header ===== */
 .saved-trips__title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #064e3b;
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.25rem;
+  color: #173820;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
 }
 
 .saved-trips__status {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #d8e2da;
+  border-radius: 10px;
+  background: #f5f8f5;
+  color: #56655b;
   text-align: center;
-  color: #b00020;
-  margin: 1.5rem 0;
 }
 
-/* ===== TripList Delete All Button Override ===== */
-.trip-list__delete-all {
-  display: inline-block;
-  margin-bottom: 1.25rem;
-  background-color: #d32f2f;
-  color: white;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.95rem;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease;
+.saved-trips__status--error {
+  border-color: #e4b9b9;
+  background: #fff4f4;
+  color: #9a2c2c;
 }
 
-.trip-list__delete-all:hover {
-  background-color: #b71c1c;
-  transform: translateY(-1px);
-}
-
-/* ===== Trip Cards Grid ===== */
-.trip-list__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
-  align-items: start;
-}
-
-/* ===== Trip Card Styling ===== */
-.trip-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(6px);
-  border-radius: 12px;
-  padding: 0;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  overflow: hidden; /* This removes space between blocks */
-  display: flex;
-  flex-direction: column;
-}
-
-/* ===== Fix button spacing ===== */
-.trip-card .trip-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #4caf50;
-  color: white;
-  font-weight: 700;
-  padding: 0.75rem 1rem;
-}
-
-.trip-card .trip-footer {
-  background: #38bdf8;
-  text-align: center;
-  padding: 0.75rem 1rem;
-  font-weight: 600;
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.trip-card .trip-footer:hover {
-  background: #0ea5e9;
-}
-
-/* ===== Empty State ===== */
-.trip-list__empty {
-  font-size: 1rem;
-  color: #475569;
-  text-align: center;
-  margin-top: 2rem;
+@media (max-width: 620px) {
+  .saved-trips {
+    width: min(100% - 1rem, 1000px);
+    margin-top: 1.5rem;
+  }
 }

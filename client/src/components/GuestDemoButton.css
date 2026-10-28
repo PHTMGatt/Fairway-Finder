@@ -1,0 +1,32 @@
+.guest-demo {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: stretch;
+  width: 100%;
+}
+
+.guest-demo__button {
+  cursor: pointer;
+}
+
+.guest-demo__button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.guest-demo__note,
+.guest-demo__error {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.guest-demo__note {
+  color: #284d32;
+}
+
+.guest-demo__error {
+  color: #9e1c2f;
+  font-weight: 600;
+}

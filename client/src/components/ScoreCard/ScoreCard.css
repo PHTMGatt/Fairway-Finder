@@ -1,141 +1,233 @@
-/* src/components/ScoreCard/'ScoreCard.css' */
-/*Note; outer card wrapper with glass effect */
+/* client/src/components/ScoreCard/ScoreCard.css */
 .scorecard {
-  margin-top: 2rem;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.75);
-  border-radius: 16px;
-  box-shadow: 0 12px 24px rgba(109, 194, 255, 0.2);
-  backdrop-filter: blur(8px);
+  margin: 0;
 }
 
-/*Note; header layout and title */
 .scorecard__header {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   gap: 1rem;
   margin-bottom: 1rem;
 }
+
 .scorecard__title {
-  font-size: 1.25rem;
-  color: #1f3b24;
-  font-weight: 600;
+  margin: 0;
+  color: #203b29;
+  font-size: 1.1rem;
+  font-weight: 800;
 }
 
-/*Note; button nav */
+.scorecard__hint {
+  margin: 0.25rem 0 0;
+  color: #758178;
+  font-size: 0.82rem;
+}
+
 .scorecard__nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
+  gap: 0.45rem;
 }
+
 .scorecard__slider {
   margin: 0.5rem 0 1rem;
 }
+
 .scorecard__btn {
-  background: #6dc2ff;
-  color: #fff;
-  padding: 0.4rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
+  min-height: 38px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #aebdb1;
+  border-radius: 8px;
+  background: #fff;
+  color: #34503c;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
-}
-.scorecard__btn:hover:not(:disabled) {
-  background: #4eb6f5;
-}
-.scorecard__btn:disabled {
-  background: #c5e8ff;
-  cursor: not-allowed;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
 }
 
-/*Note; horizontal scroll wrapper for table */
+.scorecard__btn:hover:not(:disabled),
+.scorecard__btn[aria-pressed='true'] {
+  border-color: #4f7c5c;
+  background: #edf5ef;
+}
+
+.scorecard__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.scorecard__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.scorecard__error {
+  margin: 0 0 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #e4b9b9;
+  border-radius: 8px;
+  background: #fff4f4;
+  color: #9e2e2e;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.scorecard__status,
+.scorecard__empty {
+  margin: 0 0 1rem;
+  color: #6f7b72;
+}
+
 .scorecard__table-wrapper {
   width: 100%;
   overflow-x: auto;
+  border: 1px solid #dde5df;
+  border-radius: 10px;
+  background: #fff;
 }
 
-/*Note; styled score table */
 .scorecard__table {
   width: 100%;
   min-width: 650px;
   border-collapse: collapse;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 10px;
-}
-.scorecard__table th,
-.scorecard__table td {
-  padding: 0.5rem;
-  text-align: center;
-  border-bottom: 1px solid #d0ecfa;
-  white-space: nowrap;
-}
-.scorecard__table th {
-  background-color: #eafaff;
-  color: #1f3b24;
-  font-weight: 600;
+  font-size: 0.9rem;
 }
 
-/*Note; score inputs */
-.scorecard__input {
-  width: 3rem;
-  padding: 0.3rem;
+.scorecard__table th,
+.scorecard__table td {
+  padding: 0.55rem;
   text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border-bottom: 1px solid #e3e9e4;
+  white-space: nowrap;
+}
+
+.scorecard__table thead th {
+  position: sticky;
+  top: 0;
+  background: #f2f6f3;
+  color: #334a39;
+  font-weight: 800;
+}
+
+.scorecard__table tbody th {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  color: #294332;
+  text-align: left;
+  z-index: 1;
+}
+
+.scorecard__input {
+  width: 3.1rem;
+  min-height: 38px;
+  padding: 0.35rem;
+  text-align: center;
+  border: 1px solid #bcc8be;
+  border-radius: 7px;
+  background: #fff;
+  color: #24372a;
   font-size: 1rem;
 }
 
-/*Note; remove player button */
-.scorecard__remove {
-  background: transparent;
-  border: none;
-  color: #ff4d4f;
-  cursor: pointer;
-  font-size: 1.1rem;
+.scorecard__input:focus {
+  outline: 3px solid rgba(47, 111, 66, 0.15);
+  outline-offset: 1px;
+  border-color: #5f8569;
 }
 
-/*Note; player adder */
+.scorecard__input:disabled {
+  background: #f3f5f3;
+}
+
+.scorecard__total {
+  font-weight: 800;
+  color: #1f472d;
+}
+
+.scorecard__remove {
+  min-height: 36px;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid #e1b8b8;
+  border-radius: 7px;
+  background: #fff;
+  color: #9a3030;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.scorecard__remove:hover {
+  border-color: #c96c6c;
+  background: #fff4f4;
+}
+
 .scorecard__add-player {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
-  align-items: center;
+  align-items: flex-end;
   margin-top: 1rem;
 }
-.scorecard__player-input {
-  padding: 0.5rem;
-  flex: 1 1 200px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-.scorecard__add-btn {
-  background: #28a745;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
-}
-.scorecard__add-btn:hover {
-  background: #218838;
+
+.scorecard__player-field {
+  flex: 1 1 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #405248;
+  font-size: 0.84rem;
+  font-weight: 700;
 }
 
-/*Note; responsive tweaks */
-@media (max-width: 768px) {
+.scorecard__player-input {
+  min-height: 42px;
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #bcc8be;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.scorecard__player-input:focus {
+  outline: 3px solid rgba(47, 111, 66, 0.15);
+  outline-offset: 1px;
+  border-color: #5f8569;
+}
+
+.scorecard__add-btn {
+  min-height: 42px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #245e36;
+  border-radius: 8px;
+  background: #245e36;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.scorecard__add-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (max-width: 600px) {
   .scorecard__header {
-    flex-direction: column;
     align-items: flex-start;
+    flex-direction: column;
   }
+
   .scorecard__nav {
-    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .scorecard__btn {
+    flex: 1 1 auto;
+  }
+
+  .scorecard__add-player,
+  .scorecard__add-btn {
+    width: 100%;
   }
 }

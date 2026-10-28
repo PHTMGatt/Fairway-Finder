@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import fetch from 'node-fetch';
+import { fetchWithTimeout as fetch } from '../services/http.js';
 
 const router = Router();
 

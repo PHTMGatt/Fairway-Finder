@@ -8,6 +8,8 @@ export interface ProfileDoc extends Document {
   password: string;
   trips: Types.ObjectId[];
   handicap?: number;
+  isGuest?: boolean;
+  expiresAt?: Date;
   isCorrectPassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -43,6 +45,13 @@ const profileSchema = new Schema<ProfileDoc>(
       type: Number,
       default: null,
     },
+    // Note; Guest Demo fields. No defaults on purpose: permanent accounts never store them.
+    isGuest: {
+      type: Boolean,
+    },
+    expiresAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -55,6 +64,14 @@ const profileSchema = new Schema<ProfileDoc>(
       getters: true,
     },
   }
+);
+
+// Note; TTL index: MongoDB deletes a guest profile once expiresAt passes. The partial filter
+// means only isGuest documents are ever considered, so a permanent account can't be
+// deleted even if it somehow ends up with an expiresAt.
+profileSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { isGuest: true } }
 );
 
 profileSchema.pre<ProfileDoc>('save', async function (next) {

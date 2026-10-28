@@ -1,17 +1,24 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import Auth from '../../utils/auth';
 import { ADD_PROFILE } from '../../utils/mutations';
 import { useAuth } from './AuthContext';
 import './Signup.css';
 
+// Note; Mirrors the server rule for new passwords
+const PASSWORD_MIN_LENGTH = 8;
+
 const Signup: React.FC = () => {
-  // Note; Track name/email/password and potential error
+  // Note; Invite links look like /signup?invite=CODE, so prefill the code from the URL
+  const [searchParams] = useSearchParams();
+
+  // Note; Track name/email/password/invite code and potential error
   const [formValues, setFormValues] = useState({
     name: '',
     email: '',
     password: '',
+    inviteCode: searchParams.get('invite')?.trim() ?? '',
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -33,15 +40,19 @@ const Signup: React.FC = () => {
     e.preventDefault();
     setErrorMessage(null);
 
-    const { name, email, password } = formValues;
-    if (!name || !email || !password) {
+    const { name, email, password, inviteCode } = formValues;
+    if (!name || !email || !password || !inviteCode.trim()) {
       setErrorMessage('All fields are required.');
+      return;
+    }
+    if (password.length < PASSWORD_MIN_LENGTH) {
+      setErrorMessage(`Password must be at least ${PASSWORD_MIN_LENGTH} characters.`);
       return;
     }
 
     try {
       const { data } = await addProfile({
-        variables: { input: formValues },
+        variables: { input: { ...formValues, inviteCode: inviteCode.trim() } },
       });
       const token = data?.addProfile?.token;
       if (token) {
@@ -67,11 +78,29 @@ const Signup: React.FC = () => {
       <div className="auth-card">
         <h4 className="auth-header">Sign Up</h4>
         <div className="auth-body">
+          <p className="auth-note">
+            Fairway Finder accounts are invite-only. Enter the code from your invite.
+          </p>
           <form className="auth-form" onSubmit={handleSubmit}>
+            <input
+              name="inviteCode"
+              className="auth-input"
+              placeholder="Invite code"
+              aria-label="Invite code"
+              autoComplete="off"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              value={formValues.inviteCode}
+              onChange={handleChange}
+            />
             <input
               name="name"
               className="auth-input"
               placeholder="Username"
+              aria-label="Username"
+              autoComplete="username"
+              autoCapitalize="none"
               value={formValues.name}
               onChange={handleChange}
             />
@@ -80,6 +109,8 @@ const Signup: React.FC = () => {
               type="email"
               className="auth-input"
               placeholder="Email"
+              aria-label="Email"
+              autoComplete="email"
               value={formValues.email}
               onChange={handleChange}
             />
@@ -87,7 +118,9 @@ const Signup: React.FC = () => {
               name="password"
               type="password"
               className="auth-input"
-              placeholder="Password"
+              placeholder={`Password (${PASSWORD_MIN_LENGTH}+ characters)`}
+              aria-label="Password"
+              autoComplete="new-password"
               value={formValues.password}
               onChange={handleChange}
             />
@@ -96,24 +129,15 @@ const Signup: React.FC = () => {
               className="auth-btn"
               disabled={loading}
             >
-              {loading ? 'Creating…' : 'Submit'}
+              {loading ? 'Creating…' : 'Create account'}
             </button>
           </form>
           {errorMessage && (
-            <div className="auth-error">{errorMessage}</div>
+            <div className="auth-error" role="alert">{errorMessage}</div>
           )}
-
-          {/* Note; Dev-only: clear all user profiles */}
-          <button
-            className="auth-btn clear-session-btn"
-            onClick={async () => {
-              await fetch('/api/dev/clear-users', { method: 'DELETE' });
-              Auth.logout();
-              window.location.reload();
-            }}
-          >
-            Delete All Users (DEV ONLY)
-          </button>
+          <p className="auth-note">
+            Already have an account? <Link to="/login">Log in</Link>
+          </p>
         </div>
       </div>
     </main>
