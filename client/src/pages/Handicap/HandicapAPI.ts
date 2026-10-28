@@ -58,6 +58,31 @@ export interface CourseDetails {
   };
 }
 
+const isCourseDetails = (value: unknown): value is CourseDetails => {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Partial<CourseDetails>;
+  return (
+    typeof candidate.id === 'number' &&
+    typeof candidate.club_name === 'string' &&
+    typeof candidate.course_name === 'string' &&
+    Boolean(candidate.location && typeof candidate.location === 'object') &&
+    Boolean(candidate.tees && typeof candidate.tees === 'object') &&
+    Array.isArray(candidate.tees?.male) &&
+    Array.isArray(candidate.tees?.female)
+  );
+};
+
+/**
+ * The Fairway Finder proxy passes GolfCourseAPI's detail payload through directly.
+ * Keep accepting the old wrapped shape as a compatibility fallback for stale callers/tests.
+ */
+export const normalizeCourseDetailsResponse = (value: unknown): CourseDetails | null => {
+  if (isCourseDetails(value)) return value;
+  if (!value || typeof value !== 'object') return null;
+  const wrapped = (value as { course?: unknown }).course;
+  return isCourseDetails(wrapped) ? wrapped : null;
+};
+
 /** ─────────────────────────────────────────────────────────────────────────────
  *  searchCourses(query: string) → Promise<CourseSummary[]>
  *  ─────────────────────────────────────────────────────────────────────────────
@@ -142,13 +167,13 @@ export async function getCourseById(
       throw new Error(`Details fetch failed: ${res.status} ${text}`);
     }
     const json = await res.json();
-    // Proxy returns { course: CourseDetails }
-    if (!json.course) {
-      console.error('❌ [API] getCourseById missing "course" field:', json);
+    const course = normalizeCourseDetailsResponse(json);
+    if (!course) {
+      console.error('❌ [API] getCourseById returned an invalid course payload:', json);
       return null;
     }
-    console.log('✅ [API] Course details fetched:', json.course);
-    return json.course as CourseDetails;
+    console.log('✅ [API] Course details fetched:', course);
+    return course;
   } catch (err) {
     console.error('❌ [API] getCourseById error:', err);
     return null;
