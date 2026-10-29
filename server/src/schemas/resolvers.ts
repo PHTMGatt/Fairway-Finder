@@ -247,8 +247,12 @@ const resolvers: IResolvers<any, Context> = {
     },
     deleteTrip: async (_p, { tripId }, context) => {
       const { profile, trip } = await requireOwnedTrip(tripId, context);
-      profile.trips = profile.trips.filter((id) => id.toString() !== tripId) as any;
-      await profile.save();
+      const unlinkedProfile = await Profile.findOneAndUpdate(
+        { _id: profile._id, trips: trip._id },
+        { $pull: { trips: trip._id } },
+        { new: true, runValidators: true }
+      );
+      if (!unlinkedProfile) throw new UserInputError('Trip not found');
       await trip.deleteOne();
       return trip;
     },
