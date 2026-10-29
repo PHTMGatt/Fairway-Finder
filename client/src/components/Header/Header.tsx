@@ -5,6 +5,7 @@ import { FaFlag } from 'react-icons/fa';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import Auth from '../../utils/auth';
 import { RESET_GUEST_DEMO } from '../../utils/mutations';
+import { QUERY_MY_TRIPS, QUERY_TRIPS } from '../../utils/queries';
 import { getGuestBannerState } from './guestBanner';
 import { getHeaderNavigation } from './headerNavigation';
 import './Header.css';
@@ -44,8 +45,10 @@ const Header: React.FC = () => {
   const handleResetDemo = async () => {
     setDemoResetError('');
     try {
-      await resetGuestDemo();
-      await apolloClient.resetStore();
+      await resetGuestDemo({
+        refetchQueries: [QUERY_TRIPS, QUERY_MY_TRIPS],
+        awaitRefetchQueries: true,
+      });
       navigate('/saved-trips', { replace: true });
     } catch (error: unknown) {
       setDemoResetError(
