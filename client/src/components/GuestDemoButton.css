@@ -3,30 +3,38 @@
   gap: 0.45rem;
   justify-items: stretch;
   width: 100%;
+  min-width: 0;
 }
 
 .guest-demo__button {
+  min-height: 44px;
   cursor: pointer;
+}
+
+.guest-demo__button:focus-visible {
+  outline: 3px solid rgba(53, 215, 125, 0.52);
+  outline-offset: 3px;
 }
 
 .guest-demo__button:disabled {
   cursor: wait;
-  opacity: 0.7;
+  opacity: 0.62;
 }
 
 .guest-demo__note,
 .guest-demo__error {
   margin: 0;
+  overflow-wrap: anywhere;
   text-align: center;
   font-size: 0.8rem;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .guest-demo__note {
-  color: #284d32;
+  color: #819589;
 }
 
 .guest-demo__error {
-  color: #9e1c2f;
-  font-weight: 600;
+  color: #efaaaa;
+  font-weight: 650;
 }
