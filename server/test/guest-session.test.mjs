@@ -8,8 +8,11 @@ import { dist, startTestDb, startGraphQL, LOGIN } from './helpers.mjs';
 let db, api, Profile, Trip, sweepExpiredGuests;
 
 const START = `mutation { startGuestSession { token profile { _id name email isGuest expiresAt } } }`;
-const ME = `query { me { _id isGuest expiresAt trips { _id } } }`;
+const ME = `query { me { _id isGuest expiresAt trips { _id name date courses { name source address location { lat lng } rating courseRating slope } players { name score total handicap } } } }`;
+const RESET = `mutation { resetGuestDemo { _id isGuest expiresAt } }`;
 const ADD_TRIP = `mutation($input: TripInput!) { addTrip(input: $input) { _id } }`;
+const ADD_PLAYER = `mutation($tripId: ID!, $name: String!) { addPlayer(tripId: $tripId, name: $name) { _id } }`;
+const UPDATE_SCORE = `mutation($tripId: ID!, $player: String!, $hole: Int!, $score: Int!) { updateScore(tripId: $tripId, player: $player, hole: $hole, score: $score) { _id } }`;
 const tripInput = (name) => ({ input: { name, date: '2026-11-01', courseName: 'Links' } });
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -55,6 +58,41 @@ test('startGuestSession creates a 24h guest and a token that ends with it', asyn
   assert.equal(me.data?.me?.isGuest, true);
 });
 
+test('new guests start with one isolated seeded demo trip', async () => {
+  const first = await startGuest();
+  const second = await startGuest();
+  assert.equal(first.error, null);
+  assert.equal(second.error, null);
+  assert.notEqual(first.profile._id, second.profile._id);
+
+  const [firstMe, secondMe] = await Promise.all([
+    api.gql(ME, {}, { token: first.token }),
+    api.gql(ME, {}, { token: second.token }),
+  ]);
+
+  const firstTrips = firstMe.data?.me?.trips ?? [];
+  const secondTrips = secondMe.data?.me?.trips ?? [];
+  assert.equal(firstTrips.length, 1);
+  assert.equal(secondTrips.length, 1);
+  assert.notEqual(firstTrips[0]._id, secondTrips[0]._id);
+
+  const seeded = firstTrips[0];
+  assert.equal(seeded.name, 'Fairway Finder Demo Round');
+  assert.match(seeded.date, /^\d{4}-\d{2}-\d{2}$/);
+  assert.equal(seeded.courses.length, 1);
+  assert.equal(seeded.courses[0].name, 'Fairway Finder Demo Course');
+  assert.equal(seeded.courses[0].source, 'demo');
+  assert.equal(seeded.courses[0].address, 'Ann Arbor, MI');
+  assert.equal(seeded.players.length, 2);
+  assert.deepEqual(seeded.players.map((player) => player.name), ['Alex', 'Jordan']);
+  assert.equal(seeded.players[0].score.H1, 4);
+  assert.ok(seeded.players[0].total > 0);
+
+  const storedSeed = await Trip.findById(seeded._id).lean();
+  assert.equal(storedSeed.isGuest, true);
+  assert.equal(storedSeed.expiresAt.toISOString(), first.profile.expiresAt);
+});
+
 test('permanent accounts report isGuest false and no expiry', async () => {
   await Profile.create({ name: 'Perm', email: 'perm@example.com', password: 'goodpass1' });
   const login = await api.gql(LOGIN, { email: 'perm@example.com', password: 'goodpass1' });
@@ -63,18 +101,18 @@ test('permanent accounts report isGuest false and no expiry', async () => {
   assert.equal(me.data?.me?.expiresAt, null);
 });
 
-test('guest trips expire with the guest, and a guest is limited to 3 trips', async () => {
+test('guest trips expire with the guest, and the seeded trip counts toward the 3-trip cap', async () => {
   const { token, profile } = await startGuest();
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 2; i++) {
     const res = await api.gql(ADD_TRIP, tripInput(`Guest trip ${i}`), { token });
     assert.equal(res.error, null, `trip ${i}`);
   }
-  const fourth = await api.gql(ADD_TRIP, tripInput('One too many'), { token });
-  assert.equal(fourth.error?.message, 'The guest demo is limited to 3 trips');
+  const fourthTotal = await api.gql(ADD_TRIP, tripInput('One too many'), { token });
+  assert.equal(fourthTotal.error?.message, 'The guest demo is limited to 3 trips');
 
-  const trips = await Trip.find({ name: /^Guest trip/ }).lean();
-  assert.equal(trips.length, 3);
-  for (const trip of trips) {
+  const ownedTrips = await Trip.find({ _id: { $in: (await Profile.findById(profile._id).lean()).trips } }).lean();
+  assert.equal(ownedTrips.length, 3);
+  for (const trip of ownedTrips) {
     assert.equal(trip.isGuest, true);
     assert.equal(trip.expiresAt.toISOString(), profile.expiresAt);
   }
@@ -92,19 +130,60 @@ test('concurrent guest trip creation cannot race past the 3-trip cap or leave or
   const rejected = attempts.filter(
     (result) => result.error?.message === 'The guest demo is limited to 3 trips'
   );
-  assert.equal(successes.length, 3);
-  assert.equal(rejected.length, 5);
+  assert.equal(successes.length, 2);
+  assert.equal(rejected.length, 6);
 
   const storedProfile = await Profile.findById(profile._id).lean();
   assert.equal(storedProfile.trips.length, 3);
 
   const storedTrips = await Trip.find({ name: /^Concurrent guest trip/ }).lean();
-  assert.equal(storedTrips.length, 3, 'losing concurrent creates are cleaned up');
-  assert.deepEqual(
-    storedTrips.map((trip) => String(trip._id)).sort(),
-    storedProfile.trips.map(String).sort(),
-    'every stored concurrent trip is owned by the guest profile'
-  );
+  assert.equal(storedTrips.length, 2, 'losing concurrent creates are cleaned up');
+  const concurrentIds = storedTrips.map((trip) => String(trip._id)).sort();
+  assert.ok(concurrentIds.every((id) => storedProfile.trips.map(String).includes(id)));
+});
+
+test('resetGuestDemo removes only that guest data and restores the canonical seed', async () => {
+  const { token, profile } = await startGuest();
+  const before = await api.gql(ME, {}, { token });
+  const originalSeedId = before.data.me.trips[0]._id;
+
+  assert.equal((await api.gql(ADD_PLAYER, { tripId: originalSeedId, name: 'Tester' }, { token })).error, null);
+  assert.equal((await api.gql(UPDATE_SCORE, { tripId: originalSeedId, player: 'Alex', hole: 1, score: 9 }, { token })).error, null);
+  const extra = await api.gql(ADD_TRIP, tripInput('Temporary demo trip'), { token });
+  assert.equal(extra.error, null);
+  const oldIds = [originalSeedId, extra.data.addTrip._id];
+
+  const reset = await api.gql(RESET, {}, { token });
+  assert.equal(reset.error, null);
+  assert.equal(reset.data.resetGuestDemo.isGuest, true);
+
+  const afterReset = await api.gql(ME, {}, { token });
+  const resetTrips = afterReset.data.me.trips;
+  assert.equal(resetTrips.length, 1);
+  assert.equal(resetTrips[0].name, 'Fairway Finder Demo Round');
+  assert.notEqual(resetTrips[0]._id, originalSeedId);
+  assert.deepEqual(resetTrips[0].players.map((player) => player.name), ['Alex', 'Jordan']);
+  assert.equal(resetTrips[0].players[0].score.H1, 4);
+
+  for (const oldId of oldIds) {
+    assert.equal(await Trip.findById(oldId), null, `old guest trip ${oldId} deleted`);
+  }
+  const storedProfile = await Profile.findById(profile._id).lean();
+  assert.deepEqual(storedProfile.trips.map(String), [resetTrips[0]._id]);
+});
+
+test('permanent users cannot reset demo data and their trips are untouched', async () => {
+  const profile = await Profile.create({ name: 'ResetPerm', email: 'resetperm@example.com', password: 'goodpass1' });
+  const login = await api.gql(LOGIN, { email: profile.email, password: 'goodpass1' });
+  const added = await api.gql(ADD_TRIP, tripInput('Permanent reset guard'), { token: login.data.login.token });
+  assert.equal(added.error, null);
+
+  const reset = await api.gql(RESET, {}, { token: login.data.login.token });
+  assert.equal(reset.error?.message, 'Demo reset is only available in Demo Mode');
+
+  const storedProfile = await Profile.findById(profile._id).lean();
+  assert.ok(storedProfile.trips.map(String).includes(added.data.addTrip._id));
+  assert.ok(await Trip.findById(added.data.addTrip._id));
 });
 
 test('permanent users have no trip limit and their trips carry no guest fields', async () => {
