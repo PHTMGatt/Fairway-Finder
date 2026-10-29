@@ -8,7 +8,8 @@ import { dist, startTestDb, startGraphQL, LOGIN } from './helpers.mjs';
 let db, api, Profile, Trip, sweepExpiredGuests;
 
 const START = `mutation { startGuestSession { token profile { _id name email isGuest expiresAt } } }`;
-const ME = `query { me { _id isGuest expiresAt trips { _id name date courses { name source address location { lat lng } rating courseRating slope } players { name score total handicap } } } }`;
+const ME = `query { me { _id isGuest expiresAt trips { _id name date courses { name source address location { lat lng } rating courseRating slope } } } }`;
+const TRIP = `query($id: ID!) { trip(id: $id) { _id name date courses { name source address location { lat lng } rating courseRating slope } players { name score total handicap } } }`;
 const RESET = `mutation { resetGuestDemo { _id isGuest expiresAt } }`;
 const ADD_TRIP = `mutation($input: TripInput!) { addTrip(input: $input) { _id } }`;
 const ADD_PLAYER = `mutation($tripId: ID!, $name: String!) { addPlayer(tripId: $tripId, name: $name) { _id } }`;
@@ -83,10 +84,14 @@ test('new guests start with one isolated seeded demo trip', async () => {
   assert.equal(seeded.courses[0].name, 'Fairway Finder Demo Course');
   assert.equal(seeded.courses[0].source, 'demo');
   assert.equal(seeded.courses[0].address, 'Ann Arbor, MI');
-  assert.equal(seeded.players.length, 2);
-  assert.deepEqual(seeded.players.map((player) => player.name), ['Alex', 'Jordan']);
-  assert.equal(seeded.players[0].score.H1, 4);
-  assert.ok(seeded.players[0].total > 0);
+
+  const seededDetails = await api.gql(TRIP, { id: seeded._id }, { token: first.token });
+  assert.equal(seededDetails.error, null);
+  const players = seededDetails.data.trip.players;
+  assert.equal(players.length, 2);
+  assert.deepEqual(players.map((player) => player.name), ['Alex', 'Jordan']);
+  assert.equal(players[0].score.H1, 4);
+  assert.ok(players[0].total > 0);
 
   const storedSeed = await Trip.findById(seeded._id).lean();
   assert.equal(storedSeed.isGuest, true);
@@ -110,7 +115,8 @@ test('guest trips expire with the guest, and the seeded trip counts toward the 3
   const fourthTotal = await api.gql(ADD_TRIP, tripInput('One too many'), { token });
   assert.equal(fourthTotal.error?.message, 'The guest demo is limited to 3 trips');
 
-  const ownedTrips = await Trip.find({ _id: { $in: (await Profile.findById(profile._id).lean()).trips } }).lean();
+  const storedProfile = await Profile.findById(profile._id).lean();
+  const ownedTrips = await Trip.find({ _id: { $in: storedProfile.trips } }).lean();
   assert.equal(ownedTrips.length, 3);
   for (const trip of ownedTrips) {
     assert.equal(trip.isGuest, true);
@@ -162,8 +168,11 @@ test('resetGuestDemo removes only that guest data and restores the canonical see
   assert.equal(resetTrips.length, 1);
   assert.equal(resetTrips[0].name, 'Fairway Finder Demo Round');
   assert.notEqual(resetTrips[0]._id, originalSeedId);
-  assert.deepEqual(resetTrips[0].players.map((player) => player.name), ['Alex', 'Jordan']);
-  assert.equal(resetTrips[0].players[0].score.H1, 4);
+
+  const resetDetails = await api.gql(TRIP, { id: resetTrips[0]._id }, { token });
+  assert.equal(resetDetails.error, null);
+  assert.deepEqual(resetDetails.data.trip.players.map((player) => player.name), ['Alex', 'Jordan']);
+  assert.equal(resetDetails.data.trip.players[0].score.H1, 4);
 
   for (const oldId of oldIds) {
     assert.equal(await Trip.findById(oldId), null, `old guest trip ${oldId} deleted`);
