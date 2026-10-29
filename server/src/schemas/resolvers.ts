@@ -16,6 +16,7 @@ import {
   isReservedGuestEmail,
   isReservedGuestName,
 } from '../utils/guest.js';
+import { resetGuestDemoData, seedGuestDemoTrip } from '../utils/guestDemoSeed.js';
 import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
@@ -199,8 +200,22 @@ const resolvers: IResolvers<any, Context> = {
     startGuestSession: async (_p, _a, context) => {
       enforceRateLimit(guestLimiter, context.ip);
       const profile = await createGuestProfile();
+      try {
+        await seedGuestDemoTrip(profile);
+      } catch (error) {
+        await Profile.deleteOne({ _id: profile._id, isGuest: true });
+        throw error;
+      }
       const token = signToken(profile.name, profile.email, profile._id as string, { notAfter: profile.expiresAt as Date, isGuest: true });
       return { token, profile };
+    },
+    resetGuestDemo: async (_p, _a, context) => {
+      const profile = await getCurrentProfile(context);
+      if (!profile.isGuest) {
+        throw new UserInputError('Demo reset is only available in Demo Mode');
+      }
+      await resetGuestDemoData(profile);
+      return Profile.findById(profile._id).populate('trips');
     },
     addTrip: async (_p, { input }, context) => {
       checkText(input.name, 'name', 'Trip name', LIMITS.tripName);
