@@ -80,6 +80,33 @@ test('guest trips expire with the guest, and a guest is limited to 3 trips', asy
   }
 });
 
+test('concurrent guest trip creation cannot race past the 3-trip cap or leave orphans', async () => {
+  const { token, profile } = await startGuest();
+  const attempts = await Promise.all(
+    Array.from({ length: 8 }, (_, i) =>
+      api.gql(ADD_TRIP, tripInput(`Concurrent guest trip ${i + 1}`), { token })
+    )
+  );
+
+  const successes = attempts.filter((result) => result.error === null);
+  const rejected = attempts.filter(
+    (result) => result.error?.message === 'The guest demo is limited to 3 trips'
+  );
+  assert.equal(successes.length, 3);
+  assert.equal(rejected.length, 5);
+
+  const storedProfile = await Profile.findById(profile._id).lean();
+  assert.equal(storedProfile.trips.length, 3);
+
+  const storedTrips = await Trip.find({ name: /^Concurrent guest trip/ }).lean();
+  assert.equal(storedTrips.length, 3, 'losing concurrent creates are cleaned up');
+  assert.deepEqual(
+    storedTrips.map((trip) => String(trip._id)).sort(),
+    storedProfile.trips.map(String).sort(),
+    'every stored concurrent trip is owned by the guest profile'
+  );
+});
+
 test('permanent users have no trip limit and their trips carry no guest fields', async () => {
   const login = await api.gql(LOGIN, { email: 'perm@example.com', password: 'goodpass1' });
   for (let i = 1; i <= 4; i++) {
@@ -90,7 +117,6 @@ test('permanent users have no trip limit and their trips carry no guest fields',
 });
 
 test('guests can never log in by password', async () => {
-  // Note; Give a guest a known password to prove the isGuest check, not just the random password, blocks it
   const guest = await Profile.create({ name: 'guest-known', email: 'known@guest.invalid', password: 'knownpass1', isGuest: true, expiresAt: new Date(Date.now() + DAY_MS) });
   const res = await api.gql(LOGIN, { email: guest.email, password: 'knownpass1' });
   assert.equal(res.error?.message, 'Invalid email or password');
