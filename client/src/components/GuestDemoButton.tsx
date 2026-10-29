@@ -27,10 +27,10 @@ interface GuestDemoButtonProps {
 
 const GuestDemoButton: React.FC<GuestDemoButtonProps> = ({
   className = '',
-  destination = '/plan-trip',
+  destination = '/saved-trips',
   navigationState,
   showNote = true,
-  label = 'Try as Guest',
+  label = 'Continue as Guest',
 }) => {
   const [startGuestSession, { loading }] = useMutation<StartGuestSessionData>(START_GUEST_SESSION);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -65,7 +65,7 @@ const GuestDemoButton: React.FC<GuestDemoButtonProps> = ({
         onClick={handleStartGuest}
         disabled={loading}
       >
-        {loading ? 'Starting Guest Demo…' : label}
+        {loading ? 'Starting Demo…' : label}
       </button>
       {showNote && <p className="guest-demo__note">{GUEST_DEMO_NOTE}</p>}
       {errorMessage && (
