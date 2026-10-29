@@ -1,4 +1,5 @@
-export const GUEST_DEMO_NOTE = 'Temporary demo data is automatically deleted after 24 hours.';
+export const GUEST_DEMO_NOTE =
+  'Your isolated demo data is automatically deleted after 24 hours.';
 
 interface StartGuestSessionData {
   startGuestSession?: {
@@ -23,7 +24,7 @@ export const extractGuestToken = (data: unknown): string | null => {
 };
 
 export const getGuestDemoNavigation = (
-  destination = '/plan-trip',
+  destination = '/saved-trips',
   state?: unknown
 ): GuestDemoNavigation => ({
   destination,
