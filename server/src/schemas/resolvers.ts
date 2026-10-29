@@ -63,19 +63,11 @@ const getCurrentProfile = async (context: Context) => {
   return profile;
 };
 
-// Note; Same message for unknown email and wrong password so login can't be used to probe for accounts
 const INVALID_LOGIN_MESSAGE = 'Invalid email or password';
-
-// Note; Compared against when the email isn't found, so unknown emails take as long as wrong
-// passwords. Same cost (10) as Profile's pre-save hash; matches no real password.
 const TIMING_DUMMY_HASH = bcrypt.hashSync(randomBytes(16).toString('hex'), 10);
-
-// Note; Rules for NEW passwords only; existing accounts keep their current passwords.
-// bcrypt ignores everything after 72 bytes, so longer passwords are rejected rather than silently truncated.
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_BYTES = 72;
 
-// Note; Unique-index races surface as Mongo E11000; map them to a clean input error
 const toDuplicateKeyError = (err: any) => {
   if (err?.code !== 11000) return err;
   const field = Object.keys(err.keyPattern ?? err.keyValue ?? {})[0];
@@ -89,18 +81,13 @@ const profileOwnsTrip =(profile: { trips: any[] }, tripId: string) =>
 
 const requireOwnedTrip = async (tripId: string, context: Context) => {
   const profile = await getCurrentProfile(context);
-
-  // Note; Someone else's trip looks exactly like a missing one: no auth error (which would log the
-  // user out on the client) and no hint that the trip exists
   if (!profileOwnsTrip(profile, tripId)) {
     throw new UserInputError('Trip not found');
   }
-
   const trip = await Trip.findById(tripId);
   if (!trip) {
     throw new UserInputError('Trip not found');
   }
-
   return { profile, trip };
 };
 
@@ -111,19 +98,14 @@ const optionalText = (value?: string | null) => {
 
 const normalizeTripCourse = (input: TripCourseInput) => {
   checkText(input.name, 'courseName', 'Course name', LIMITS.courseName);
-
   return {
     name: input.name.trim(),
     ...(optionalText(input.source) ? { source: optionalText(input.source) } : {}),
     ...(optionalText(input.providerId) ? { providerId: optionalText(input.providerId) } : {}),
     ...(optionalText(input.address) ? { address: optionalText(input.address) } : {}),
-    ...(input.location
-      ? { location: { lat: input.location.lat, lng: input.location.lng } }
-      : {}),
+    ...(input.location ? { location: { lat: input.location.lat, lng: input.location.lng } } : {}),
     ...(typeof input.rating === 'number' ? { rating: input.rating } : {}),
-    ...(optionalText(input.golfCourseApiId)
-      ? { golfCourseApiId: optionalText(input.golfCourseApiId) }
-      : {}),
+    ...(optionalText(input.golfCourseApiId) ? { golfCourseApiId: optionalText(input.golfCourseApiId) } : {}),
     ...(typeof input.courseRating === 'number' ? { courseRating: input.courseRating } : {}),
     ...(typeof input.slope === 'number' ? { slope: input.slope } : {}),
   };
@@ -136,22 +118,14 @@ const transformTrip = (trip: any) => {
       const found = p.scores.find((s: any) => s.hole === holeNum);
       return { hole: holeNum, score: found?.score ?? 0 };
     });
-
     let total = 0;
     const scoreObj: Record<string, number> = {};
     ordered.forEach(({ hole, score }) => {
       scoreObj[`H${hole}`] = score;
       total += score;
     });
-
-    return {
-      name: p.name,
-      score: scoreObj,
-      total,
-      handicap: p.handicap ?? null,
-    };
+    return { name: p.name, score: scoreObj, total, handicap: p.handicap ?? null };
   });
-
   return {
     _id: trip._id,
     name: trip.name,
@@ -167,72 +141,40 @@ const resolvers: IResolvers<any, Context> = {
     isGuest: (profile) => profile.isGuest === true,
     expiresAt: (profile) => (profile.expiresAt ? new Date(profile.expiresAt).toISOString() : null),
   },
-
   Query: {
     me: async (_p, _a, context) => {
       const profile = await getCurrentProfile(context);
       return profile.populate('trips');
     },
-
     trips: async (_p, _a, context) => {
       const profile = await getCurrentProfile(context);
       return Trip.find({ _id: { $in: profile.trips } });
     },
-
     trip: async (_p, { id }: { id: string }, context) => {
       const { trip } = await requireOwnedTrip(id, context);
       return transformTrip(trip);
     },
   },
-
   Mutation: {
     addProfile: async (_p, { input }, context) => {
       enforceRateLimit(signupLimiter, context.ip);
       const { name, email, password, inviteCode } = input;
-
-      if (
-        password.length < PASSWORD_MIN_LENGTH ||
-        Buffer.byteLength(password, 'utf8') > PASSWORD_MAX_BYTES
-      ) {
-        throw new UserInputError(
-          `Password must be ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_BYTES} characters`,
-          { invalidArgs: ['password'] }
-        );
+      if (password.length < PASSWORD_MIN_LENGTH || Buffer.byteLength(password, 'utf8') > PASSWORD_MAX_BYTES) {
+        throw new UserInputError(`Password must be ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_BYTES} characters`, { invalidArgs: ['password'] });
       }
-
       checkText(name, 'name', 'Username', LIMITS.username);
-      if (isReservedGuestName(name)) {
-        throw new UserInputError('Usernames starting with "guest-" are reserved', { invalidArgs: ['name'] });
-      }
-      if (isReservedGuestEmail(email)) {
-        throw new UserInputError('That email address is not allowed', { invalidArgs: ['email'] });
-      }
-
+      if (isReservedGuestName(name)) throw new UserInputError('Usernames starting with "guest-" are reserved', { invalidArgs: ['name'] });
+      if (isReservedGuestEmail(email)) throw new UserInputError('That email address is not allowed', { invalidArgs: ['email'] });
       const normalizedEmail = email.trim().toLowerCase();
-      const invalidInvite = () =>
-        new UserInputError('Invalid or expired invite code', { invalidArgs: ['inviteCode'] });
-
-      // Note; Validate the invite first so "Email already in use" is only revealed to invite holders
+      const invalidInvite = () => new UserInputError('Invalid or expired invite code', { invalidArgs: ['inviteCode'] });
       if (!(await isInviteUsable(inviteCode, normalizedEmail))) throw invalidInvite();
-
-      // Note; Checked before claiming so a taken email doesn't burn the invite
       const existing = await Profile.findOne({ email: normalizedEmail });
-      if (existing) {
-        throw new UserInputError('Email already in use', {
-          invalidArgs: ['email'],
-        });
-      }
-
+      if (existing) throw new UserInputError('Email already in use', { invalidArgs: ['email'] });
       const invite = await claimInvite(inviteCode, normalizedEmail);
       if (!invite) throw invalidInvite();
-
       let profile;
       try {
-        profile = await Profile.create({
-          name: name.trim(),
-          email: normalizedEmail,
-          password,
-        });
+        profile = await Profile.create({ name: name.trim(), email: normalizedEmail, password });
       } catch (err) {
         await releaseInvite(invite._id as any);
         throw toDuplicateKeyError(err);
@@ -241,12 +183,10 @@ const resolvers: IResolvers<any, Context> = {
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },
-
     login: async (_p, { email, password }, context) => {
       enforceRateLimit(loginLimiter, context.ip);
       const normalizedEmail = email.trim().toLowerCase();
       const profile = await Profile.findOne({ email: normalizedEmail }).select('+password');
-      // Note; Guest accounts can never sign in by password; they look like unknown emails
       if (!profile || profile.isGuest) {
         await bcrypt.compare(password, TIMING_DUMMY_HASH);
         throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
@@ -256,45 +196,55 @@ const resolvers: IResolvers<any, Context> = {
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },
-
     startGuestSession: async (_p, _a, context) => {
       enforceRateLimit(guestLimiter, context.ip);
       const profile = await createGuestProfile();
-      const token = signToken(profile.name, profile.email, profile._id as string, {
-        notAfter: profile.expiresAt as Date,
-        isGuest: true,
-      });
+      const token = signToken(profile.name, profile.email, profile._id as string, { notAfter: profile.expiresAt as Date, isGuest: true });
       return { token, profile };
     },
-
     addTrip: async (_p, { input }, context) => {
       checkText(input.name, 'name', 'Trip name', LIMITS.tripName);
       checkText(input.date, 'date', 'Trip date', LIMITS.tripDate);
-
-      const selectedCourse: TripCourseInput | null = input.course
-        ?? (typeof input.courseName === 'string' ? { name: input.courseName } : null);
-      if (!selectedCourse) {
-        throw new UserInputError('A course is required', { invalidArgs: ['course'] });
-      }
+      const selectedCourse: TripCourseInput | null = input.course ?? (typeof input.courseName === 'string' ? { name: input.courseName } : null);
+      if (!selectedCourse) throw new UserInputError('A course is required', { invalidArgs: ['course'] });
       const course = normalizeTripCourse(selectedCourse);
-
       const profile = await getCurrentProfile(context);
-      if (profile.isGuest && profile.trips.length >= GUEST_MAX_TRIPS) {
-        throw new UserInputError(`The guest demo is limited to ${GUEST_MAX_TRIPS} trips`);
-      }
       const trip = await Trip.create({
         name: input.name,
         date: input.date,
         courses: [course],
-        // Note; Guest trips expire with their guest, set in the same write
         ...(profile.isGuest ? { isGuest: true, expiresAt: profile.expiresAt } : {}),
       });
 
-      profile.trips.push(trip._id as any);
-      await profile.save();
+      // Link the trip atomically. For guests, the array-position predicate makes the three-trip
+      // limit part of the MongoDB write so concurrent requests cannot race past the demo cap.
+      const linkedProfile = await Profile.findOneAndUpdate(
+        profile.isGuest
+          ? {
+              _id: profile._id,
+              isGuest: true,
+              expiresAt: { $gt: new Date() },
+              [`trips.${GUEST_MAX_TRIPS - 1}`]: { $exists: false },
+            }
+          : { _id: profile._id },
+        { $push: { trips: trip._id } },
+        { new: true, runValidators: true }
+      );
+
+      if (!linkedProfile) {
+        // Never leave an unowned trip behind when the guest cap/expiry wins the race.
+        await Trip.deleteOne({ _id: trip._id });
+        if (profile.isGuest) {
+          const current = await Profile.findById(profile._id);
+          if (!current || isExpiredGuest(current)) {
+            throw new AuthenticationError('Your guest demo has ended', { reason: 'GUEST_EXPIRED' });
+          }
+          throw new UserInputError(`The guest demo is limited to ${GUEST_MAX_TRIPS} trips`);
+        }
+        throw new AuthenticationError('Profile no longer exists');
+      }
       return trip;
     },
-
     deleteTrip: async (_p, { tripId }, context) => {
       const { profile, trip } = await requireOwnedTrip(tripId, context);
       profile.trips = profile.trips.filter((id) => id.toString() !== tripId) as any;
@@ -302,98 +252,59 @@ const resolvers: IResolvers<any, Context> = {
       await trip.deleteOne();
       return trip;
     },
-
     addCourseToTrip: async (_p, { tripId, courseName }, context) => {
       checkText(courseName, 'courseName', 'Course name', LIMITS.courseName);
       await requireOwnedTrip(tripId, context);
-      // Note; The cap is part of the update filter so concurrent adds can't exceed it
       const updated = await Trip.findOneAndUpdate(
         { _id: tripId, [`courses.${LIMITS.coursesPerTrip - 1}`]: { $exists: false } },
         { $push: { courses: { name: courseName } } },
         { new: true, runValidators: true }
       );
-      if (!updated) {
-        throw new UserInputError(`A trip can have at most ${LIMITS.coursesPerTrip} courses`);
-      }
+      if (!updated) throw new UserInputError(`A trip can have at most ${LIMITS.coursesPerTrip} courses`);
       return updated;
     },
-
     removeCourseFromTrip: async (_p, { tripId, courseId }, context) => {
       const { trip } = await requireOwnedTrip(tripId, context);
-      const courseIndex = trip.courses.findIndex(
-        (course) => course._id.toString() === courseId
-      );
-
-      if (courseIndex === -1) {
-        throw new UserInputError('Course not found on this trip');
-      }
-
+      const courseIndex = trip.courses.findIndex((course) => course._id.toString() === courseId);
+      if (courseIndex === -1) throw new UserInputError('Course not found on this trip');
       trip.courses.splice(courseIndex, 1);
       await trip.save();
       return trip;
     },
-
     addPlayer: async (_p, { tripId, name }, context) => {
       checkText(name, 'name', 'Player name', LIMITS.playerName);
       const normalizedName = name.trim();
       const { trip } = await requireOwnedTrip(tripId, context);
-      // Note; Scores and handicaps are looked up by player name, so names must be unique per trip.
-      if (trip.players.some((p) => p.name === normalizedName)) {
-        throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
-      }
-      const fullScores = Array.from({ length: 18 }, (_, i) => ({
-        hole: i + 1,
-        score: 0,
-      }));
-
-      // Note; Enforce both uniqueness and the cap in the atomic update so concurrent requests
-      // cannot add the same player twice or push the trip beyond its player limit.
+      if (trip.players.some((p) => p.name === normalizedName)) throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
+      const fullScores = Array.from({ length: 18 }, (_, i) => ({ hole: i + 1, score: 0 }));
       const updated = await Trip.findOneAndUpdate(
-        {
-          _id: tripId,
-          'players.name': { $ne: normalizedName },
-          [`players.${LIMITS.playersPerTrip - 1}`]: { $exists: false },
-        },
+        { _id: tripId, 'players.name': { $ne: normalizedName }, [`players.${LIMITS.playersPerTrip - 1}`]: { $exists: false } },
         { $push: { players: { name: normalizedName, scores: fullScores } } },
         { new: true, runValidators: true }
       );
       if (!updated) {
         const current = await Trip.findById(tripId).select('players.name').lean();
-        if (current?.players.some((p) => p.name === normalizedName)) {
-          throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
-        }
+        if (current?.players.some((p) => p.name === normalizedName)) throw new UserInputError('That player is already on this trip', { invalidArgs: ['name'] });
         throw new UserInputError(`A trip can have at most ${LIMITS.playersPerTrip} players`);
       }
       return updated;
     },
-
     removePlayer: async (_p, { tripId, name }, context) => {
       await requireOwnedTrip(tripId, context);
-      return Trip.findByIdAndUpdate(
-        tripId,
-        { $pull: { players: { name } } },
-        { new: true, runValidators: true }
-      );
+      return Trip.findByIdAndUpdate(tripId, { $pull: { players: { name } } }, { new: true, runValidators: true });
     },
-
     updateScore: async (_p, { tripId, player, hole, score }, context) => {
       checkRange(hole, 'hole', 'Hole', LIMITS.hole, true);
       checkRange(score, 'score', 'Score', LIMITS.score, true);
       const { trip } = await requireOwnedTrip(tripId, context);
       const playerObj = trip.players.find((p) => p.name === player);
       if (!playerObj) throw new UserInputError('Player not found');
-
       const existing = playerObj.scores.find((s) => s.hole === hole);
-      if (existing) {
-        existing.score = score;
-      } else {
-        playerObj.scores.push({ hole, score });
-      }
-
+      if (existing) existing.score = score;
+      else playerObj.scores.push({ hole, score });
       await trip.save();
       return trip;
     },
-
     updateTripHandicap: async (_p, { tripId, handicap }, context) => {
       checkRange(handicap, 'handicap', 'Handicap', LIMITS.handicap);
       const { trip } = await requireOwnedTrip(tripId, context);
@@ -401,17 +312,11 @@ const resolvers: IResolvers<any, Context> = {
       await trip.save();
       return trip;
     },
-
-    updatePlayerHandicap: async (
-      _p,
-      { tripId, name, handicap }: { tripId: string; name: string; handicap: number },
-      context
-    ) => {
+    updatePlayerHandicap: async (_p, { tripId, name, handicap }: { tripId: string; name: string; handicap: number }, context) => {
       checkRange(handicap, 'handicap', 'Handicap', LIMITS.handicap);
       const { trip } = await requireOwnedTrip(tripId, context);
       const player = trip.players.find((p) => p.name === name);
       if (!player) throw new UserInputError('Player not found');
-
       player.handicap = handicap;
       await trip.save();
       return trip;
