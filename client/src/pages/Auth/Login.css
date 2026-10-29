@@ -142,8 +142,51 @@
   background: rgba(164, 210, 179, 0.12);
 }
 
+.auth-demo-callout {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(53, 215, 125, 0.22);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 92% 0%, rgba(53, 215, 125, 0.13), transparent 10rem),
+    rgba(8, 27, 16, 0.72);
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.auth-demo-callout > div:first-child {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.auth-demo-callout strong {
+  color: #8bf2b6;
+  font-size: 0.92rem;
+  font-weight: 850;
+  letter-spacing: 0.025em;
+}
+
+.auth-demo-callout span {
+  color: #9eb1a5;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.auth-page .auth-btn--guest {
+  width: 100%;
+  border-color: #64e99c;
+  background: linear-gradient(135deg, #35d77d, #159151);
+  box-shadow: 0 10px 26px rgba(18, 139, 74, 0.2);
+  font-size: 1rem;
+}
+
+.auth-page .auth-btn--guest:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4ae28b, #19a15a);
+  box-shadow: 0 12px 28px rgba(18, 139, 74, 0.3);
+}
+
 .auth-page .guest-demo__note {
-  color: #819589;
+  color: #92a69a;
 }
 
 .auth-page .guest-demo__error {
@@ -158,6 +201,10 @@
 
   .auth-page .auth-card {
     border-radius: 15px;
+  }
+
+  .auth-demo-callout {
+    padding: 0.8rem;
   }
 }
 
@@ -183,5 +230,14 @@
 
   .auth-page .auth-form .auth-btn {
     grid-column: 1 / -1;
+  }
+
+  .auth-demo-callout {
+    grid-template-columns: minmax(0, 1fr) minmax(220px, 0.75fr);
+    align-items: center;
+  }
+
+  .auth-demo-callout .guest-demo {
+    align-self: center;
   }
 }
