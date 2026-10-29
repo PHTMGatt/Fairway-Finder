@@ -33,7 +33,6 @@ export const seedGuestDemoTrip = async (profile: ProfileDoc): Promise<TripDoc> =
         providerId: 'fairway-finder-demo-course',
         address: 'Ann Arbor, MI',
         location: { lat: 42.2808, lng: -83.743 },
-        rating: 4.6,
         courseRating: 72.1,
         slope: 128,
       },
