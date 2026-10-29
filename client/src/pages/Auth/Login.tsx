@@ -50,8 +50,7 @@ const Login: React.FC = () => {
   };
 
   if (Auth.loggedIn()) {
-    const destination = Auth.getSessionInfo()?.isGuest ? '/plan-trip' : '/saved-trips';
-    return <Navigate to={destination} replace />;
+    return <Navigate to="/saved-trips" replace />;
   }
 
   return (
@@ -82,14 +81,20 @@ const Login: React.FC = () => {
               onChange={handleChange}
             />
             <button type="submit" className="auth-btn" disabled={loading}>
-              {loading ? 'Logging in…' : 'Submit'}
+              {loading ? 'Logging in…' : 'Log In'}
             </button>
           </form>
           {errorMessage && <div className="auth-error">{errorMessage}</div>}
           <div className="auth-divider" aria-hidden="true">
-            <span>or</span>
+            <span>or test the full app</span>
           </div>
-          <GuestDemoButton className="auth-btn" />
+          <div className="auth-demo-callout">
+            <div>
+              <strong>Guest Demo</strong>
+              <span>Start with a private sample trip, players, and scores—no real account needed.</span>
+            </div>
+            <GuestDemoButton className="auth-btn auth-btn--guest" />
+          </div>
         </div>
       </div>
     </main>
