@@ -40,6 +40,21 @@ export const START_GUEST_SESSION = gql`
   }
 `;
 
+export const RESET_GUEST_DEMO = gql`
+  mutation ResetGuestDemo {
+    resetGuestDemo {
+      _id
+      isGuest
+      expiresAt
+      trips {
+        _id
+        name
+        date
+      }
+    }
+  }
+`;
+
 /** ——— TRIP MANAGEMENT MUTATIONS ——— **/
 
 export const ADD_TRIP = gql`
