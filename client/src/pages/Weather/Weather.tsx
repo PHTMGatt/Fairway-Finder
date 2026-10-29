@@ -150,9 +150,6 @@ const Weather: React.FC = () => {
               placeholder="City, state"
               value={city}
               onChange={handleCityChange}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') void handleSearch();
-              }}
               aria-label="Weather city"
             />
             <button
