@@ -133,9 +133,15 @@ export default `
     login(email: String!, password: String!): Auth
 
     """
-    Start an anonymous Guest Demo: a temporary account whose data is deleted after 24 hours.
+    Start an anonymous Guest Demo: a temporary account seeded with fake sample data and deleted after 24 hours.
     """
     startGuestSession: Auth
+
+    """
+    Reset only the currently authenticated Guest Demo account to its canonical fake sample data.
+    Permanent accounts cannot call this mutation.
+    """
+    resetGuestDemo: Profile
 
     addTrip(input: TripInput!): Trip
     deleteTrip(tripId: ID!): Trip
