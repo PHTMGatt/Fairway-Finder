@@ -1,158 +1,92 @@
-/* ===== App.css ===== */
-
-/* — Global Base Styles — */
-body, html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+/* ===== Fairway Finder application shell ===== */
+:root {
+  color-scheme: dark;
+  --ff-bg: #07110d;
+  --ff-bg-soft: #0b1712;
+  --ff-panel: #0f1f18;
+  --ff-panel-strong: #13271e;
+  --ff-line: rgba(164, 210, 179, 0.16);
+  --ff-text: #f3f8f4;
+  --ff-muted: #a7b9ad;
+  --ff-green: #35d77d;
+  --ff-green-deep: #169653;
+  --ff-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
 }
+
+html,
+body,
 #root {
-  height: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+html {
+  background: var(--ff-bg);
 }
 
 body {
-  background: linear-gradient(to bottom right, #eafaff, #ffffff);
+  min-width: 320px;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 72% -10%, rgba(44, 167, 97, 0.13), transparent 32rem),
+    linear-gradient(180deg, #08130f 0%, var(--ff-bg) 48%, #050c09 100%);
+  color: var(--ff-text);
   font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  color: #1a3d7c;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* — App Layout — */
+button,
+a,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
 .app-layout {
   display: flex;
+  min-height: 100vh;
   flex-direction: column;
-  height: 100vh;           /* fill viewport */
 }
+
 .app-content {
-  flex: 1;                 /* grow to fill between header + footer */
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-width: 0;
 }
 
-/* — Header & Footer remain sticky — */
-header, footer {
-  flex: 0 0 auto;
-}
-
-/* — Main content container (map will fill this) — */
 .app-content > * {
   flex: 1;
 }
 
-/* ===== Header “Score-Card” Styling ===== */
-.header {
-  background: repeating-linear-gradient(
-    to bottom,
-    #1a3d7c 0,
-    #1a3d7c 33.33%,
-    #3052a4 33.33%,
-    #3052a4 66.66%,
-    #1a3d7c 66.66%,
-    #1a3d7c 100%
-  );
-  border-bottom: 2px solid #1a3d7c;
-  padding: 1rem 0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+header,
+footer {
+  flex: 0 0 auto;
 }
 
-.header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-/* ===== Header Title & Toggles ===== */
-.header__title {
-  margin: 0;
-  font-size: 1.5rem;
-  color: #ffffff;
-  transition: color 0.2s;
-}
-.header__title:hover {
-  color: #53bfff;
-}
-
-.header__toggle {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-.header__toggle .toggle-btn {
-  width: 2rem;
-  height: 2rem;
-  background: #ffffff;
-  border: 2px solid #ccc;
-  border-radius: 50%;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  cursor: pointer;
-  transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-}
-.header__toggle .toggle-btn:hover {
-  background: linear-gradient(135deg, #53bfff, #1f9eff);
-  border-color: #1f9eff;
-  transform: scale(1.2);
-  box-shadow:
-    0 0 8px rgba(255,255,255,0.8),
-    0 0 20px rgba(83,191,255,0.7),
-    0 6px 16px rgba(0,0,0,0.3);
-}
-
-/* ===== Header Action Buttons ===== */
-.header__actions .header__btn {
-  background: #ffffff !important;
-  color: #1a3d7c !important;
-  border: 1px solid #ccc !important;
-  padding: 0.5rem 1rem !important;
-  border-radius: 6px !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s !important;
-}
-.header__actions .header__btn:hover {
-  background: linear-gradient(135deg, #53bfff, #1f9eff) !important;
-  color: #fff !important;
-  border-color: #1f9eff !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3) !important;
-}
-.header__actions .header__btn:active {
-  transform: translateY(0) !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
-}
-
-/* ===== Footer Styling ===== */
-.footer {
-  background: #f0f8ff;
-  border-top: 2px solid #1a3d7c;
-  padding: 1rem 0;
-  box-shadow: 0 -2px 6px rgba(0,0,0,0.1);
-  position: sticky;
-  bottom: 0;
-}
-.footer__inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 960px;
-  margin: 0 auto;
-}
-.footer__copy {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #555;
-}
-
-/* ===== Utility Helpers ===== */
 .min-100-vh {
   min-height: 100vh;
 }
 
-/* Prevent horizontal scrollbar caused by animated footer GIF */
-body {
-  margin: 0; /* reset default margin if not already set */
-  overflow-x: hidden;
+/* Legacy pages still use Bootstrap/light surfaces. Give their outer containers a
+   neutral dark canvas without overriding their functional component styles. */
+.app-content {
+  background: transparent;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
