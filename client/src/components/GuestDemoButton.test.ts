@@ -7,9 +7,11 @@ import {
 } from './GuestDemoButton.utils';
 
 describe('Guest Demo control', () => {
-  it('provides the shared Guest Demo component and accurate 24-hour cleanup copy', () => {
+  it('provides the shared Guest Demo component and explains isolated 24-hour data', () => {
     expect(GuestDemoButton).toBeTypeOf('function');
-    expect(GUEST_DEMO_NOTE).toBe('Temporary demo data is automatically deleted after 24 hours.');
+    expect(GUEST_DEMO_NOTE).toBe(
+      'Your isolated demo data is automatically deleted after 24 hours.'
+    );
   });
 
   it('extracts the guest token from the GraphQL response', () => {
@@ -17,9 +19,9 @@ describe('Guest Demo control', () => {
     expect(extractGuestToken({})).toBeNull();
   });
 
-  it('defaults Guest Demo to Plan Trip and preserves an explicit navigation state', () => {
+  it('lands a new demo session on seeded My Trips and preserves explicit destinations', () => {
     expect(getGuestDemoNavigation()).toEqual({
-      destination: '/plan-trip',
+      destination: '/saved-trips',
       options: { replace: true },
     });
 
