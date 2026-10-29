@@ -1,9 +1,10 @@
-import { useApolloClient } from '@apollo/client';
+import { useApolloClient, useMutation } from '@apollo/client';
 import { Link, useNavigate } from 'react-router-dom';
 import { MouseEvent, useEffect, useState } from 'react';
 import { FaFlag } from 'react-icons/fa';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import Auth from '../../utils/auth';
+import { RESET_GUEST_DEMO } from '../../utils/mutations';
 import { getGuestBannerState } from './guestBanner';
 import { getHeaderNavigation } from './headerNavigation';
 import './Header.css';
@@ -13,6 +14,8 @@ const Header: React.FC = () => {
   const apolloClient = useApolloClient();
   const navigate = useNavigate();
   const [now, setNow] = useState(Date.now());
+  const [demoResetError, setDemoResetError] = useState('');
+  const [resetGuestDemo, { loading: resettingDemo }] = useMutation(RESET_GUEST_DEMO);
   const guestBanner = getGuestBannerState(Auth.getSessionInfo(), now);
   const navigation = getHeaderNavigation(isLoggedIn);
 
@@ -36,6 +39,21 @@ const Header: React.FC = () => {
     void apolloClient.clearStore().finally(() => {
       navigate('/', { replace: true });
     });
+  };
+
+  const handleResetDemo = async () => {
+    setDemoResetError('');
+    try {
+      await resetGuestDemo();
+      await apolloClient.resetStore();
+      navigate('/saved-trips', { replace: true });
+    } catch (error: unknown) {
+      setDemoResetError(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Could not reset the demo. Please try again.'
+      );
+    }
   };
 
   return (
@@ -71,16 +89,32 @@ const Header: React.FC = () => {
           className={`header__guest-banner${guestBanner.warning ? ' header__guest-banner--warning' : ''}`}
           role="status"
         >
-          <span>
-            Guest Demo · temporary data deletes at{' '}
-            {guestBanner.expiresAt.toLocaleString([], {
-              hour: 'numeric',
-              minute: '2-digit',
-              month: 'short',
-              day: 'numeric',
-            })}
-          </span>
-          {guestBanner.warning && <strong>Less than 2 hours left</strong>}
+          <div className="header__guest-copy">
+            <strong className="header__demo-badge">Demo Mode</strong>
+            <span>
+              Isolated sample data · resets automatically at{' '}
+              {guestBanner.expiresAt.toLocaleString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </span>
+            {guestBanner.warning && <strong>Less than 2 hours left</strong>}
+          </div>
+          <button
+            type="button"
+            className="header__demo-reset"
+            onClick={handleResetDemo}
+            disabled={resettingDemo}
+          >
+            {resettingDemo ? 'Resetting…' : 'Reset Demo'}
+          </button>
+          {demoResetError && (
+            <span className="header__demo-error" role="alert">
+              {demoResetError}
+            </span>
+          )}
         </div>
       )}
     </header>
