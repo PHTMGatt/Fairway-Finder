@@ -84,6 +84,7 @@ test('new guests start with one isolated seeded demo trip', async () => {
   assert.equal(seeded.courses[0].name, 'Fairway Finder Demo Course');
   assert.equal(seeded.courses[0].source, 'demo');
   assert.equal(seeded.courses[0].address, 'Ann Arbor, MI');
+  assert.equal(seeded.courses[0].rating, null);
 
   const seededDetails = await api.gql(TRIP, { id: seeded._id }, { token: first.token });
   assert.equal(seededDetails.error, null);
