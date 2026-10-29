@@ -59,6 +59,7 @@ a {
   flex: 1;
   flex-direction: column;
   min-width: 0;
+  background: transparent;
 }
 
 .app-content > * {
@@ -70,14 +71,19 @@ footer {
   flex: 0 0 auto;
 }
 
-.min-100-vh {
-  min-height: 100vh;
+.app-route-loading {
+  width: min(720px, calc(100% - 2rem));
+  margin: 2rem auto;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--ff-line);
+  border-radius: 11px;
+  background: rgba(11, 26, 19, 0.92);
+  color: var(--ff-muted);
+  text-align: center;
 }
 
-/* Legacy pages still use Bootstrap/light surfaces. Give their outer containers a
-   neutral dark canvas without overriding their functional component styles. */
-.app-content {
-  background: transparent;
+.min-100-vh {
+  min-height: 100vh;
 }
 
 @media (prefers-reduced-motion: reduce) {
