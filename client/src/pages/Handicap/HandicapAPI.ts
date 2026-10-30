@@ -1,19 +1,14 @@
 // client/src/pages/Handicap/HandicapAPI.ts
 
 /**
- * ─── TOGGLE HERE ───
- * Set USE_API = true  → live GolfCourseAPI via your Express proxy (/api/golf)
- * Set USE_API = false → local in-memory data (LocalHandicapData.ts)
+ * Handicap calculations use live GolfCourseAPI rating/slope data through the
+ * server-side Express proxy. Keeping the provider call behind `/api/golf`
+ * avoids exposing the provider API key to the browser.
  */
-const USE_API = false;
-
-const API_BASE = '/api/golf'; // your Express proxy mount point
-
-// If USE_API = false, we'll import a hard-coded array of courses:
-import { localCourses } from './LocalHandicapData';
+const API_BASE = '/api/golf';
 
 /** ─────────────────────────────────────────────────────────────────────────────
- *  Interfaces (these must match the structure of your API OR your Local data)
+ *  Interfaces (these must match the structure of the API)
  *  ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -38,7 +33,7 @@ export interface TeeBox {
 }
 
 /**
- * Full course details (returned by GET /v1/courses/{id} or from our `localCourses` array).
+ * Full course details returned by GET /v1/courses/{id} through our proxy.
  */
 export interface CourseDetails {
   id: number;
@@ -96,26 +91,6 @@ export async function searchCourses(
     return [];
   }
 
-  if (!USE_API) {
-    // ─── LOCAL MODE ───
-    // Filter localCourses by substring match on course_name or club_name
-    const matches: CourseSummary[] = localCourses
-      .filter((c) => {
-        const full = (c.course_name || c.club_name).toLowerCase();
-        return full.includes(cleaned);
-      })
-      .map((c) => ({
-        id: c.id,
-        club_name: c.club_name,
-        course_name: c.course_name,
-        location: { address: c.location.address },
-      }));
-
-    console.log('🔍 [Local] searchCourses returned:', matches);
-    return matches;
-  }
-
-  // ─── API MODE ───
   const url = `${API_BASE}/search?search_query=${encodeURIComponent(cleaned)}`;
   console.log('📤 [API] Hitting Golf Proxy (search):', url);
 
@@ -148,15 +123,6 @@ export async function getCourseById(
     return null;
   }
 
-  if (!USE_API) {
-    // ─── LOCAL MODE ───
-    const numericId = parseInt(trimmedId, 10);
-    const found = localCourses.find((c) => c.id === numericId) || null;
-    console.log('📥 [Local] getCourseById returned:', found);
-    return found;
-  }
-
-  // ─── API MODE ───
   const url = `${API_BASE}/${encodeURIComponent(trimmedId)}`;
   console.log('📤 [API] Hitting Golf Proxy (details):', url);
 
