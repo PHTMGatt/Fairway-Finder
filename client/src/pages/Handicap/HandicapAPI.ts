@@ -95,13 +95,14 @@ export async function searchCourses(query: string): Promise<CourseSummary[]> {
 }
 
 /**
- * Course-detail transport/provider failures reject for the same reason as search failures.
- * A successful response with an invalid payload also rejects rather than masquerading as a
- * missing course. `null` remains reserved for an intentionally empty id supplied by a caller.
+ * Course-detail failures reject so callers never have to treat provider/network failures
+ * as a missing course. An empty id is also invalid input and rejects before any request.
  */
-export async function getCourseById(id: string): Promise<CourseDetails | null> {
+export async function getCourseById(id: string): Promise<CourseDetails> {
   const trimmedId = id.trim();
-  if (!trimmedId) return null;
+  if (!trimmedId) {
+    throw new Error('Course id is required.');
+  }
 
   const url = `${API_BASE}/${encodeURIComponent(trimmedId)}`;
   const res = await fetch(url);
