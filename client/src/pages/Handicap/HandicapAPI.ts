@@ -7,14 +7,6 @@
  */
 const API_BASE = '/api/golf';
 
-/** ─────────────────────────────────────────────────────────────────────────────
- *  Interfaces (these must match the structure of the API)
- *  ─────────────────────────────────────────────────────────────────────────────
- */
-
-/**
- * Minimal “summary” returned by search—just enough to identify the course to fetch details later.
- */
 export interface CourseSummary {
   id: number;
   club_name: string;
@@ -22,19 +14,12 @@ export interface CourseSummary {
   location?: { address?: string };
 }
 
-/**
- * Each TeeBox entry (we only care about `course_rating` and `slope_rating` for handicap calculation).
- */
 export interface TeeBox {
   tee_name: string;
   course_rating: number;
   slope_rating: number;
-  // (other fields like bogey_rating, holes[], etc. are optional/ignored)
 }
 
-/**
- * Full course details returned by GET /v1/courses/{id} through our proxy.
- */
 export interface CourseDetails {
   id: number;
   club_name: string;
@@ -78,70 +63,59 @@ export const normalizeCourseDetailsResponse = (value: unknown): CourseDetails | 
   return isCourseDetails(wrapped) ? wrapped : null;
 };
 
-/** ─────────────────────────────────────────────────────────────────────────────
- *  searchCourses(query: string) → Promise<CourseSummary[]>
- *  ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Search failures deliberately reject instead of being converted to an empty result.
+ * Callers can therefore distinguish a real "no courses found" response from a provider,
+ * network, or proxy failure and present an honest error state to the user.
  */
-export async function searchCourses(
-  query: string
-): Promise<CourseSummary[]> {
+export async function searchCourses(query: string): Promise<CourseSummary[]> {
   const cleaned = query.trim().toLowerCase();
-  if (!cleaned) {
-    console.warn('searchCourses(): empty query → returning []');
-    return [];
-  }
+  if (!cleaned) return [];
 
   const url = `${API_BASE}/search?search_query=${encodeURIComponent(cleaned)}`;
-  console.log('📤 [API] Hitting Golf Proxy (search):', url);
+  const res = await fetch(url);
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Search failed: ${res.status} ${text}`);
-    }
-    const data = await res.json();
-    const courses: CourseSummary[] = Array.isArray(data.courses) ? data.courses : [];
-    console.log('✅ [API] searchCourses returned:', courses);
-    return courses;
-  } catch (err) {
-    console.error('❌ [API] searchCourses error:', err);
-    return [];
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Course search failed (${res.status}): ${text}`);
   }
+
+  const data: unknown = await res.json();
+  if (!data || typeof data !== 'object') {
+    throw new Error('Course search returned an invalid response.');
+  }
+
+  const courses = (data as { courses?: unknown }).courses;
+  if (courses === undefined) return [];
+  if (!Array.isArray(courses)) {
+    throw new Error('Course search returned an invalid courses payload.');
+  }
+
+  return courses as CourseSummary[];
 }
 
-/** ─────────────────────────────────────────────────────────────────────────────
- *  getCourseById(id: string) → Promise<CourseDetails | null>
- *  ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Course-detail transport/provider failures reject for the same reason as search failures.
+ * A successful response with an invalid payload also rejects rather than masquerading as a
+ * missing course. `null` remains reserved for an intentionally empty id supplied by a caller.
  */
-export async function getCourseById(
-  id: string
-): Promise<CourseDetails | null> {
+export async function getCourseById(id: string): Promise<CourseDetails | null> {
   const trimmedId = id.trim();
-  if (!trimmedId) {
-    console.warn('getCourseById(): empty id → returning null');
-    return null;
-  }
+  if (!trimmedId) return null;
 
   const url = `${API_BASE}/${encodeURIComponent(trimmedId)}`;
-  console.log('📤 [API] Hitting Golf Proxy (details):', url);
+  const res = await fetch(url);
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(`Details fetch failed: ${res.status} ${text}`);
-    }
-    const json = await res.json();
-    const course = normalizeCourseDetailsResponse(json);
-    if (!course) {
-      console.error('❌ [API] getCourseById returned an invalid course payload:', json);
-      return null;
-    }
-    console.log('✅ [API] Course details fetched:', course);
-    return course;
-  } catch (err) {
-    console.error('❌ [API] getCourseById error:', err);
-    return null;
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Course details failed (${res.status}): ${text}`);
   }
+
+  const json: unknown = await res.json();
+  const course = normalizeCourseDetailsResponse(json);
+  if (!course) {
+    throw new Error('Course details returned an invalid payload.');
+  }
+
+  return course;
 }
