@@ -15,17 +15,6 @@ import {
 import ToggleSwitch from '../../components/ToggleSwitch/ToggleSwitch';
 import './Weather.css';
 
-/**
- * Shape of the data we pull from our /api/weather proxy:
- * - tempF      raw temperature in °F (server uses units=imperial)
- * - humidity   relative humidity %
- * - precipitation  rain or snow volume (mm in last 1h)
- * - windSpeed  wind speed (mph)
- * - iconCode   OpenWeather icon code (e.g. "01d", "01n")
- * - main       high-level condition (Clear, Clouds, etc.)
- * - description detailed text
- * - name       city name
- */
 interface WeatherInfo {
   tempF: number;
   humidity: number;
@@ -37,42 +26,35 @@ interface WeatherInfo {
   name: string;
 }
 
-// Map OpenWeather “main” to a day-time icon
 const iconMap: Record<string, JSX.Element> = {
-  Clear:        <WiDaySunny    className="weather-icon" />,
-  Clouds:       <WiCloudy      className="weather-icon" />,
-  Rain:         <WiRain        className="weather-icon" />,
-  Drizzle:      <WiRain        className="weather-icon" />,
+  Clear: <WiDaySunny className="weather-icon" />,
+  Clouds: <WiCloudy className="weather-icon" />,
+  Rain: <WiRain className="weather-icon" />,
+  Drizzle: <WiRain className="weather-icon" />,
   Thunderstorm: <WiThunderstorm className="weather-icon" />,
-  Snow:         <WiSnow        className="weather-icon" />,
-  Mist:         <WiFog         className="weather-icon" />,
-  Smoke:        <WiFog         className="weather-icon" />,
-  Haze:         <WiFog         className="weather-icon" />,
-  Dust:         <WiFog         className="weather-icon" />,
-  Fog:          <WiFog         className="weather-icon" />,
-  Sand:         <WiFog         className="weather-icon" />,
-  Ash:          <WiFog         className="weather-icon" />,
-  Squall:       <WiCloudy      className="weather-icon" />,
-  Tornado:      <WiThunderstorm className="weather-icon" />,
+  Snow: <WiSnow className="weather-icon" />,
+  Mist: <WiFog className="weather-icon" />,
+  Smoke: <WiFog className="weather-icon" />,
+  Haze: <WiFog className="weather-icon" />,
+  Dust: <WiFog className="weather-icon" />,
+  Fog: <WiFog className="weather-icon" />,
+  Sand: <WiFog className="weather-icon" />,
+  Ash: <WiFog className="weather-icon" />,
+  Squall: <WiCloudy className="weather-icon" />,
+  Tornado: <WiThunderstorm className="weather-icon" />,
 };
 
-/** Convert Fahrenheit → Celsius */
-const fahrenheitToCelsius = (f: number) =>
-  Math.round(((f - 32) * 5) / 9);
+const fahrenheitToCelsius = (f: number) => Math.round(((f - 32) * 5) / 9);
 
 const Weather: React.FC = () => {
-  // controlled inputs & flags
   const [city, setCity] = useState<string>('');
   const [isFahrenheit, setIsFahrenheit] = useState<boolean>(true);
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
-  /** update input */
-  const handleCityChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setCity(e.target.value);
+  const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => setCity(e.target.value);
 
-  /** fetch from our server proxy */
   const handleSearch = async () => {
     const name = city.trim();
     if (!name) {
@@ -86,15 +68,10 @@ const Weather: React.FC = () => {
     setWeather(null);
 
     try {
-      const res = await fetch(
-        `/api/weather?city=${encodeURIComponent(name)}`
-      );
+      const res = await fetch(`/api/weather?city=${encodeURIComponent(name)}`);
       if (!res.ok) throw new Error('Failed to fetch weather');
       const data = await res.json();
 
-      console.log('Raw weather data (°F):', data.main.temp, data);
-
-      // validate
       if (!data.weather?.[0] || data.main?.temp == null) {
         throw new Error('Incomplete weather data');
       }
@@ -109,58 +86,74 @@ const Weather: React.FC = () => {
         description: data.weather[0].description,
         name: data.name,
       });
-    } catch (err: any) {
-      setError(err.message || 'Failed to load weather.');
+    } catch (err: unknown) {
+      setError(err instanceof Error && err.message ? err.message : 'Failed to load weather.');
     } finally {
       setLoading(false);
     }
   };
 
-  /** pick day vs night icon */
   const renderIcon = () => {
     if (!weather) return null;
-    // night codes end in “n”
     return weather.iconCode.endsWith('n')
       ? <WiStars className="weather-icon" />
       : iconMap[weather.main] || <WiCloudy className="weather-icon" />;
   };
 
-  /** which temp to show */
   const displayTemp = weather == null
     ? null
     : isFahrenheit
-    ? Math.round(weather.tempF)                      // raw °F
-    : fahrenheitToCelsius(weather.tempF);            // to °C
+      ? Math.round(weather.tempF)
+      : fahrenheitToCelsius(weather.tempF);
 
   return (
     <main className="weather-page">
-      <div className="weather-card">
-
-        {/* ===== Search Panel ===== */}
-        <section className="weather-card__search">
-          <h2 className="weather-card__title">Weather Forecast</h2>
-          <p className="weather-card__desc">
-            Enter a city to view precipitation, humidity, wind, and more.
+      <header className="weather-page__header">
+        <div>
+          <p className="weather-page__eyebrow">Golf-day conditions</p>
+          <h1>Check the weather before you tee it up.</h1>
+          <p>
+            Use a city to check temperature, precipitation, humidity, and wind before the group commits to the round.
           </p>
+        </div>
+        <div className="weather-page__context" aria-hidden="true">
+          <span>Temperature</span>
+          <span>Rain</span>
+          <span>Wind</span>
+        </div>
+      </header>
 
-          <div className="weather-card__toggle">
-            <ToggleSwitch
-              id="unitToggle"
-              checked={isFahrenheit}
-              onChange={setIsFahrenheit}
-              label={isFahrenheit ? '°F' : '°C'}
-            />
+      <div className="weather-card">
+        <section className="weather-card__search" aria-labelledby="weather-search-title">
+          <div className="weather-card__search-heading">
+            <div>
+              <p className="weather-page__eyebrow">Location</p>
+              <h2 id="weather-search-title" className="weather-card__title">Weather check</h2>
+            </div>
+            <div className="weather-card__toggle">
+              <ToggleSwitch
+                id="unitToggle"
+                checked={isFahrenheit}
+                onChange={setIsFahrenheit}
+                label={isFahrenheit ? '°F' : '°C'}
+              />
+            </div>
           </div>
+          <p className="weather-card__desc">
+            Search the city near your course or lodging. Trip-specific weather is also available inside each saved trip.
+          </p>
 
           <div className="weather-card__input-group">
             <input
               type="text"
               className="weather-card__input"
-              placeholder="Enter city"
+              placeholder="City, state"
               value={city}
               onChange={handleCityChange}
+              aria-label="Weather city"
             />
             <button
+              type="button"
               className="weather-card__btn"
               onClick={handleSearch}
               disabled={loading}
@@ -170,45 +163,66 @@ const Weather: React.FC = () => {
           </div>
 
           {error && (
-            <p className="trip-details__status" style={{ color: '#b00020' }}>
-              ❌ {error}
-            </p>
+            <div className="weather-card__status weather-card__status--error" role="alert">
+              <strong>Weather unavailable</strong>
+              <span>{error}</span>
+            </div>
+          )}
+
+          {loading && (
+            <div className="weather-card__status" role="status">
+              <span className="weather-card__status-dot" aria-hidden="true" />
+              <div>
+                <strong>Checking playing conditions…</strong>
+                <span>Looking up the latest available weather for {city.trim() || 'your location'}.</span>
+              </div>
+            </div>
           )}
         </section>
 
-        {/* ===== Result Panel ===== */}
-        {weather && displayTemp !== null && (
-          <section className="weather-card__result">
+        <section className="weather-card__result" aria-live="polite">
+          {weather && displayTemp !== null ? (
             <div className="weather-result">
-              <div className="weather-result__icon-wrapper">
-                {renderIcon()}
+              <div className="weather-result__topline">
+                <div className="weather-result__icon-wrapper">{renderIcon()}</div>
+                <div>
+                  <p className="weather-page__eyebrow">Current conditions</p>
+                  <h2 className="weather-result__city">{weather.name}</h2>
+                  <p className="weather-result__desc">{weather.description}</p>
+                </div>
               </div>
-              <h3 className="weather-result__city">{weather.name}</h3>
-              <p className="weather-result__desc">
-                {weather.description}
-              </p>
+
               <p className="weather-result__temp">
-                {displayTemp}°{isFahrenheit ? 'F' : 'C'}
+                {displayTemp}°<span>{isFahrenheit ? 'F' : 'C'}</span>
               </p>
 
               <div className="weather-result__details">
                 <div className="detail">
-                  <WiRain className="detail-icon" />
-                  <span>Precip: <strong>{weather.precipitation} mm</strong></span>
+                  <WiRain className="detail-icon" aria-hidden="true" />
+                  <span>Precipitation</span>
+                  <strong>{weather.precipitation} mm</strong>
                 </div>
                 <div className="detail">
-                  <WiRaindrops className="detail-icon" />
-                  <span>Humidity: <strong>{weather.humidity}%</strong></span>
+                  <WiRaindrops className="detail-icon" aria-hidden="true" />
+                  <span>Humidity</span>
+                  <strong>{weather.humidity}%</strong>
                 </div>
                 <div className="detail">
-                  <WiStrongWind className="detail-icon" />
-                  <span>Wind: <strong>{weather.windSpeed} mph</strong></span>
+                  <WiStrongWind className="detail-icon" aria-hidden="true" />
+                  <span>Wind</span>
+                  <strong>{weather.windSpeed} mph</strong>
                 </div>
               </div>
             </div>
-          </section>
-        )}
-
+          ) : !loading ? (
+            <div className="weather-result weather-result--empty">
+              <span className="weather-result__empty-icon" aria-hidden="true">☀</span>
+              <p className="weather-page__eyebrow">Ready when you are</p>
+              <h2>Search a golf destination.</h2>
+              <p>Conditions will appear here with the details that matter most before a round.</p>
+            </div>
+          ) : null}
+        </section>
       </div>
     </main>
   );

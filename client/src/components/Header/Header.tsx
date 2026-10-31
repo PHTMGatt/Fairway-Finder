@@ -1,55 +1,125 @@
-import { Link } from 'react-router-dom';
-import { MouseEvent } from 'react';
+import { useApolloClient, useMutation } from '@apollo/client';
+import { Link, useNavigate } from 'react-router-dom';
+import { MouseEvent, useEffect, useState } from 'react';
+import { FaFlag } from 'react-icons/fa';
 import { useAuth } from '../../pages/Auth/AuthContext';
-import golfGif from '../../assets/images/golf2.gif';
+import Auth from '../../utils/auth';
+import { RESET_GUEST_DEMO } from '../../utils/mutations';
+import { QUERY_MY_TRIPS, QUERY_TRIPS } from '../../utils/queries';
+import { getGuestBannerState } from './guestBanner';
+import { getHeaderNavigation } from './headerNavigation';
 import './Header.css';
 
-// Note; remastered Header to use isLoggedIn + logoutUser from context
 const Header: React.FC = () => {
   const { isLoggedIn, logoutUser } = useAuth();
+  const apolloClient = useApolloClient();
+  const navigate = useNavigate();
+  const [now, setNow] = useState(Date.now());
+  const [demoResetError, setDemoResetError] = useState('');
+  const [resetGuestDemo, { loading: resettingDemo }] = useMutation(RESET_GUEST_DEMO);
+  const guestBanner = getGuestBannerState(Auth.getSessionInfo(), now);
+  const navigation = getHeaderNavigation(isLoggedIn);
 
-  const handleLogout = (e: MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    logoutUser(); // clears token and sets isLoggedIn=false immediately
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const interval = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(interval);
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    if (!guestBanner?.expired) return;
+    logoutUser();
+    void apolloClient.clearStore().finally(() => {
+      navigate('/login?reason=guest_expired', { replace: true });
+    });
+  }, [apolloClient, guestBanner?.expired, logoutUser, navigate]);
+
+  const handleLogout = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    logoutUser();
+    void apolloClient.clearStore().finally(() => {
+      navigate('/', { replace: true });
+    });
+  };
+
+  const handleResetDemo = async () => {
+    setDemoResetError('');
+    try {
+      await resetGuestDemo({
+        refetchQueries: [QUERY_TRIPS, QUERY_MY_TRIPS],
+        awaitRefetchQueries: true,
+      });
+      navigate('/saved-trips', { replace: true });
+    } catch (error: unknown) {
+      setDemoResetError(
+        error instanceof Error && error.message
+          ? error.message
+          : 'Could not reset the demo. Please try again.'
+      );
+    }
   };
 
   return (
     <header className="header header--bg">
-      {/* Animated icon links to home */}
-      <Link to="/" className="header__icon-link">
-        <img src={golfGif} alt="Home" className="header__gif-icon" />
-      </Link>
+      <div className="header__main">
+        <Link to="/" className="header__brand" aria-label="Fairway Finder home">
+          <span className="header__home-icon" aria-hidden="true">
+            <FaFlag />
+          </span>
+          <span className="header__logo">FAIRWAY FINDER</span>
+        </Link>
 
-      {/* Center title link */}
-      <Link to="/" className="header__logo">
-        FAIRWAY FINDER
-      </Link>
-
-      {/* Spacer pushes buttons right */}
-      <div className="header__spacer" />
-
-      {/* Auth buttons (now using isLoggedIn from context) */}
-      <div className="header__actions">
-        {isLoggedIn ? (
-          <>
-            <Link to="/saved-trips" className="header__btn">
-              My Trips
+        <nav className="header__actions" aria-label="Primary navigation">
+          {navigation.map((item, index) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`header__btn${isLoggedIn && index === 0 ? ' header__btn--primary' : ''}`}
+            >
+              {item.label}
             </Link>
-            <button onClick={handleLogout} className="header__btn">
+          ))}
+          {isLoggedIn && (
+            <button onClick={handleLogout} className="header__btn header__btn--quiet">
               Log Out
             </button>
-          </>
-        ) : (
-          <>
-            <Link to="/login" className="header__btn">
-              Log In
-            </Link>
-            <Link to="/signup" className="header__btn">
-              Sign Up
-            </Link>
-          </>
-        )}
+          )}
+        </nav>
       </div>
+
+      {guestBanner && !guestBanner.expired && (
+        <div
+          className={`header__guest-banner${guestBanner.warning ? ' header__guest-banner--warning' : ''}`}
+          role="status"
+        >
+          <div className="header__guest-copy">
+            <strong className="header__demo-badge">Demo Mode</strong>
+            <span>
+              Isolated sample data · resets automatically at{' '}
+              {guestBanner.expiresAt.toLocaleString([], {
+                hour: 'numeric',
+                minute: '2-digit',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </span>
+            {guestBanner.warning && <strong>Less than 2 hours left</strong>}
+          </div>
+          <button
+            type="button"
+            className="header__demo-reset"
+            onClick={handleResetDemo}
+            disabled={resettingDemo}
+          >
+            {resettingDemo ? 'Resetting…' : 'Reset Demo'}
+          </button>
+          {demoResetError && (
+            <span className="header__demo-error" role="alert">
+              {demoResetError}
+            </span>
+          )}
+        </div>
+      )}
     </header>
   );
 };

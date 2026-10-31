@@ -9,12 +9,8 @@
   animation: fadeInBg 1s ease-in-out;
 }
 
-@keyframes fadeInBg {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+@keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
 
-/* ===== Auth / Loading Card (reused inside Handicap page) ===== */
 .handicap-page .auth-card {
   background: #ffffff;
   border-radius: 18px;
@@ -27,25 +23,10 @@
   opacity: 0;
 }
 
-@keyframes fadeInCard {
-  to {
-    opacity: 1;
-  }
-}
+@keyframes fadeInCard { to { opacity: 1; } }
 
-.handicap-page .title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #065f46;
-  margin-bottom: 1rem;
-}
+.handicap-page .handicap-message { font-size: 1rem; color: #333333; }
 
-.handicap-page .handicap-message {
-  font-size: 1rem;
-  color: #333333;
-}
-
-/* ===== Main Setup Card ===== */
 .handicap-page .setup-card {
   background: #ffffff;
   border-radius: 18px;
@@ -58,83 +39,52 @@
   transform: translateY(20px);
 }
 
-/* ===== Section Title ===== */
 .handicap-page .title {
   text-align: center;
   font-size: 2.2rem;
+  font-weight: 700;
   color: #065f46;
   margin-bottom: 2rem;
   letter-spacing: 1px;
 }
 
-/* ===== Form Group ===== */
-.handicap-page .form-group {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
-}
-
-.handicap-page .form-group label {
+.handicap-page .handicap-feedback {
+  margin: -0.5rem 0 1.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
   font-size: 0.95rem;
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-  color: #333;
+  line-height: 1.45;
 }
 
+.handicap-page .handicap-feedback--error { background: #fef2f2; border-color: #fecaca; color: #991b1b; }
+.handicap-page .handicap-feedback--success { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; }
+.handicap-page .handicap-feedback--info { background: #eff6ff; border-color: #bfdbfe; color: #1e3a8a; }
+
+.handicap-page .form-group { display: flex; flex-direction: column; margin-bottom: 1rem; min-width: 0; }
+.handicap-page .form-group label { font-size: 0.95rem; font-weight: 500; margin-bottom: 0.4rem; color: #333; }
 .handicap-page .form-group select,
 .handicap-page .form-group input {
   padding: 0.65rem 1rem;
   font-size: 1rem;
   border-radius: 8px;
   border: 1px solid #ccc;
+  min-width: 0;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-
 .handicap-page .form-group select:focus,
-.handicap-page .form-group input:focus {
+.handicap-page .form-group input:focus,
+.handicap-page button:focus-visible {
   border-color: #00b4d8;
-  box-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
+  box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.28);
   outline: none;
 }
 
-/* ===== Flex Row for Paired Fields ===== */
-.handicap-page .flex-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-}
-
-.handicap-page .flex-row .form-group {
-  flex: 1;
-  margin-bottom: 0;
-}
-
-.handicap-page .search-row {
-  flex: 2 1 0%;
-}
-
-/* ===== Search Controls ===== */
-.handicap-page .search-controls {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.handicap-page .search-input {
-  flex: 1;
-  padding: 0.65rem 1rem;
-  font-size: 1rem;
-  border-radius: 8px 0 0 8px;
-  border: 1px solid #ccc;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.handicap-page .search-input:focus {
-  border-color: #00b4d8;
-  box-shadow: 0 0 8px rgba(0, 180, 216, 0.3);
-  outline: none;
-}
-
+.handicap-page .flex-row { display: flex; gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap; }
+.handicap-page .flex-row .form-group { flex: 1; margin-bottom: 0; }
+.handicap-page .search-row { flex: 2 1 0%; }
+.handicap-page .search-controls { display: flex; gap: 0.5rem; }
+.handicap-page .search-input { flex: 1; min-width: 0; padding: 0.65rem 1rem; font-size: 1rem; border-radius: 8px 0 0 8px; border: 1px solid #ccc; }
 .handicap-page .search-btn {
   padding: 0.65rem 1.2rem;
   background-color: #1d4ed8;
@@ -146,24 +96,10 @@
   transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
+.handicap-page .search-btn:hover:not(:disabled) { background-color: #2563eb; transform: translateY(-1px); }
 
-.handicap-page .search-btn:hover {
-  background-color: #2563eb;
-  transform: translateY(-1px);
-}
-
-/* ===== Round Form Buttons ===== */
-.handicap-page .round-form .form-group {
-  width: 100%;
-}
-
-.handicap-page .button-wrapper {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
+.handicap-page .round-form .form-group { width: 100%; }
+.handicap-page .button-wrapper { display: flex; justify-content: center; gap: 1rem; margin-top: 1.5rem; }
 .handicap-page .submit-btn,
 .handicap-page .clear-btn {
   padding: 0.75rem 1.6rem;
@@ -176,100 +112,42 @@
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
 }
+.handicap-page .submit-btn { background-color: #10b981; }
+.handicap-page .clear-btn { background-color: #ef4444; }
+.handicap-page .submit-btn:hover:not(:disabled),
+.handicap-page .clear-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); }
+.handicap-page .submit-btn:hover:not(:disabled) { background-color: #34d399; }
+.handicap-page .clear-btn:hover:not(:disabled) { background-color: #f87171; }
+.handicap-page button:disabled { cursor: not-allowed; opacity: 0.65; transform: none; }
 
-.handicap-page .submit-btn {
-  background-color: #10b981;
-}
+.handicap-page .handicap-info { text-align: center; margin-top: 2rem; }
+.handicap-page .handicap-info h2 { font-size: 1.2rem; color: #334155; margin-bottom: 0.5rem; }
+.handicap-page .handicap-value { font-size: 2.8rem; font-weight: 800; color: #2563eb; letter-spacing: 1px; }
 
-.handicap-page .clear-btn {
-  background-color: #ef4444;
-}
-
-.handicap-page .submit-btn:hover,
-.handicap-page .clear-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-.handicap-page .submit-btn:hover { background-color: #34d399; }
-.handicap-page .clear-btn:hover { background-color: #f87171; }
-
-/* ===== Handicap Display ===== */
-.handicap-page .handicap-info {
-  text-align: center;
-  margin-top: 2rem;
-}
-
-.handicap-page .handicap-info h2 {
-  font-size: 1.2rem;
-  color: #334155;
-  margin-bottom: 0.5rem;
-}
-
-.handicap-page .handicap-value {
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #2563eb;
-  letter-spacing: 1px;
-}
-
-/* ===== Responsive Tweaks ===== */
 @media (max-width: 768px) {
-  .handicap-page .setup-card {
-    padding: 1.5rem 1.5rem;
-  }
-  .handicap-page .flex-row {
-    flex-direction: column;
-  }
-  .handicap-page .search-controls {
-    flex-direction: column;
-  }
+  .handicap-page { padding: 2rem 1rem; }
+  .handicap-page .setup-card { padding: 1.5rem; }
+  .handicap-page .flex-row { flex-direction: column; }
+  .handicap-page .search-controls { flex-direction: column; }
   .handicap-page .search-input,
-  .handicap-page .search-btn {
-    width: 100%;
-    border-radius: 8px;
-  }
-  .handicap-page .search-btn {
-    margin-top: 0.5rem;
-  }
-  .handicap-page .button-wrapper {
-    flex-direction: column;
-  }
+  .handicap-page .search-btn { width: 100%; border-radius: 8px; }
+  .handicap-page .search-btn { margin-top: 0.5rem; }
+  .handicap-page .button-wrapper { flex-direction: column; }
   .handicap-page .submit-btn,
-  .handicap-page .clear-btn {
-    width: 100%;
-    max-width: 240px;
-    margin: 0 auto;
-  }
-  .handicap-page .title {
-    font-size: 1.75rem;
-  }
+  .handicap-page .clear-btn { width: 100%; max-width: 240px; margin: 0 auto; }
+  .handicap-page .title { font-size: 1.75rem; }
 }
 
 @media (max-width: 480px) {
-  .handicap-page .setup-card {
-    padding: 1rem 1rem;
-  }
-  .handicap-page .title {
-    font-size: 1.5rem;
-  }
-  .handicap-page .form-label {
-    font-size: 0.95rem;
-  }
+  .handicap-page { padding: 1rem 0.75rem; }
+  .handicap-page .setup-card { padding: 1rem; }
+  .handicap-page .title { font-size: 1.5rem; }
+  .handicap-page .form-label { font-size: 0.95rem; }
   .handicap-page .form-select,
   .handicap-page .form-input,
-  .handicap-page .search-input {
-    font-size: 0.95rem;
-    padding: 0.6rem 1rem;
-  }
+  .handicap-page .search-input { font-size: 0.95rem; padding: 0.6rem 1rem; }
   .handicap-page .search-btn,
   .handicap-page .submit-btn,
-  .handicap-page .clear-btn {
-    font-size: 0.95rem;
-    padding: 0.6rem 1.2rem;
-  }
-  .handicap-page .handicap-value {
-    font-size: 2rem;
-  }
+  .handicap-page .clear-btn { font-size: 0.95rem; padding: 0.7rem 1.2rem; min-height: 44px; }
+  .handicap-page .handicap-value { font-size: 2rem; }
 }
-

@@ -12,6 +12,10 @@ export default `
     name: String
     email: String
     trips: [Trip]
+    "True for a temporary Guest Demo account."
+    isGuest: Boolean
+    "When a Guest Demo and its trips are deleted (ISO 8601); null for permanent accounts."
+    expiresAt: String
   }
 
   """
@@ -23,14 +27,19 @@ export default `
   }
 
   """
-  A golf course, including cached rating and slope for handicap calculations.
+  A canonical selected-course snapshot embedded in a trip. Provider identity and
+  enrichment fields are optional so legacy name-only trips remain compatible.
   """
   type Course {
     _id: ID
     name: String
+    source: String
+    providerId: String
     address: String
     location: Location
     rating: Float
+    golfCourseApiId: String
+    courseRating: Float
     slope: Int
   }
 
@@ -40,6 +49,23 @@ export default `
   type Location {
     lat: Float
     lng: Float
+  }
+
+  input LocationInput {
+    lat: Float!
+    lng: Float!
+  }
+
+  input TripCourseInput {
+    name: String!
+    source: String
+    providerId: String
+    address: String
+    location: LocationInput
+    rating: Float
+    golfCourseApiId: String
+    courseRating: Float
+    slope: Int
   }
 
   """
@@ -64,16 +90,25 @@ export default `
     handicap: Float
   }
 
+  """
+  Sign-up details. Permanent accounts are invite-only, so a valid invite code is required.
+  """
   input ProfileInput {
     name: String!
     email: String!
     password: String!
+    inviteCode: String!
   }
 
+  """
+  New clients send a structured course snapshot. courseName remains temporarily
+  supported for older clients while the trip-planning flow is migrated.
+  """
   input TripInput {
     name: String!
     date: String!
-    courseName: String!
+    course: TripCourseInput
+    courseName: String
   }
 
   type Query {
@@ -97,10 +132,21 @@ export default `
     addProfile(input: ProfileInput!): Auth
     login(email: String!, password: String!): Auth
 
+    """
+    Start an anonymous Guest Demo: a temporary account seeded with fake sample data and deleted after 24 hours.
+    """
+    startGuestSession: Auth
+
+    """
+    Reset only the currently authenticated Guest Demo account to its canonical fake sample data.
+    Permanent accounts cannot call this mutation.
+    """
+    resetGuestDemo: Profile
+
     addTrip(input: TripInput!): Trip
     deleteTrip(tripId: ID!): Trip
     addCourseToTrip(tripId: ID!, courseName: String!): Trip
-    removeCourseFromTrip(courseName: String!): Trip
+    removeCourseFromTrip(tripId: ID!, courseId: ID!): Trip
     addPlayer(tripId: ID!, name: String!): Trip
     removePlayer(tripId: ID!, name: String!): Trip
     updateScore(tripId: ID!, player: String!, hole: Int!, score: Int!): Trip

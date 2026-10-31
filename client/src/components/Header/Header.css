@@ -1,204 +1,326 @@
-/* 'client/src/components/Header/Header.css' */
-
-/* Note; header background: texture + striped gradient */
+/* Fairway Finder primary navigation */
 .header--bg {
-  position: relative;
-  height: 120px;
-  padding: 0 2rem;
-  background-image: 
-    url('../../assets/images/pool-table.png'),
-    repeating-linear-gradient(
-      45deg,
-      #2e5633,
-      #2e5633 40px,
-      #3b6e40 40px,
-      #3b6e40 80px
-    );
-  background-repeat: repeat;
-  background-size: auto, auto;
-  border-bottom: 3px solid #1f3b24;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(164, 210, 179, 0.14);
+  background: rgba(7, 17, 13, 0.92);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
+  color: #f5faf6;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  display: flex;
-  align-items: center;
-  z-index: 1;
+  backdrop-filter: blur(18px);
 }
 
-/* Note; main logo centered absolute */
-.header__logo {
-  position: absolute;
-  left: 50%;
-  top: 28px;
-  transform: translateX(-50%);
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: white;
-  letter-spacing: 2px;
-  text-transform: uppercase;
+.header__main {
+  display: flex;
+  min-height: 72px;
+  width: min(1380px, calc(100% - 2.5rem));
+  margin: 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+}
+
+.header__brand {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.75rem;
+  color: #fff;
   text-decoration: none;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
-  transition: transform 0.3s ease;
-  z-index: 20;
-}
-.header__logo:hover {
-  transform: translateX(-50%) scale(1.08);
 }
 
-/* Note; golf gif icon left side */
-.header__icon-link {
-  display: flex;
-  align-items: center;
-  z-index: 20;
-}
-.header__gif-icon {
-  height: 85px;
-  margin-right: 1rem;
-  filter: brightness(1.1);
-  transition: transform 0.3s ease, filter 0.3s ease;
-  cursor: pointer;
-}
-.header__gif-icon:hover {
-  transform: scale(1.25);
-  filter: brightness(1.4);
+.header__home-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid rgba(53, 215, 125, 0.34);
+  border-radius: 12px;
+  background: linear-gradient(145deg, rgba(53, 215, 125, 0.2), rgba(53, 215, 125, 0.06));
+  color: #55e894;
+  font-size: 1.05rem;
+  box-shadow: inset 0 1px rgba(255, 255, 255, 0.08);
 }
 
-/* Note; spacer pushes auth buttons */
-.header__spacer {
-  flex-grow: 1;
+.header__logo {
+  font-size: 1.02rem;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
 }
 
-/* Note; right-side button container */
 .header__actions {
   display: flex;
-  gap: 0.5rem;
-  z-index: 10;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
 }
 
-/* Note; reusable button style */
 .header__btn {
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 0.4rem 0.75rem;
-  background: #fff;
-  border: 2px solid #1f3b24;
-  border-radius: 4px;
-  color: #1f3b24;
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  padding: 0.52rem 0.82rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #c7d6cc;
+  font-size: 0.84rem;
+  font-weight: 750;
   text-decoration: none;
-  transition: all 0.2s ease;
   cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
+
 .header__btn:hover {
-  background: #f0f0f0;
+  border-color: rgba(164, 210, 179, 0.18);
+  background: rgba(255, 255, 255, 0.055);
+  color: #fff;
+}
+
+.header__btn--primary {
+  border-color: rgba(53, 215, 125, 0.42);
+  background: rgba(53, 215, 125, 0.12);
+  color: #6aeca1;
+}
+
+.header__btn--primary:hover {
+  border-color: rgba(53, 215, 125, 0.7);
+  background: rgba(53, 215, 125, 0.18);
+  color: #8bf2b6;
+}
+
+.header__btn--quiet {
+  color: #91a49a;
+}
+
+.header__btn:focus-visible,
+.header__brand:focus-visible,
+.header__demo-reset:focus-visible {
+  outline: 3px solid rgba(53, 215, 125, 0.55);
+  outline-offset: 3px;
+}
+
+.header__guest-banner {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  padding: 0.48rem 1rem;
+  border-top: 1px solid rgba(164, 210, 179, 0.1);
+  background: #10251b;
+  color: #c8d9ce;
+  font-size: 0.76rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.header__guest-copy {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.header__demo-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid rgba(83, 231, 143, 0.34);
+  border-radius: 999px;
+  background: rgba(53, 215, 125, 0.12);
+  color: #78efaa;
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.header__demo-reset {
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0.38rem 0.72rem;
+  border: 1px solid rgba(83, 231, 143, 0.5);
+  border-radius: 8px;
+  background: rgba(53, 215, 125, 0.1);
+  color: #8bf2b6;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.header__demo-reset:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-.header__btn:active {
-  transform: translateY(0);
-  box-shadow: none;
-}
-.header__btn:focus {
-  box-shadow: 0 0 0 2px rgba(31, 59, 36, 0.3);
-  outline: none;
+  border-color: rgba(112, 237, 165, 0.85);
+  background: rgba(53, 215, 125, 0.18);
 }
 
-/* ===== MOBILE RESPONSIVE ===== */
+.header__demo-reset:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
 
-/* 1) Adjust earlier at <=900px */
-@media (max-width: 900px) {
+.header__demo-error {
+  max-width: 30rem;
+  overflow-wrap: anywhere;
+  color: #ffb6b6;
+  font-weight: 700;
+}
+
+.header__guest-banner--warning {
+  border-top-color: rgba(230, 203, 128, 0.4);
+  background: #493b1c;
+  color: #fff4d3;
+}
+
+.header__guest-banner--warning .header__demo-badge,
+.header__guest-banner--warning .header__demo-reset {
+  border-color: rgba(255, 232, 163, 0.45);
+  background: rgba(255, 232, 163, 0.1);
+  color: #fff1bd;
+}
+
+.header__guest-banner strong {
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
   .header--bg {
+    position: relative;
+  }
+
+  .header__main {
+    width: min(100% - 1.25rem, 1380px);
+    min-height: auto;
     flex-direction: column;
-    align-items: flex-start;  /* start stacking, but keep left alignment */
-    height: auto;
-    padding: 1rem 1.5rem;
-    text-align: left;
+    padding: 0.75rem 0;
+    gap: 0.65rem;
   }
 
-  /* Move logo down a bit and shrink */
-  .header__logo {
-    position: static;
-    transform: none;
-    margin: 0 auto 0.25rem;
-    font-size: 2.2rem;
-    top: auto;
+  .header__brand {
+    width: 100%;
+    justify-content: center;
   }
 
-  /* Shrink the icon */
-  .header__gif-icon {
-    height: 70px;
-    margin-right: 0.5rem;
-  }
-
-  /* Spacer disappears early */
-  .header__spacer {
-    display: none;
-  }
-
-  /* Collapse actions a bit sooner */
   .header__actions {
+    width: 100%;
     flex-wrap: wrap;
-    justify-content: flex-end;
-    width: 100%;
-    margin-top: 0.5rem;
+    justify-content: center;
   }
+
   .header__btn {
-    margin: 0.25rem 0;
-    /* don't force full width yet; just allow wrap */
+    flex: 1 1 110px;
+  }
+
+  .header__guest-banner {
+    flex-wrap: wrap;
+    gap: 0.45rem 0.7rem;
+  }
+
+  .header__guest-copy {
+    flex: 1 1 100%;
   }
 }
 
-/* 2) Further adjust at <=768px (tablet/smaller) */
-@media (max-width: 768px) {
-  .header--bg {
-    align-items: center;
-    text-align: center;
-    padding: 1rem 1rem;
+@media (max-width: 520px) and (orientation: portrait) {
+  .header__guest-banner {
+    flex-direction: column;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .header__guest-copy {
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .header__demo-reset {
+    width: min(100%, 240px);
+    min-height: 40px;
+  }
+}
+
+/* Landscape phones need the navigation to stay shallow rather than consuming
+   most of the usable viewport. */
+@media (max-height: 520px) and (orientation: landscape) {
+  .header__main {
+    width: min(100% - 1rem, 1380px);
+    min-height: 52px;
+    flex-direction: row;
+    padding: 0.3rem 0;
+  }
+
+  .header__home-icon {
+    width: 34px;
+    height: 34px;
+    flex-basis: 34px;
   }
 
   .header__logo {
-    font-size: 1.8rem;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Position icon above title */
-  .header__icon-link {
-    position: static;
-    margin-bottom: 0.5rem;
-  }
-  .header__gif-icon {
-    height: 60px;
-    margin-right: 0;
+    font-size: 0.82rem;
   }
 
   .header__actions {
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    width: 100%;
-    margin-top: 0.75rem;
+    width: auto;
+    flex-wrap: nowrap;
   }
+
   .header__btn {
-    width: 100%;
-    max-width: 220px;
-    margin: 0.25rem auto;
-    font-size: 0.85rem;
-    padding: 0.35rem 0.75rem;
+    min-height: 34px;
+    flex: 0 0 auto;
+    padding: 0.38rem 0.55rem;
+    font-size: 0.76rem;
+  }
+
+  .header__guest-banner {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    padding-block: 0.28rem;
+  }
+
+  .header__guest-copy {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+
+  .header__guest-copy > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .header__demo-reset {
+    min-height: 32px;
+    padding: 0.28rem 0.58rem;
   }
 }
 
-/* 3) Collapse fully at <=480px (small phones) */
-@media (max-width: 480px) {
+@media (max-width: 390px) {
   .header__logo {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.92rem;
+    letter-spacing: 0.08em;
   }
 
-  .header__gif-icon {
-    height: 50px;
+  .header__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 
   .header__btn {
-    max-width: 180px;
-    font-size: 0.8rem;
-    padding: 0.3rem 0.6rem;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .header__btn--quiet:last-child:nth-child(3) {
+    grid-column: 1 / -1;
   }
 }

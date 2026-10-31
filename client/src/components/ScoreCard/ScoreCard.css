@@ -1,141 +1,302 @@
-/* src/components/ScoreCard/'ScoreCard.css' */
-/*Note; outer card wrapper with glass effect */
+/* Fairway Finder scorecard */
 .scorecard {
-  margin-top: 2rem;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.75);
-  border-radius: 16px;
-  box-shadow: 0 12px 24px rgba(109, 194, 255, 0.2);
-  backdrop-filter: blur(8px);
+  min-width: 0;
+  margin: 0;
+  color: #e7f0ea;
 }
 
-/*Note; header layout and title */
 .scorecard__header {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-.scorecard__title {
-  font-size: 1.25rem;
-  color: #1f3b24;
-  font-weight: 600;
+  align-items: flex-end;
+  gap: 0.8rem;
+  margin-bottom: 0.9rem;
 }
 
-/*Note; button nav */
+.scorecard__title {
+  margin: 0;
+  color: #eef6f0;
+  font-size: 1.08rem;
+  font-weight: 820;
+}
+
+.scorecard__hint {
+  margin: 0.25rem 0 0;
+  color: #84988b;
+  font-size: 0.8rem;
+}
+
 .scorecard__nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
+  gap: 0.4rem;
 }
+
 .scorecard__slider {
   margin: 0.5rem 0 1rem;
 }
+
 .scorecard__btn {
-  background: #6dc2ff;
-  color: #fff;
-  padding: 0.4rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
+  min-height: 42px;
+  padding: 0.48rem 0.7rem;
+  border: 1px solid rgba(176, 211, 187, 0.18);
+  border-radius: 8px;
+  background: rgba(5, 16, 10, 0.72);
+  color: #b7c8bd;
+  font-weight: 760;
   cursor: pointer;
-  transition: background 0.2s ease-in-out;
-}
-.scorecard__btn:hover:not(:disabled) {
-  background: #4eb6f5;
-}
-.scorecard__btn:disabled {
-  background: #c5e8ff;
-  cursor: not-allowed;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, color 0.15s ease;
 }
 
-/*Note; horizontal scroll wrapper for table */
+.scorecard__btn:hover:not(:disabled),
+.scorecard__btn[aria-pressed='true'] {
+  border-color: rgba(73, 224, 134, 0.42);
+  background: rgba(53, 215, 125, 0.1);
+  color: #7beaa8;
+}
+
+.scorecard__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.scorecard__btn:focus-visible,
+.scorecard__input:focus-visible,
+.scorecard__player-input:focus-visible,
+.scorecard__remove:focus-visible,
+.scorecard__add-btn:focus-visible {
+  outline: 3px solid rgba(53, 215, 125, 0.52);
+  outline-offset: 3px;
+}
+
+.scorecard__remove:focus-visible {
+  outline-color: rgba(238, 112, 112, 0.65);
+}
+
+.scorecard__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+.scorecard__error {
+  margin: 0 0 0.9rem;
+  padding: 0.72rem 0.85rem;
+  border: 1px solid rgba(232, 103, 103, 0.3);
+  border-radius: 8px;
+  background: rgba(67, 21, 21, 0.82);
+  color: #f3b5b5;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.scorecard__status,
+.scorecard__empty {
+  margin: 0 0 0.9rem;
+  padding: 0.85rem;
+  border: 1px dashed rgba(164, 210, 179, 0.14);
+  border-radius: 9px;
+  background: rgba(5, 16, 10, 0.46);
+  color: #899c90;
+}
+
 .scorecard__table-wrapper {
   width: 100%;
+  min-width: 0;
   overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  border: 1px solid rgba(164, 210, 179, 0.14);
+  border-radius: 11px;
+  background: rgba(5, 16, 10, 0.72);
+  scrollbar-color: rgba(72, 215, 129, 0.45) rgba(4, 13, 9, 0.5);
 }
 
-/*Note; styled score table */
 .scorecard__table {
   width: 100%;
   min-width: 650px;
   border-collapse: collapse;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 10px;
+  font-size: 0.88rem;
 }
+
 .scorecard__table th,
 .scorecard__table td {
-  padding: 0.5rem;
+  padding: 0.53rem;
   text-align: center;
-  border-bottom: 1px solid #d0ecfa;
+  border-bottom: 1px solid rgba(164, 210, 179, 0.08);
+  color: #b6c7bc;
   white-space: nowrap;
 }
-.scorecard__table th {
-  background-color: #eafaff;
-  color: #1f3b24;
-  font-weight: 600;
+
+.scorecard__table thead th {
+  position: sticky;
+  top: 0;
+  background: #102219;
+  color: #98d8ae;
+  font-weight: 830;
+  z-index: 2;
 }
 
-/*Note; score inputs */
+.scorecard__table tbody th {
+  position: sticky;
+  left: 0;
+  background: #0b1b13;
+  color: #e1ebe4;
+  text-align: left;
+  z-index: 1;
+}
+
+.scorecard__table tbody tr:hover td,
+.scorecard__table tbody tr:hover th {
+  background-color: rgba(53, 215, 125, 0.045);
+}
+
 .scorecard__input {
-  width: 3rem;
-  padding: 0.3rem;
+  width: 3.1rem;
+  min-height: 40px;
+  padding: 0.35rem;
   text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
+  border: 1px solid rgba(178, 213, 189, 0.18);
+  border-radius: 7px;
+  background: rgba(4, 14, 9, 0.82);
+  color: #f2f7f3;
+  font-size: 0.98rem;
+  color-scheme: dark;
 }
 
-/*Note; remove player button */
+.scorecard__input:focus-visible {
+  border-color: rgba(88, 229, 145, 0.72);
+}
+
+.scorecard__input:disabled {
+  background: rgba(255, 255, 255, 0.025);
+  color: #72857a;
+}
+
+.scorecard__total {
+  color: #7ceaa9 !important;
+  font-weight: 850;
+}
+
 .scorecard__remove {
-  background: transparent;
-  border: none;
-  color: #ff4d4f;
+  min-height: 38px;
+  padding: 0.38rem 0.55rem;
+  border: 1px solid rgba(230, 111, 111, 0.2);
+  border-radius: 7px;
+  background: rgba(87, 24, 24, 0.16);
+  color: #d88e8e;
   cursor: pointer;
-  font-size: 1.1rem;
+  font-size: 0.78rem;
+  font-weight: 760;
 }
 
-/*Note; player adder */
+.scorecard__remove:hover {
+  border-color: rgba(235, 112, 112, 0.44);
+  background: rgba(105, 28, 28, 0.35);
+  color: #ffb4b4;
+}
+
 .scorecard__add-player {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  margin-top: 1rem;
-}
-.scorecard__player-input {
-  padding: 0.5rem;
-  flex: 1 1 200px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-}
-.scorecard__add-btn {
-  background: #28a745;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
-}
-.scorecard__add-btn:hover {
-  background: #218838;
+  gap: 0.7rem;
+  align-items: flex-end;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(164, 210, 179, 0.09);
 }
 
-/*Note; responsive tweaks */
-@media (max-width: 768px) {
+.scorecard__player-field {
+  flex: 1 1 220px;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #9fb2a6;
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.scorecard__player-input {
+  min-height: 44px;
+  width: 100%;
+  min-width: 0;
+  padding: 0.62rem 0.7rem;
+  border: 1px solid rgba(178, 213, 189, 0.18);
+  border-radius: 8px;
+  background: rgba(5, 16, 10, 0.82);
+  color: #f0f6f2;
+  font-size: 1rem;
+}
+
+.scorecard__player-input::placeholder {
+  color: #718579;
+}
+
+.scorecard__player-input:focus-visible {
+  border-color: rgba(88, 229, 145, 0.72);
+}
+
+.scorecard__add-btn {
+  min-height: 44px;
+  padding: 0.62rem 0.9rem;
+  border: 1px solid #35d77d;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #24b965, #168a4c);
+  color: #fff;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.scorecard__add-btn:hover:not(:disabled) {
+  border-color: #72efa7;
+  background: linear-gradient(135deg, #30ca72, #199555);
+}
+
+.scorecard__add-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+@media (max-width: 650px) and (orientation: portrait) {
   .scorecard__header {
-    flex-direction: column;
     align-items: flex-start;
+    flex-direction: column;
   }
+
   .scorecard__nav {
-    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .scorecard__btn {
+    flex: 1 1 auto;
+  }
+
+  .scorecard__add-player,
+  .scorecard__add-btn {
+    width: 100%;
+  }
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .scorecard__header {
+    align-items: flex-end;
+    flex-direction: row;
+  }
+
+  .scorecard__nav {
+    width: auto;
+  }
+
+  .scorecard__table {
+    min-width: 620px;
+    font-size: 0.84rem;
+  }
+
+  .scorecard__table th,
+  .scorecard__table td {
+    padding: 0.45rem;
+  }
+
+  .scorecard__add-player {
+    flex-wrap: nowrap;
   }
 }
