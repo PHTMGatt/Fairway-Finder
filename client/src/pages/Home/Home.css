@@ -318,13 +318,10 @@
     background-position: 60% center;
   }
 
+  /* Keep quick actions visible without a hidden horizontal swipe on tablets. */
   .home__steps,
   .home__tool-grid {
-    grid-template-columns: repeat(3, minmax(190px, 1fr));
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: thin;
-    padding-bottom: 0.25rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -387,6 +384,13 @@
 
   .home__guest {
     margin-top: 0.7rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .home__steps,
+  .home__tool-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
