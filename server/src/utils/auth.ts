@@ -8,7 +8,11 @@ interface UserPayload {
   username: string;
   email: string;
   _id: string;
+  isGuest?: boolean; // Note; for the client's UI only; the server always checks the Profile record
 }
+
+// Note; How long a permanent login lasts before signing in again
+export const SESSION_TTL_SECONDS = 7 * 24 * 60 * 60;
 
 declare module 'express-serve-static-core' {
   interface Request {
@@ -54,15 +58,22 @@ export const authenticateToken = ({
   return req;
 };
 
+/**
+ * Sign a session token. It expires after SESSION_TTL_SECONDS, or at `notAfter`
+ * (a guest's expiresAt) if that comes first. The expiry is an absolute time so it
+ * can never outlive the guest account.
+ */
 export const signToken = (
   username: string,
   email: string,
-  _id: string
+  _id: string,
+  { notAfter, isGuest }: { notAfter?: Date; isGuest?: boolean } = {}
 ): string => {
-  const payload: UserPayload = { username, email, _id };
-  return jwt.sign({ data: payload }, getSecret(), {
-    expiresIn: '8h',
-  });
+  const payload: UserPayload = { username, email, _id, ...(isGuest ? { isGuest: true } : {}) };
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  let exp = nowSeconds + SESSION_TTL_SECONDS;
+  if (notAfter) exp = Math.min(exp, Math.floor(notAfter.getTime() / 1000));
+  return jwt.sign({ data: payload, iat: nowSeconds, exp }, getSecret());
 };
 
 export class AuthenticationError extends GraphQLError {

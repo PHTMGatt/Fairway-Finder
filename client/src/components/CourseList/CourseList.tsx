@@ -1,36 +1,42 @@
-// client/src/components/CourseList/'CourseList.tsx'
+// client/src/components/CourseList/CourseList.tsx
 import React, { useCallback, memo, useMemo } from 'react';
 import { useMutation } from '@apollo/client';
 import { REMOVE_COURSE_FROM_TRIP } from '../../utils/mutations';
 import { QUERY_MY_TRIPS } from '../../utils/queries';
 import './CourseList.css';
 
-//Note; remastered CourseList with memo, useMemo for login check
+interface CourseListCourse {
+  _id: string;
+  name: string;
+}
+
 interface CourseListProps {
-  courses?: string[];
+  tripId: string;
+  courses?: CourseListCourse[];
   isLoggedInUser: boolean;
 }
 
-const CourseList: React.FC<CourseListProps> = memo(({ courses = [], isLoggedInUser }) => {
-  //Note; auth check memoized (if needed elsewhere)
+const CourseList: React.FC<CourseListProps> = memo(({
+  tripId,
+  courses = [],
+  isLoggedInUser,
+}) => {
   const showRemove = useMemo(() => isLoggedInUser, [isLoggedInUser]);
 
-  //Note; GraphQL remove mutation with refetch
   const [removeCourseFromTrip, { error: removeCourseError }] = useMutation(
     REMOVE_COURSE_FROM_TRIP,
     { refetchQueries: [{ query: QUERY_MY_TRIPS }] }
   );
 
-  //Note; remove handler
   const handleCourseRemove = useCallback(
-    async (courseName: string) => {
+    async (courseId: string) => {
       try {
-        await removeCourseFromTrip({ variables: { courseName } });
+        await removeCourseFromTrip({ variables: { tripId, courseId } });
       } catch {
-        //Note; error displayed below
+        // Apollo exposes the mutation error below.
       }
     },
-    [removeCourseFromTrip]
+    [removeCourseFromTrip, tripId]
   );
 
   if (courses.length === 0) {
@@ -40,14 +46,13 @@ const CourseList: React.FC<CourseListProps> = memo(({ courses = [], isLoggedInUs
   return (
     <div className="course-list">
       {courses.map((course) => (
-        <div key={course} className="course-card">
+        <div key={course._id} className="course-card">
           <h4 className="course-card__name">
-            {course}
+            {course.name}
             {showRemove && (
-              //Note; removal button styled as primary-action
               <button
                 className="course-card__remove"
-                onClick={() => handleCourseRemove(course)}
+                onClick={() => handleCourseRemove(course._id)}
               >
                 Remove
               </button>

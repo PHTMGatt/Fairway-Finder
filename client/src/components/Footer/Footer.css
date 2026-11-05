@@ -1,92 +1,93 @@
-/* client/src/components/Footer/'Footer.css' */
-/*Note; Body background gradient and reset*/
-body {
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(to bottom, #cceeff, #e6f7ff);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
-}
-
-/*Note; Wrapper around footer and mower to allow icon overflow*/
-.footer-wrapper {
-  position: relative;
-  overflow: visible;
-}
-
-/*Note; Footer container with refreshed gradient*/
+/* Fairway Finder footer — scoped to the dark application shell. */
+/* Global body styling lives in App.css, not a component stylesheet. */
 .footer {
-  background: linear-gradient(135deg, #b3d9ff, #66b2ff);
-  padding: 1.5rem 1rem 1rem;
-  border-top: 2px solid #01d9ff;
-  color: #fff;
-  position: relative;
-  z-index: 1;
+  flex: 0 0 auto;
+  margin-top: 1rem;
+  padding: 1.2rem max(1.25rem, env(safe-area-inset-right)) calc(1.2rem + env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left));
+  border-top: 1px solid var(--ff-line, rgba(164, 210, 179, 0.16));
+  background: linear-gradient(180deg, rgba(10, 23, 16, 0.94), rgba(5, 13, 9, 0.98));
+  color: var(--ff-muted, #a7b9ad);
 }
 
-/*Note; Inner flex container for back button and copy*/
 .footer__inner {
+  width: min(1280px, 100%);
+  margin: 0 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
-/*Note; Back button styling: white background, blue border/text, hover baby-blue fill*/
-.footer__back {
-  background: linear-gradient(to right, #10b981, #22c55e);
-  color: #ffffff;
-  padding: 0.6rem 1.4rem;
-  border-radius: 999px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: 2px solid #0bd696;
-  outline: 2px solid #ffffffbb;
-  outline-offset: 2px;
+.footer__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.footer__back,
+.footer__link {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid rgba(164, 210, 179, 0.23);
+  border-radius: 10px;
+  background: rgba(20, 45, 30, 0.58);
+  color: #d9e8dc;
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.2;
+  text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 12px 28px rgba(16, 185, 129, 0.6);
-  z-index: 10;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
-.footer__back:hover {
-  background: linear-gradient(to right, #059669, #16a34a);
-  transform: translateY(-3px);
-  box-shadow: 0 16px 32px rgba(16, 185, 129, 0.75);
+.footer__back:hover,
+.footer__link:hover {
+  transform: translateY(-1px);
+  border-color: rgba(103, 231, 156, 0.56);
+  background: rgba(33, 87, 54, 0.42);
+  color: #fff;
 }
 
+.footer__back:focus-visible,
+.footer__link:focus-visible {
+  outline: 3px solid rgba(53, 215, 125, 0.64);
+  outline-offset: 3px;
+}
 
-/*Note; Footer copyright text styling*/
 .footer__copy {
-  color: #ffffffcc;
-  font-size: 0.9rem;
   margin: 0;
+  color: #9caf9f;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: right;
 }
 
-/*Note; Mower link wrapper positioned just above footer, fully clickable*/
-.footer__mower-link {
-  position: absolute;
-  bottom: calc(100% + 15px); /* 15px above footer */
-  left: 50%;
-  transform: translateX(-50%);
-  width: 200px;
-  height: 60px;
-  z-index: 9999;
-  animation: mower-roll-footer 15s linear infinite;
-  display: block;
-  pointer-events: auto;
+@media (max-width: 620px) {
+  .footer {
+    padding-inline: max(0.85rem, env(safe-area-inset-left)) max(0.85rem, env(safe-area-inset-right));
+  }
+
+  .footer__inner {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .footer__actions {
+    justify-content: center;
+  }
+
+  .footer__copy {
+    text-align: center;
+  }
 }
 
-/*Note; Mower image styling*/
-.footer__mower {
-  height: 90px;
-  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
-  user-select: none;
-  pointer-events: none;
-}
-
-/*Note; Animate mower rolling left to right across the footer-wrapper*/
-@keyframes mower-roll-footer {
-  0% { left: -150px; }
-  100% { left: calc(100% + 150px); }
+@media (max-width: 390px) {
+  .footer__actions > * {
+    flex: 1 1 auto;
+  }
 }

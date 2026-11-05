@@ -5,10 +5,7 @@ import fetch from 'node-fetch';
 
 const router = Router();
 
-const GOOGLE_API_KEY = process.env.PLACES_API_KEY;
-if (!GOOGLE_API_KEY) {
-  throw new Error('Missing PLACES_API_KEY in server environment');
-}
+const GOOGLE_API_KEY = process.env.PLACES_API_KEY?.trim();
 
 interface RouteShape {
   overview_polyline: { points: string };
@@ -28,6 +25,8 @@ interface PlacesSearchArgs {
 }
 
 const geocodeGoogle = async (query: string): Promise<Coordinates | null> => {
+  if (!GOOGLE_API_KEY) return null;
+
   const url = new URL('https://maps.googleapis.com/maps/api/geocode/json');
   url.searchParams.set('address', query);
   url.searchParams.set('key', GOOGLE_API_KEY);
@@ -88,6 +87,8 @@ const directionsNew = async (
   destination: string,
   mode: string
 ): Promise<RouteShape[] | null> => {
+  if (!GOOGLE_API_KEY) return null;
+
   const response = await fetch(
     'https://routes.googleapis.com/directions/v2:computeRoutes',
     {
@@ -132,6 +133,8 @@ const directionsLegacy = async (
   destination: string,
   mode: string
 ): Promise<RouteShape[] | null> => {
+  if (!GOOGLE_API_KEY) return null;
+
   const url = new URL('https://maps.googleapis.com/maps/api/directions/json');
   url.searchParams.set('origin', origin);
   url.searchParams.set('destination', destination);
@@ -267,6 +270,8 @@ const placesNew = async ({
   location,
   radiusMeters,
 }: PlacesSearchArgs) => {
+  if (!GOOGLE_API_KEY) return null;
+
   let center = location;
   if (!center && city) center = await geocode(`${city}, USA`);
 
@@ -332,6 +337,8 @@ const placesLegacy = async ({
   location,
   radiusMeters,
 }: PlacesSearchArgs) => {
+  if (!GOOGLE_API_KEY) return null;
+
   let center = location;
   if (!center && city) center = await geocode(`${city}, USA`);
   if (!center) return null;

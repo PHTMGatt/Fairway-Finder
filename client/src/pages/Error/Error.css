@@ -1,47 +1,73 @@
-/* src/pages/Error/Error.css */
-
-/* ===== Error Page Wrapper ===== */
+/* Fairway Finder route error surface */
 .error-page {
+  width: min(760px, calc(100% - 2rem));
+  min-height: 56vh;
+  margin: 2rem auto 4rem;
+  padding: clamp(2rem, 6vw, 4rem) 1.2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 70vh;
-  padding: 3rem 1rem;
-  background: linear-gradient(to bottom right, #e0f7ff, #f9fcff);
-  border-radius: 12px;
-  box-shadow: 0 6px 20px rgba(109, 194, 255, 0.15);
-  backdrop-filter: blur(4px);
+  border: 1px solid var(--ff-line, rgba(164, 210, 179, 0.16));
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(53, 215, 125, 0.1), transparent 18rem),
+    linear-gradient(145deg, rgba(15, 31, 24, 0.97), rgba(7, 18, 13, 0.98));
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.24);
+  color: var(--ff-text, #f3f8f4);
   text-align: center;
 }
 
-/* ===== Error Title ===== */
 .error-page__title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1f3b24;
-  margin-bottom: 1rem;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  max-width: 620px;
+  margin: 0;
+  color: #f3f8f4;
+  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-weight: 850;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+  text-shadow: none;
 }
 
-/* ===== Error Description ===== */
 .error-page__desc {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #444;
-  margin-bottom: 0.75rem;
+  margin: 0.9rem 0 0;
+  color: #a7b9ad;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
-/* ===== Error Info Message ===== */
 .error-page__info {
-  font-size: 1rem;
-  color: #555;
-  font-style: italic;
-  background: rgba(255, 255, 255, 0.65);
-  padding: 0.75rem 1.25rem;
-  border-radius: 8px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 2px 8px rgba(109, 194, 255, 0.1);
   max-width: 600px;
-  margin-top: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid rgba(232, 103, 103, 0.2);
+  border-radius: 9px;
+  background: rgba(66, 22, 22, 0.56);
+  color: #eeb3b3;
+  overflow-wrap: anywhere;
+  font-size: 0.9rem;
+  font-style: normal;
+  box-shadow: none;
+}
+
+@media (max-width: 520px) and (orientation: portrait) {
+  .error-page {
+    width: min(100% - 0.9rem, 760px);
+    min-height: 48vh;
+    margin-top: 1rem;
+    border-radius: 15px;
+  }
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .error-page {
+    width: min(100% - 1rem, 900px);
+    min-height: 0;
+    margin: 0.75rem auto 2rem;
+    padding: 1.5rem;
+  }
+
+  .error-page__title {
+    font-size: clamp(2rem, 5vw, 2.8rem);
+  }
 }
