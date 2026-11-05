@@ -1,22 +1,16 @@
-/* client/src/components/Footer/Footer.css */
-body {
-  margin: 0;
-  padding: 0;
-  background: #f4f8f5;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  overflow-x: hidden;
-}
-
+/* Fairway Finder footer — scoped to the dark application shell. */
+/* Global body styling lives in App.css, not a component stylesheet. */
 .footer {
-  margin-top: 2rem;
-  padding: 1rem;
-  border-top: 1px solid #d5e0d7;
-  background: #eef4ef;
-  color: #415148;
+  flex: 0 0 auto;
+  margin-top: 1rem;
+  padding: 1.2rem max(1.25rem, env(safe-area-inset-right)) calc(1.2rem + env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-left));
+  border-top: 1px solid var(--ff-line, rgba(164, 210, 179, 0.16));
+  background: linear-gradient(180deg, rgba(10, 23, 16, 0.94), rgba(5, 13, 9, 0.98));
+  color: var(--ff-muted, #a7b9ad);
 }
 
 .footer__inner {
-  width: min(1120px, 100%);
+  width: min(1280px, 100%);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -27,47 +21,56 @@ body {
 .footer__actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.65rem;
 }
 
 .footer__back,
 .footer__link {
-  min-height: 38px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.85rem;
-  border: 1px solid #aebfb2;
-  border-radius: 8px;
-  background: #fff;
-  color: #294431;
-  font-size: 0.9rem;
-  font-weight: 700;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid rgba(164, 210, 179, 0.23);
+  border-radius: 10px;
+  background: rgba(20, 45, 30, 0.58);
+  color: #d9e8dc;
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.2;
   text-decoration: none;
   cursor: pointer;
-  transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.16s ease, background 0.16s ease, color 0.16s ease, transform 0.16s ease;
 }
 
 .footer__back:hover,
 .footer__link:hover {
   transform: translateY(-1px);
-  border-color: #718f78;
-  box-shadow: 0 4px 12px rgba(30, 65, 39, 0.08);
+  border-color: rgba(103, 231, 156, 0.56);
+  background: rgba(33, 87, 54, 0.42);
+  color: #fff;
 }
 
 .footer__back:focus-visible,
 .footer__link:focus-visible {
-  outline: 3px solid rgba(47, 111, 66, 0.25);
-  outline-offset: 2px;
+  outline: 3px solid rgba(53, 215, 125, 0.64);
+  outline-offset: 3px;
 }
 
 .footer__copy {
   margin: 0;
-  color: #738078;
-  font-size: 0.85rem;
+  color: #9caf9f;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: right;
 }
 
 @media (max-width: 620px) {
+  .footer {
+    padding-inline: max(0.85rem, env(safe-area-inset-left)) max(0.85rem, env(safe-area-inset-right));
+  }
+
   .footer__inner {
     flex-direction: column;
     align-items: stretch;
@@ -76,6 +79,15 @@ body {
 
   .footer__actions {
     justify-content: center;
-    flex-wrap: wrap;
+  }
+
+  .footer__copy {
+    text-align: center;
+  }
+}
+
+@media (max-width: 390px) {
+  .footer__actions > * {
+    flex: 1 1 auto;
   }
 }
