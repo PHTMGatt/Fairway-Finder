@@ -41,7 +41,7 @@
   min-height: 42px;
   padding: 0.48rem 0.7rem;
   border: 1px solid rgba(176, 211, 187, 0.18);
-  border-radius: 8px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(5, 16, 10, 0.72);
   color: #b7c8bd;
   font-weight: 760;
@@ -82,7 +82,7 @@
   margin: 0 0 0.9rem;
   padding: 0.72rem 0.85rem;
   border: 1px solid rgba(232, 103, 103, 0.3);
-  border-radius: 8px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(67, 21, 21, 0.82);
   color: #f3b5b5;
   font-size: 0.88rem;
@@ -94,7 +94,7 @@
   margin: 0 0 0.9rem;
   padding: 0.85rem;
   border: 1px dashed rgba(164, 210, 179, 0.14);
-  border-radius: 9px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(5, 16, 10, 0.46);
   color: #899c90;
 }
@@ -105,7 +105,7 @@
   overflow-x: auto;
   overscroll-behavior-inline: contain;
   border: 1px solid rgba(164, 210, 179, 0.14);
-  border-radius: 11px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(5, 16, 10, 0.72);
   scrollbar-color: rgba(72, 215, 129, 0.45) rgba(4, 13, 9, 0.5);
 }
@@ -155,9 +155,9 @@
   padding: 0.35rem;
   text-align: center;
   border: 1px solid rgba(178, 213, 189, 0.18);
-  border-radius: 7px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(4, 14, 9, 0.82);
-  color: #f2f7f3;
+  color: var(--ff-text);
   font-size: 0.98rem;
   color-scheme: dark;
 }
@@ -180,7 +180,7 @@
   min-height: 38px;
   padding: 0.38rem 0.55rem;
   border: 1px solid rgba(230, 111, 111, 0.2);
-  border-radius: 7px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(87, 24, 24, 0.16);
   color: #d88e8e;
   cursor: pointer;
@@ -221,14 +221,14 @@
   min-width: 0;
   padding: 0.62rem 0.7rem;
   border: 1px solid rgba(178, 213, 189, 0.18);
-  border-radius: 8px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(5, 16, 10, 0.82);
-  color: #f0f6f2;
+  color: var(--ff-text);
   font-size: 1rem;
 }
 
 .scorecard__player-input::placeholder {
-  color: #718579;
+  color: var(--ff-muted-2);
 }
 
 .scorecard__player-input:focus-visible {
@@ -238,9 +238,9 @@
 .scorecard__add-btn {
   min-height: 44px;
   padding: 0.62rem 0.9rem;
-  border: 1px solid #35d77d;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #24b965, #168a4c);
+  border: 1px solid var(--ff-green);
+  border-radius: var(--ff-radius-sm);
+  background: linear-gradient(135deg, var(--ff-green-deep), var(--ff-green-deep));
   color: #fff;
   font-weight: 820;
   cursor: pointer;
@@ -248,7 +248,7 @@
 
 .scorecard__add-btn:hover:not(:disabled) {
   border-color: #72efa7;
-  background: linear-gradient(135deg, #30ca72, #199555);
+  background: linear-gradient(135deg, var(--ff-green), var(--ff-green-deep));
 }
 
 .scorecard__add-btn:disabled {

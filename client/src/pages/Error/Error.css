@@ -9,19 +9,19 @@
   align-items: center;
   justify-content: center;
   border: 1px solid var(--ff-line, rgba(164, 210, 179, 0.16));
-  border-radius: 18px;
+  border-radius: var(--ff-radius-lg);
   background:
     radial-gradient(circle at 50% 15%, rgba(53, 215, 125, 0.1), transparent 18rem),
     linear-gradient(145deg, rgba(15, 31, 24, 0.97), rgba(7, 18, 13, 0.98));
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.24);
-  color: var(--ff-text, #f3f8f4);
+  color: var(--ff-text, var(--ff-text));
   text-align: center;
 }
 
 .error-page__title {
   max-width: 620px;
   margin: 0;
-  color: #f3f8f4;
+  color: var(--ff-text);
   font-size: clamp(2rem, 6vw, 3.4rem);
   font-weight: 850;
   line-height: 1.02;
@@ -41,7 +41,7 @@
   margin: 1rem 0 0;
   padding: 0.7rem 0.95rem;
   border: 1px solid rgba(232, 103, 103, 0.2);
-  border-radius: 9px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(66, 22, 22, 0.56);
   color: #eeb3b3;
   overflow-wrap: anywhere;
@@ -55,7 +55,7 @@
     width: min(100% - 0.9rem, 760px);
     min-height: 48vh;
     margin-top: 1rem;
-    border-radius: 15px;
+    border-radius: var(--ff-radius-lg);
   }
 }
 

@@ -23,7 +23,7 @@
   overflow: hidden;
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(25, 72, 99, 0.16);
-  border-radius: 10px;
+  border-radius: var(--ff-radius-sm);
   box-shadow: 0 10px 24px rgba(19, 60, 84, 0.14);
 }
 
@@ -35,7 +35,7 @@
   padding: 0.62rem 0.7rem;
   border: 0;
   border-bottom: 1px solid rgba(25, 72, 99, 0.08);
-  border-radius: 7px;
+  border-radius: var(--ff-radius-sm);
   background: transparent;
   color: #18384b;
   text-align: left;

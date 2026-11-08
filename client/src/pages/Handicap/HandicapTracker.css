@@ -13,7 +13,7 @@
 
 .handicap-page .auth-card {
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: var(--ff-radius-lg);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   max-width: 420px;
@@ -29,10 +29,10 @@
 
 .handicap-page .setup-card {
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: var(--ff-radius-lg);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
   padding: 2rem 3rem;
-  max-width: 800px;
+  max-width: var(--ff-content);
   width: 100%;
   animation: fadeInCard 0.8s ease-in-out 0.4s forwards;
   opacity: 0;
@@ -52,7 +52,7 @@
   margin: -0.5rem 0 1.5rem;
   padding: 0.8rem 1rem;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--ff-radius-sm);
   font-size: 0.95rem;
   line-height: 1.45;
 }
@@ -67,7 +67,7 @@
 .handicap-page .form-group input {
   padding: 0.65rem 1rem;
   font-size: 1rem;
-  border-radius: 8px;
+  border-radius: var(--ff-radius-sm);
   border: 1px solid #ccc;
   min-width: 0;
   transition: border-color 0.2s, box-shadow 0.2s;
@@ -107,7 +107,7 @@
   font-weight: 600;
   color: #fff;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--ff-radius-sm);
   cursor: pointer;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s;
@@ -130,7 +130,7 @@
   .handicap-page .flex-row { flex-direction: column; }
   .handicap-page .search-controls { flex-direction: column; }
   .handicap-page .search-input,
-  .handicap-page .search-btn { width: 100%; border-radius: 8px; }
+  .handicap-page .search-btn { width: 100%; border-radius: var(--ff-radius-sm); }
   .handicap-page .search-btn { margin-top: 0.5rem; }
   .handicap-page .button-wrapper { flex-direction: column; }
   .handicap-page .submit-btn,

@@ -65,7 +65,7 @@
   justify-content: center;
   padding: 0.52rem 0.82rem;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--ff-radius-sm);
   background: transparent;
   color: #c7d6cc;
   font-size: 0.84rem;
@@ -134,7 +134,7 @@
   min-height: 26px;
   padding: 0.2rem 0.55rem;
   border: 1px solid rgba(83, 231, 143, 0.34);
-  border-radius: 999px;
+  border-radius: var(--ff-radius-pill);
   background: rgba(53, 215, 125, 0.12);
   color: #78efaa;
   font-size: 0.7rem;
@@ -149,7 +149,7 @@
   flex: 0 0 auto;
   padding: 0.38rem 0.72rem;
   border: 1px solid rgba(83, 231, 143, 0.5);
-  border-radius: 8px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(53, 215, 125, 0.1);
   color: #8bf2b6;
   font-size: 0.74rem;

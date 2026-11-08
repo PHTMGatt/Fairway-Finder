@@ -16,7 +16,7 @@
   width: min(100%, 460px);
   overflow: hidden;
   border: 1px solid var(--ff-line, rgba(164, 210, 179, 0.16));
-  border-radius: 18px;
+  border-radius: var(--ff-radius-lg);
   background: linear-gradient(145deg, rgba(15, 31, 24, 0.97), rgba(7, 18, 13, 0.98));
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.27);
 }
@@ -26,7 +26,7 @@
   padding: 1.25rem 1.4rem;
   border-bottom: 1px solid rgba(164, 210, 179, 0.1);
   background: linear-gradient(110deg, rgba(32, 101, 64, 0.18), rgba(4, 14, 9, 0.42));
-  color: #f2f7f3;
+  color: var(--ff-text);
   font-size: 1.35rem;
   font-weight: 850;
   letter-spacing: -0.015em;
@@ -51,15 +51,15 @@
   min-height: 48px;
   padding: 0.72rem 0.85rem;
   border: 1px solid rgba(178, 213, 189, 0.2);
-  border-radius: 10px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(5, 16, 10, 0.88);
-  color: #f0f6f2;
+  color: var(--ff-text);
   font-size: 1rem;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
 .auth-page .auth-input::placeholder {
-  color: #718579;
+  color: var(--ff-muted-2);
 }
 
 .auth-page .auth-input:focus-visible,
@@ -77,9 +77,9 @@
 .auth-page .auth-btn {
   min-height: 48px;
   padding: 0.72rem 1rem;
-  border: 1px solid #35d77d;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #24b965, #168a4c);
+  border: 1px solid var(--ff-green);
+  border-radius: var(--ff-radius-sm);
+  background: linear-gradient(135deg, var(--ff-green-deep), var(--ff-green-deep));
   color: #fff;
   font-size: 0.98rem;
   font-weight: 820;
@@ -90,7 +90,7 @@
 .auth-page .auth-btn:hover:not(:disabled) {
   transform: translateY(-2px);
   border-color: #70eda5;
-  background: linear-gradient(135deg, #30ca72, #199555);
+  background: linear-gradient(135deg, var(--ff-green), var(--ff-green-deep));
   box-shadow: 0 10px 22px rgba(12, 94, 49, 0.25);
 }
 
@@ -103,7 +103,7 @@
 .auth-page .auth-error,
 .auth-page .auth-info {
   padding: 0.72rem 0.8rem;
-  border-radius: 9px;
+  border-radius: var(--ff-radius-sm);
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.45;
@@ -141,7 +141,7 @@
   }
 
   .auth-page .auth-card {
-    border-radius: 15px;
+    border-radius: var(--ff-radius-lg);
   }
 }
 

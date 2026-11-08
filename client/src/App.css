@@ -11,6 +11,17 @@
   --ff-green: #35d77d;
   --ff-green-deep: #169653;
   --ff-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+
+  /* One design system for every page: pages used 12 widths, 10 radii and ~15 near-duplicate
+     greens/whites. They now all point at these tokens. */
+  --ff-muted-2: #718579;
+  --ff-radius-sm: 10px;
+  --ff-radius-lg: 16px;
+  --ff-radius-pill: 999px;
+  --ff-content: 760px;
+  --ff-content-wide: 1180px;
+  --ff-form: 520px;
+  --ff-tap: 44px;
 }
 
 html,

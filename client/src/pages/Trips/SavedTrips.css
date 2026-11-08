@@ -7,14 +7,14 @@
   min-width: 0;
   flex-direction: column;
   gap: 1.1rem;
-  color: var(--ff-text, #f3f8f4);
+  color: var(--ff-text, var(--ff-text));
 }
 
 .saved-trips__hero,
 .saved-trips__board,
 .saved-trips__status {
   border: 1px solid var(--ff-line, rgba(164, 210, 179, 0.16));
-  border-radius: 19px;
+  border-radius: var(--ff-radius-lg);
   background: linear-gradient(145deg, rgba(15, 31, 24, 0.96), rgba(7, 18, 13, 0.97));
   box-shadow: 0 16px 42px rgba(0, 0, 0, 0.2);
 }
@@ -37,16 +37,16 @@
   position: absolute;
   inset: auto 0 0;
   height: 3px;
-  background: linear-gradient(90deg, #35d77d, transparent 72%);
+  background: linear-gradient(90deg, var(--ff-green), transparent 72%);
 }
 
 .saved-trips__hero > div:first-child {
-  max-width: 700px;
+  max-width: var(--ff-content);
 }
 
 .saved-trips__eyebrow {
   margin: 0 0 0.4rem;
-  color: #61e696;
+  color: var(--ff-green);
   font-size: 0.75rem;
   font-weight: 850;
   letter-spacing: 0.13em;
@@ -65,7 +65,7 @@
 .saved-trips__intro {
   max-width: 650px;
   margin: 0.8rem 0 0;
-  color: #a9bbb0;
+  color: var(--ff-muted);
   line-height: 1.6;
 }
 
@@ -83,9 +83,9 @@
   justify-content: center;
   gap: 0.45rem;
   padding: 0.7rem 0.95rem;
-  border: 1px solid #35d77d;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #24b965, #168a4c);
+  border: 1px solid var(--ff-green);
+  border-radius: var(--ff-radius-sm);
+  background: linear-gradient(135deg, var(--ff-green-deep), var(--ff-green-deep));
   color: #fff;
   font-weight: 820;
   text-decoration: none;
@@ -129,7 +129,7 @@
 
 .saved-trips__board-heading h2 {
   margin: 0;
-  color: #f3f8f4;
+  color: var(--ff-text);
   font-size: clamp(1.4rem, 2.5vw, 1.95rem);
   letter-spacing: -0.025em;
 }
@@ -137,7 +137,7 @@
 .saved-trips__board-heading > p {
   max-width: 500px;
   margin: 0;
-  color: #91a59a;
+  color: var(--ff-muted);
   line-height: 1.5;
   text-align: right;
 }
@@ -147,7 +147,7 @@
   align-items: center;
   gap: 0.9rem;
   padding: 1.15rem 1.25rem;
-  color: #9eb0a5;
+  color: var(--ff-muted);
 }
 
 .saved-trips__status strong,
@@ -168,7 +168,7 @@
   width: 12px;
   height: 12px;
   flex: 0 0 12px;
-  border-radius: 999px;
+  border-radius: var(--ff-radius-pill);
   background: #50e490;
   box-shadow: 0 0 0 7px rgba(53, 215, 125, 0.1);
 }
@@ -211,7 +211,7 @@
 
   .saved-trips__hero,
   .saved-trips__board {
-    border-radius: 15px;
+    border-radius: var(--ff-radius-lg);
   }
 
   .saved-trips__actions,
