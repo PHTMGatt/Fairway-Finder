@@ -27,11 +27,8 @@
   justify-content: center;
   padding: clamp(2rem, 6vw, 5.5rem);
   border: 1px solid rgba(164, 210, 179, 0.16);
-  border-radius: 26px;
-  background:
-    linear-gradient(90deg, rgba(3, 13, 8, 0.94) 0%, rgba(4, 17, 10, 0.82) 40%, rgba(4, 15, 10, 0.3) 72%, rgba(4, 13, 9, 0.18) 100%),
-    linear-gradient(180deg, transparent 45%, rgba(3, 12, 8, 0.78) 100%),
-    url('../../assets/images/golf2.gif') center 45% / cover no-repeat;
+  border-radius: var(--ff-radius-lg);
+  background: var(--ff-hero-bg);
   box-shadow: var(--ff-shadow, 0 22px 60px rgba(0, 0, 0, 0.28));
   text-align: left;
 }
@@ -336,10 +333,6 @@
     min-height: 470px;
     padding: 2rem 1.25rem;
     border-radius: var(--ff-radius-lg);
-    background:
-      linear-gradient(90deg, rgba(3, 13, 8, 0.94), rgba(3, 13, 8, 0.66)),
-      linear-gradient(180deg, transparent 30%, rgba(3, 12, 8, 0.78) 100%),
-      url('../../assets/images/golf2.gif') 58% center / cover no-repeat;
   }
 
   .home__workflow,

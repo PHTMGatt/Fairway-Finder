@@ -1,24 +1,55 @@
 import { useApolloClient, useMutation } from '@apollo/client';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { MouseEvent, useEffect, useState } from 'react';
-import { FaFlag } from 'react-icons/fa';
+import type { IconType } from 'react-icons';
+import {
+  FaCalculator,
+  FaCloudSun,
+  FaFlag,
+  FaGolfBall,
+  FaHome,
+  FaRoute,
+  FaSignInAlt,
+  FaSignOutAlt,
+  FaSuitcase,
+  FaUserPlus,
+} from 'react-icons/fa';
+import { FaMapLocationDot } from 'react-icons/fa6';
 import { useAuth } from '../../pages/Auth/AuthContext';
 import Auth from '../../utils/auth';
 import { RESET_GUEST_DEMO } from '../../utils/mutations';
 import { QUERY_MY_TRIPS, QUERY_TRIPS } from '../../utils/queries';
 import { getGuestBannerState } from './guestBanner';
-import { getHeaderNavigation } from './headerNavigation';
+import { getHeaderNavigation, isNavActive, NavIcon } from './headerNavigation';
 import './Header.css';
 
+const ICONS: Record<NavIcon, IconType> = {
+  home: FaHome,
+  plan: FaMapLocationDot,
+  trips: FaSuitcase,
+  courses: FaGolfBall,
+  weather: FaCloudSun,
+  routes: FaRoute,
+  handicap: FaCalculator,
+  login: FaSignInAlt,
+  signup: FaUserPlus,
+};
+
+/**
+ * App navigation: a fixed left sidebar on desktop, and a slim top bar plus a
+ * bottom tab bar on phones. Same items, same order, so nothing moves around.
+ */
 const Header: React.FC = () => {
   const { isLoggedIn, logoutUser } = useAuth();
   const apolloClient = useApolloClient();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [now, setNow] = useState(Date.now());
   const [demoResetError, setDemoResetError] = useState('');
   const [resetGuestDemo, { loading: resettingDemo }] = useMutation(RESET_GUEST_DEMO);
   const guestBanner = getGuestBannerState(Auth.getSessionInfo(), now);
   const navigation = getHeaderNavigation(isLoggedIn);
+  const mobileNavigation = navigation.filter((item) => item.mobile);
 
   useEffect(() => {
     if (!isLoggedIn) return;
@@ -59,33 +90,70 @@ const Header: React.FC = () => {
     }
   };
 
-  return (
-    <header className="header header--bg">
-      <div className="header__main">
-        <Link to="/" className="header__brand" aria-label="Fairway Finder home">
-          <span className="header__home-icon" aria-hidden="true">
-            <FaFlag />
-          </span>
-          <span className="header__logo">FAIRWAY FINDER</span>
-        </Link>
+  const brand = (
+    <Link to={isLoggedIn ? '/me' : '/'} className="nav__brand" aria-label="Fairway Finder home">
+      <span className="nav__brand-icon" aria-hidden="true">
+        <FaFlag />
+      </span>
+      <span className="nav__brand-name">Fairway Finder</span>
+    </Link>
+  );
 
-        <nav className="header__actions" aria-label="Primary navigation">
-          {navigation.map((item, index) => (
+  const logoutButton = isLoggedIn && (
+    <button type="button" onClick={handleLogout} className="nav__logout">
+      <FaSignOutAlt aria-hidden="true" />
+      <span>Log Out</span>
+    </button>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="nav-side" aria-label="Main">
+        {brand}
+        <nav className="nav-side__list" aria-label="Primary navigation">
+          {navigation.map((item) => {
+            const Icon = ICONS[item.icon];
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={`nav-side__item${isNavActive(item.path, pathname) ? ' is-active' : ''}`}
+                aria-current={isNavActive(item.path, pathname) ? 'page' : undefined}
+              >
+                <Icon aria-hidden="true" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
+        <div className="nav-side__foot">{logoutButton}</div>
+      </aside>
+
+      {/* Phone top bar */}
+      <header className="nav-top">
+        {brand}
+        {logoutButton}
+      </header>
+
+      {/* Phone bottom tabs */}
+      <nav className="nav-tabs" aria-label="Primary navigation">
+        {mobileNavigation.map((item) => {
+          const Icon = ICONS[item.icon];
+          const active = isNavActive(item.path, pathname);
+          return (
             <Link
               key={item.path}
               to={item.path}
-              className={`header__btn${isLoggedIn && index === 0 ? ' header__btn--primary' : ''}`}
+              className={`nav-tabs__item${active ? ' is-active' : ''}`}
+              aria-current={active ? 'page' : undefined}
             >
-              {item.label}
+              <Icon aria-hidden="true" />
+              <span>{item.label.replace('Invite ', '')}</span>
             </Link>
-          ))}
-          {isLoggedIn && (
-            <button onClick={handleLogout} className="header__btn header__btn--quiet">
-              Log Out
-            </button>
-          )}
-        </nav>
-      </div>
+          );
+        })}
+      </nav>
 
       {guestBanner && !guestBanner.expired && (
         <div
@@ -120,7 +188,7 @@ const Header: React.FC = () => {
           )}
         </div>
       )}
-    </header>
+    </>
   );
 };
 

@@ -24,10 +24,8 @@ import { useAuth } from './pages/Auth/AuthContext';
 const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || '';
 
 const httpLink = createHttpLink({
-  uri:
-    import.meta.env.MODE === 'development'
-      ? 'http://localhost:3001/graphql'
-      : '/graphql',
+  // Same-origin in every mode: the Vite dev proxy forwards /graphql to the API.
+  uri: '/graphql',
   credentials: 'include',
 });
 

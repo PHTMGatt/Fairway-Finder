@@ -31,10 +31,7 @@
   justify-content: space-between;
   gap: 2rem;
   padding: clamp(1.6rem, 4vw, 3.4rem);
-  background:
-    linear-gradient(90deg, rgba(3, 13, 8, 0.95), rgba(5, 18, 11, 0.77) 48%, rgba(4, 13, 9, 0.35)),
-    linear-gradient(180deg, transparent 38%, rgba(2, 10, 6, 0.84)),
-    url('../../assets/images/golf2.gif') center 48% / cover no-repeat;
+  background: var(--ff-hero-bg);
 }
 
 .course-finder__hero::after {

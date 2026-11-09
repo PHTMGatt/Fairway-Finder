@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getGuestBannerState } from './guestBanner';
-import { getHeaderNavigation } from './headerNavigation';
+import { getHeaderNavigation, isNavActive } from './headerNavigation';
 
 describe('guest banner state', () => {
   it('warns when a Guest Demo has less than two hours left', () => {
@@ -19,17 +19,37 @@ describe('guest banner state', () => {
 });
 
 describe('header navigation', () => {
-  it('keeps the two primary trip actions one click away for signed-in users', () => {
-    expect(getHeaderNavigation(true)).toEqual([
-      { label: 'Plan Trip', path: '/plan-trip' },
-      { label: 'My Trips', path: '/saved-trips' },
+  it('puts every signed-in page in the sidebar, with the two trip actions first after Dashboard', () => {
+    const nav = getHeaderNavigation(true);
+    expect(nav.map((item) => item.path)).toEqual([
+      '/me',
+      '/plan-trip',
+      '/saved-trips',
+      '/courses',
+      '/weather',
+      '/routing',
+      '/handicap',
     ]);
   });
 
-  it('shows only account entry points for signed-out users', () => {
-    expect(getHeaderNavigation(false)).toEqual([
-      { label: 'Log In', path: '/login' },
-      { label: 'Invite Sign Up', path: '/signup' },
+  it('keeps the phone bottom bar to at most five items', () => {
+    expect(getHeaderNavigation(true).filter((item) => item.mobile)).toHaveLength(5);
+    expect(getHeaderNavigation(false).filter((item) => item.mobile).length).toBeLessThanOrEqual(5);
+  });
+
+  it('shows only home and account entry points for signed-out users', () => {
+    expect(getHeaderNavigation(false).map((item) => item.label)).toEqual([
+      'Home',
+      'Log In',
+      'Invite Sign Up',
     ]);
+  });
+
+  it('marks the right item active', () => {
+    expect(isNavActive('/', '/')).toBe(true);
+    expect(isNavActive('/', '/me')).toBe(false);
+    expect(isNavActive('/saved-trips', '/trip/abc123')).toBe(true);
+    expect(isNavActive('/plan-trip', '/plan-trip')).toBe(true);
+    expect(isNavActive('/plan-trip', '/saved-trips')).toBe(false);
   });
 });

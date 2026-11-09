@@ -22,6 +22,14 @@
   --ff-content-wide: 1180px;
   --ff-form: 520px;
   --ff-tap: 44px;
+  --ff-side-w: 248px;
+  --ff-tabs-h: 64px;
+  /* Shared hero backdrop: soft fairway glow + mowing stripes (replaces the old cartoon GIF). */
+  --ff-hero-bg:
+    radial-gradient(ellipse 60% 70% at 88% 18%, rgba(53, 215, 125, 0.22), transparent 70%),
+    radial-gradient(ellipse 55% 60% at 70% 110%, rgba(22, 150, 83, 0.28), transparent 70%),
+    repeating-linear-gradient(115deg, rgba(164, 210, 179, 0.035) 0 2px, transparent 2px 46px),
+    linear-gradient(135deg, #0c1d15 0%, #07110d 60%);
 }
 
 html,
@@ -63,6 +71,15 @@ a {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
+  padding-left: var(--ff-side-w);
+}
+
+/* Phones: no sidebar; leave room for the fixed bottom tab bar. */
+@media (max-width: 899px) {
+  .app-layout {
+    padding-left: 0;
+    padding-bottom: calc(var(--ff-tabs-h) + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 .app-content {
@@ -87,7 +104,7 @@ footer {
   margin: 2rem auto;
   padding: 1rem 1.1rem;
   border: 1px solid var(--ff-line);
-  border-radius: 11px;
+  border-radius: var(--ff-radius-sm);
   background: rgba(11, 26, 19, 0.92);
   color: var(--ff-muted);
   text-align: center;
