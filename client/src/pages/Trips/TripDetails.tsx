@@ -8,13 +8,29 @@ import React, {
   useCallback,
 } from 'react';
 import { useQuery } from '@apollo/client';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import { FaCalendarAlt, FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
 import { Alert } from 'react-bootstrap';
 import ScoreCard from '../../components/ScoreCard/ScoreCard';
+import {
+  PersistedTripCourse,
+  TeeRating,
+  resolveGolfCourseLookup,
+  storedTeeRating,
+  weatherParamsForCourse,
+} from './tripDetailsCourse';
 import './TripDetails.css';
+
+interface TripForecastData {
+  date: string;
+  weather: { description: string }[];
+  tempMax: number;
+  tempMin: number;
+  precipitation: number;
+  windSpeed: number;
+}
 
 interface WeatherData {
   name: string;
@@ -23,6 +39,14 @@ interface WeatherData {
   wind: { speed: number };
   rain?: { '1h': number };
   snow?: { '1h': number };
+  forecastStatus?: 'available' | 'outside-window';
+  forecast?: TripForecastData | null;
+}
+
+interface TripCourse extends PersistedTripCourse {
+  _id?: string;
+  address?: string | null;
+  rating?: number | null;
 }
 
 interface GolfCourseAPIResponse {
@@ -43,226 +67,321 @@ interface GolfCourseAPIResponse {
   };
 }
 
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const displayDate = (value: string) => {
+  if (!ISO_DATE.test(value)) return value;
+  return new Date(`${value}T12:00:00`).toLocaleDateString([], {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+};
+
 const TripDetails: React.FC = () => {
   const { tripId } = useParams<{ tripId: string }>();
-
-  const [tripDate, setTripDate] = useState<string>(() =>
-    localStorage.getItem(`tripDate-${tripId}`) || ''
-  );
-  const [weatherCity, setWeatherCity] = useState<string>(() =>
-    localStorage.getItem(`weatherCity-${tripId}`) || ''
-  );
-
+  const [weatherCity, setWeatherCity] = useState('');
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [weatherLoading, setWeatherLoading] = useState<boolean>(false);
-  const [weatherError, setWeatherError] = useState<string>('');
-  const [golfApiError, setGolfApiError] = useState<string>('');
-  const [showAlert, setShowAlert] = useState<boolean>(false);
-
-  useEffect(() => {
-    const nav = window.history.state?.usr;
-    if (nav?.date) {
-      localStorage.setItem(`tripDate-${tripId}`, nav.date);
-      setTripDate(nav.date);
-    }
-    if (nav?.city) {
-      localStorage.setItem(`weatherCity-${tripId}`, nav.city);
-      setWeatherCity(nav.city);
-    }
-  }, [tripId]);
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState('');
+  const [golfApiError, setGolfApiError] = useState('');
+  const [teeRating, setTeeRating] = useState<TeeRating | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
 
   const { loading, error, data } = useQuery(QUERY_TRIP, {
     variables: { id: tripId },
     skip: !tripId,
   });
   const trip = data?.trip;
-  const courseName = trip?.courses?.[0]?.name;
+  const course: TripCourse | undefined = trip?.courses?.[0];
 
-  const fetchWeather = (city: string) => {
+  const fetchWeather = useCallback(async (params: URLSearchParams) => {
     setWeatherLoading(true);
     setWeatherError('');
-    fetch(`/api/weather?city=${encodeURIComponent(city)}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch weather');
-        return res.json();
-      })
-      .then((json) => setWeatherData(json))
-      .catch((err) => setWeatherError(err.message))
-      .finally(() => setWeatherLoading(false));
-  };
+    try {
+      const response = await fetch(`/api/weather?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch weather');
+      setWeatherData(await response.json());
+    } catch (weatherRequestError: unknown) {
+      setWeatherError(
+        weatherRequestError instanceof Error
+          ? weatherRequestError.message
+          : 'Unable to load weather'
+      );
+    } finally {
+      setWeatherLoading(false);
+    }
+  }, []);
 
-  // Keep the GolfCourseAPI key server-side. The browser only calls our proxy.
-  const fetchSlopeAndRating = useCallback(
-    async (name: string) => {
-      if (!name) return;
+  const loadTeeRating = useCallback(async (selectedCourse: TripCourse) => {
+    const persisted = storedTeeRating(selectedCourse);
+    if (persisted) {
+      setTeeRating(persisted);
+      setGolfApiError('');
+      return;
+    }
 
-      try {
-        setGolfApiError('');
+    const lookup = resolveGolfCourseLookup(selectedCourse);
+    if (!lookup) {
+      setTeeRating(null);
+      setGolfApiError('');
+      return;
+    }
+
+    try {
+      setGolfApiError('');
+      let courseId: string;
+
+      if (lookup.kind === 'details') {
+        courseId = lookup.id;
+      } else {
         const search = await fetch(
-          `/api/golf/search?search_query=${encodeURIComponent(name)}`
+          `/api/golf/search?search_query=${encodeURIComponent(lookup.query)}`
         );
-        if (!search.ok) {
-          throw new Error('Unable to search golf course details');
-        }
+        if (!search.ok) throw new Error('Unable to search golf course details');
 
         const searchJson = await search.json();
         const firstResult = searchJson.courses?.[0];
-        if (!firstResult) return;
-
-        const details = await fetch(`/api/golf/${firstResult.id}`);
-        if (!details.ok) {
-          throw new Error('Unable to load golf course details');
+        if (!firstResult?.id) {
+          setTeeRating(null);
+          return;
         }
-
-        const fullData: GolfCourseAPIResponse = await details.json();
-        const firstTee = fullData.tees.male?.[0];
-        if (!firstTee) throw new Error('No tee data found');
-
-        localStorage.setItem(
-          `slopeRating-${tripId}`,
-          String(firstTee.slope_rating)
-        );
-        localStorage.setItem(
-          `courseRating-${tripId}`,
-          String(firstTee.course_rating)
-        );
-      } catch (err: any) {
-        setGolfApiError(err.message || 'Error loading slope/rating');
+        courseId = String(firstResult.id);
       }
-    },
-    [tripId]
-  );
+
+      const details = await fetch(`/api/golf/${encodeURIComponent(courseId)}`);
+      if (!details.ok) throw new Error('Unable to load golf course details');
+
+      const fullData: GolfCourseAPIResponse = await details.json();
+      const firstTee = fullData.tees.male?.[0];
+      if (!firstTee) throw new Error('No tee data found');
+
+      setTeeRating({
+        slopeRating: firstTee.slope_rating,
+        courseRating: firstTee.course_rating,
+      });
+    } catch (golfRequestError: unknown) {
+      setGolfApiError(
+        golfRequestError instanceof Error
+          ? golfRequestError.message
+          : 'Error loading slope/rating'
+      );
+      setTeeRating(null);
+    }
+  }, []);
 
   useEffect(() => {
-    if (weatherCity) {
-      fetchWeather(weatherCity);
-    }
-  }, [weatherCity]);
+    const params = weatherParamsForCourse(course, trip?.date);
+    if (params) void fetchWeather(params);
+  }, [course, fetchWeather, trip?.date]);
 
   useEffect(() => {
-    if (courseName) {
-      fetchSlopeAndRating(courseName);
-    }
-  }, [courseName, fetchSlopeAndRating]);
+    if (course) void loadTeeRating(course);
+    else setTeeRating(null);
+  }, [course, loadTeeRating]);
 
-  const handleCitySubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleCitySubmit = (event: FormEvent) => {
+    event.preventDefault();
+    const city = weatherCity.trim();
 
-    if (!weatherCity.trim()) {
+    if (!city) {
       setShowAlert(true);
       return;
     }
 
     setShowAlert(false);
-    localStorage.setItem(`weatherCity-${tripId}`, weatherCity);
-    fetchWeather(weatherCity);
+    const params = new URLSearchParams({ city });
+    if (typeof trip?.date === 'string' && ISO_DATE.test(trip.date)) {
+      params.set('date', trip.date);
+    }
+    void fetchWeather(params);
   };
 
-  if (!tripId) {
-    return <p className="trip-details__status">❌ No trip ID provided.</p>;
-  }
-  if (loading) {
-    return <p className="trip-details__status">Loading trip details…</p>;
-  }
+  if (!tripId) return <p className="trip-details__status">No trip ID provided.</p>;
+  if (loading) return <p className="trip-details__status">Loading trip details…</p>;
   if (error || !trip) {
     return (
-      <p className="trip-details__status">
-        ❌ Error loading trip: {error?.message}
+      <p className="trip-details__status trip-details__status--error">
+        Error loading trip: {error?.message || 'Trip not found'}
       </p>
     );
   }
 
   const precip = weatherData?.rain?.['1h'] ?? weatherData?.snow?.['1h'] ?? 0;
+  const forecast = weatherData?.forecast ?? null;
+  const mapsQuery = [course?.name, course?.address].filter(Boolean).join(' ');
+  const routeDestination = mapsQuery || course?.name || '';
+  const hasGooglePlace = course?.source === 'google' && course?.providerId;
+  const mapsUrl = course?.name
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapsQuery || course.name)}${
+        hasGooglePlace
+          ? `&query_place_id=${encodeURIComponent(course.providerId as string)}`
+          : ''
+      }`
+    : '';
+  const hasSavedLocation = Boolean(course?.location);
 
   return (
-    <div className="trip-details">
-      <h2 className="trip-details__title">{trip.name}</h2>
-      <p className="trip-details__label">
-        Date: <strong>{tripDate || 'N/A'}</strong>
-      </p>
+    <main className="trip-details">
+      <header className="trip-details__hero">
+        <p className="trip-details__eyebrow">Trip hub</p>
+        <h1 className="trip-details__title">{trip.name}</h1>
+        <div className="trip-details__meta">
+          <span>
+            <FaCalendarAlt aria-hidden="true" /> {trip.date || 'Date not set'}
+          </span>
+          {course?.name && <span>{course.name}</span>}
+        </div>
+      </header>
 
-      {showAlert && (
-        <Alert
-          variant="danger"
-          onClose={() => setShowAlert(false)}
-          dismissible
-          className="trip-details__alert"
-        >
-          Please enter a city name.
-        </Alert>
-      )}
+      <section className="trip-details__overview" aria-label="Trip overview">
+        <article className="trip-details__card">
+          <div className="trip-details__card-header">Course</div>
+          <div className="trip-details__card-body">
+            <h2 className="trip-details__course-name">
+              {course?.name ?? 'No course selected'}
+            </h2>
+            <p className="trip-details__muted">
+              {course?.address ?? 'No address available'}
+            </p>
+            <div className="trip-details__facts">
+              {typeof course?.rating === 'number' && (
+                <span>★ {course.rating} Google rating</span>
+              )}
+              {teeRating && (
+                <span>
+                  Rating {teeRating.courseRating} · Slope {teeRating.slopeRating}
+                </span>
+              )}
+            </div>
+            {golfApiError && (
+              <p className="trip-details__inline-error">{golfApiError}</p>
+            )}
 
-      <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
-        <input
-          type="text"
-          className="trip-details__weather-input"
-          placeholder="Search city for courses..."
-          value={weatherCity}
-          onChange={(e: ChangeEvent<HTMLInputElement>) => setWeatherCity(e.target.value)}
-        />
-        <button
-          type="submit"
-          className="trip-details__weather-btn"
-          disabled={weatherLoading}
-        >
-          {weatherLoading ? 'Loading…' : 'Find Courses'}
-        </button>
-      </form>
-
-      {weatherError && <p className="trip-details__status">❌ {weatherError}</p>}
-      {golfApiError && <p className="trip-details__status">❌ {golfApiError}</p>}
-
-      <section className="trip-details__top">
-        <div className="trip-card">
-          <div className="trip-card__header">Course Info</div>
-          <div className="trip-card__body">
-            <h3 className="trip-card__course-name">
-              {trip.courses?.[0]?.name ?? 'No course selected'}
-            </h3>
-            <p>{trip.courses?.[0]?.address ?? 'No address available'}</p>
-            {trip.courses?.[0]?.name && (
-              <a
-                className="trip-card__link"
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  trip.courses[0].name
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <FaMapMarkerAlt /> Open in Maps
-              </a>
+            {course?.name && (
+              <div className="trip-details__card-actions">
+                {mapsUrl && (
+                  <a
+                    className="trip-details__action-link"
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FaMapMarkerAlt aria-hidden="true" /> Open in Maps
+                  </a>
+                )}
+                <Link
+                  className="trip-details__action-link trip-details__action-link--primary"
+                  to="/routing"
+                  state={{ destination: routeDestination }}
+                >
+                  <FaRoute aria-hidden="true" /> Plan Route
+                </Link>
+              </div>
             )}
           </div>
-        </div>
+        </article>
 
-        <div className="trip-card">
-          <div className="trip-card__header">Current Weather</div>
-          <div className="trip-card__body">
+        <article className="trip-details__card">
+          <div className="trip-details__card-header">Weather</div>
+          <div className="trip-details__card-body">
             {weatherLoading ? (
-              <p>Loading weather…</p>
+              <p className="trip-details__muted">Loading weather…</p>
             ) : weatherData ? (
-              <>
-                <p><strong>{weatherData.name}</strong></p>
-                <p>{weatherData.weather[0].description}</p>
-                <p><strong>{Math.round(weatherData.main.temp)}°F</strong></p>
-                <p>
-                  <WiRain /> {precip} mm &nbsp;
-                  <WiRaindrops /> {weatherData.main.humidity}% &nbsp;
-                  <WiStrongWind /> {weatherData.wind.speed} mph
-                </p>
-              </>
+              <div className="trip-details__weather-summary">
+                <div>
+                  <strong>{weatherData.name}</strong>
+                  <span>
+                    {forecast
+                      ? `Trip forecast · ${displayDate(forecast.date)}`
+                      : weatherData.weather[0]?.description || 'Current conditions'}
+                  </span>
+                </div>
+                {forecast ? (
+                  <>
+                    <strong className="trip-details__temperature">
+                      {Math.round(forecast.tempMax)}° / {Math.round(forecast.tempMin)}°F
+                    </strong>
+                    <div className="trip-details__weather-facts">
+                      <span><WiRain aria-hidden="true" /> {forecast.precipitation} mm</span>
+                      <span><WiStrongWind aria-hidden="true" /> {forecast.windSpeed} mph max</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <strong className="trip-details__temperature">
+                      {Math.round(weatherData.main.temp)}°F
+                    </strong>
+                    <div className="trip-details__weather-facts">
+                      <span><WiRain aria-hidden="true" /> {precip} mm</span>
+                      <span><WiRaindrops aria-hidden="true" /> {weatherData.main.humidity}%</span>
+                      <span><WiStrongWind aria-hidden="true" /> {weatherData.wind.speed} mph</span>
+                    </div>
+                  </>
+                )}
+                {weatherData.forecastStatus === 'outside-window' && trip.date && (
+                  <p className="trip-details__muted">
+                    Trip-date forecast becomes available within 16 days. Showing current conditions for now.
+                  </p>
+                )}
+              </div>
             ) : (
-              <p>No weather data. Enter a city above.</p>
+              <p className="trip-details__muted">
+                {hasSavedLocation
+                  ? 'Weather is unavailable right now.'
+                  : 'This older trip has no saved course coordinates yet.'}
+              </p>
             )}
+
+            {weatherError && (
+              <p className="trip-details__inline-error">{weatherError}</p>
+            )}
+
+            <details className="trip-details__weather-override" open={!hasSavedLocation}>
+              <summary>
+                {hasSavedLocation ? 'Check another location' : 'Enter a weather location'}
+              </summary>
+              {showAlert && (
+                <Alert
+                  variant="danger"
+                  onClose={() => setShowAlert(false)}
+                  dismissible
+                  className="trip-details__alert"
+                >
+                  Please enter a weather location.
+                </Alert>
+              )}
+              <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
+                <input
+                  type="text"
+                  className="trip-details__weather-input"
+                  placeholder="City, state"
+                  value={weatherCity}
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
+                    setWeatherCity(event.target.value)
+                  }
+                />
+                <button
+                  type="submit"
+                  className="trip-details__weather-btn"
+                  disabled={weatherLoading}
+                >
+                  {weatherLoading ? 'Loading…' : 'Update Weather'}
+                </button>
+              </form>
+            </details>
           </div>
-        </div>
+        </article>
       </section>
 
       <section className="trip-details__scorecard">
-        <h3>Scorecard</h3>
+        <div className="trip-details__section-heading">
+          <p className="trip-details__eyebrow">Game day</p>
+          <h2>Players & scorecard</h2>
+        </div>
         <ScoreCard tripId={tripId} />
       </section>
-    </div>
+    </main>
   );
 };
 

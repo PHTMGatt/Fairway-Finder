@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 21.x
+          node-version: 22.x
 
       - name: Install all dependencies
         run: |
@@ -26,16 +26,14 @@ jobs:
           cd ../server && npm install
           cd ..
 
-      - name: Run Lint from root
+      - name: Run lint
         run: npm run lint
 
-      # - name: Build all
-      #   run: npm run build
+      - name: Build application
+        run: npm run build
 
-      # - name: Test client
-      #   run: npm run test
-      #   working-directory: ./client
+      - name: Run server regression tests
+        run: npm test
 
-      # - name: Test server
-      #   run: npm run test
-      #   working-directory: ./server
+      - name: Run client regression tests
+        run: cd client && npm test -- --run

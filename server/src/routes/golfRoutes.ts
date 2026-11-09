@@ -2,17 +2,13 @@
 // Note; Express route proxy for GolfCourseAPI — handles search + detail fetch
 
 import express, { Request, Response } from 'express';
-import fetch from 'node-fetch';
+import { fetchWithTimeout as fetch } from '../services/http.js';
 
 const router = express.Router();
 
 const API_BASE = 'https://api.golfcourseapi.com/v1';
-const GOLF_API_KEY = process.env.GOLF_API_KEY;
-
-if (!GOLF_API_KEY) {
-  console.error('❌ GOLF_API_KEY is missing from .env!');
-  process.exit(1);
-}
+const GOLF_API_KEY = process.env.GOLF_API_KEY?.trim();
+const unavailableMessage = 'Golf course data provider is not configured';
 
 // Note; Proxy to search golf courses by name or club name
 router.get('/golf/search', async (req: Request, res: Response) => {
@@ -20,6 +16,10 @@ router.get('/golf/search', async (req: Request, res: Response) => {
 
   if (!search_query) {
     return res.status(400).json({ error: 'Missing search query' });
+  }
+
+  if (!GOLF_API_KEY) {
+    return res.status(503).json({ error: unavailableMessage });
   }
 
   try {
@@ -49,6 +49,10 @@ router.get('/golf/:id', async (req: Request, res: Response) => {
 
   if (!id) {
     return res.status(400).json({ error: 'Missing course ID' });
+  }
+
+  if (!GOLF_API_KEY) {
+    return res.status(503).json({ error: unavailableMessage });
   }
 
   try {

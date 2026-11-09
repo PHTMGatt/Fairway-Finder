@@ -5,10 +5,11 @@ import { UPDATE_PLAYER_HANDICAP } from '../../utils/mutations';
 import {
   searchCourses,
   getCourseById,
-  CourseSummary,
   TeeBox,
 } from './HandicapAPI';
+import { Link } from 'react-router-dom';
 import Auth from '../../utils/auth';
+import { parseRoundInput, scoreDifferential } from './handicapMath';
 import './HandicapTracker.css';
 
 interface Trip {
@@ -18,93 +19,86 @@ interface Trip {
   players: { name: string }[];
 }
 
+type Gender = 'male' | 'female';
+type Feedback = { kind: 'error' | 'success' | 'info'; message: string } | null;
+
 const HandicapTracker: React.FC = () => {
-  // Apollo: fetch current user's trips
   const { data, loading } = useQuery<{ me: { trips: Trip[] } }>(QUERY_MY_TRIPS);
   const [updatePlayerHandicap] = useMutation(UPDATE_PLAYER_HANDICAP);
 
-  // Local component state
   const [tripId, setTripId] = useState('');
   const [player, setPlayer] = useState('');
-  const [gender, setGender] = useState<'male' | 'female'>('male');
+  const [gender, setGender] = useState<Gender>('male');
   const [teeColor, setTeeColor] = useState('');
   const [gross, setGross] = useState('');
   const [handicap, setHandicap] = useState<number | null>(null);
-
-  // API search results + dynamic tee lists
-  const [apiCourses, setApiCourses] = useState<CourseSummary[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [availableTees, setAvailableTees] = useState<string[]>([]);
+  const [teeData, setTeeData] = useState<TeeBox[]>([]);
+  const [rating, setRating] = useState('');
+  const [slope, setSlope] = useState('');
+  const [feedback, setFeedback] = useState<Feedback>(null);
+  const [searching, setSearching] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  /**
-   * Normalize a search term & call the API. Once we get back at least one CourseSummary,
-   * we fetch details for the FIRST match (to populate availableTees).
-   */
   const handleCourseSearch = useCallback(
-    async (manualQuery?: string) => {
+    async (manualQuery?: string, requestedGender: Gender = gender) => {
       const raw = manualQuery !== undefined ? manualQuery : searchQuery;
       const cleaned = raw.toLowerCase().replace(/[^a-z0-9\s]/gi, '').trim();
       if (!cleaned) {
-        console.warn('handleCourseSearch called with empty search term.');
-        setApiCourses([]);
         setAvailableTees([]);
         setTeeColor('');
+        setFeedback({ kind: 'info', message: 'Enter a course name to search for tee information.' });
         return;
       }
 
+      setSearching(true);
+      setFeedback(null);
       try {
         const results = await searchCourses(cleaned);
-        console.log('🔍 searchCourses returned:', results);
-        setApiCourses(results);
 
         if (results.length === 0) {
-          console.warn('No API match found for:', cleaned);
           setAvailableTees([]);
           setTeeColor('');
+          setFeedback({ kind: 'info', message: 'No matching courses were found. Try a broader course name.' });
           return;
         }
 
         const firstId = results[0].id;
         const details = await getCourseById(String(firstId));
-        if (!details) {
-          console.warn('Could not fetch course details for ID:', firstId);
-          setAvailableTees([]);
-          setTeeColor('');
-          return;
-        }
-
-        console.log('🏌️‍♂️ getCourseById returned (CourseDetails):', details);
-        const teeList: TeeBox[] = details.tees[gender] || [];
-        console.log(`👥 teeList for gender "${gender}":`, teeList);
-
+        const teeList: TeeBox[] = details.tees[requestedGender] || [];
         const names = teeList.map((t) => t.tee_name);
+        setTeeData(teeList);
         setAvailableTees(names);
-
-        if (names.length) {
-          setTeeColor(names[0]);
-        } else {
-          setTeeColor('');
+        setTeeColor(names[0] || '');
+        if (teeList[0]) {
+          setRating(String(teeList[0].course_rating));
+          setSlope(String(teeList[0].slope_rating));
+        }
+        if (names.length === 0) {
+          setFeedback({ kind: 'info', message: `No ${requestedGender} tee data is available for this course.` });
         }
       } catch (err) {
         console.error('Error during handleCourseSearch:', err);
         setAvailableTees([]);
         setTeeColor('');
+        setFeedback({
+          kind: 'error',
+          message: "Course lookup isn't available right now. Type the course rating and slope from your scorecard below.",
+        });
+      } finally {
+        setSearching(false);
       }
     },
     [searchQuery, gender]
   );
 
-  // 1) When the trips load, default to the first trip in the list
   useEffect(() => {
     if (!loading && data?.me.trips.length) {
       setTripId(data.me.trips[0]._id);
     }
   }, [loading, data]);
 
-  // 2) When the selected trip changes:
-  //    • Auto‐select first player (if none chosen yet)
-  //    • Grab that trip’s “raw” course name, pick just the first two words
-  //    • Populate searchQuery and immediately call handleCourseSearch()
   useEffect(() => {
     const trip = data?.me.trips.find((t) => t._id === tripId);
     if (!trip) return;
@@ -120,65 +114,54 @@ const HandicapTracker: React.FC = () => {
     handleCourseSearch(firstTwoWords);
   }, [tripId, data, player, handleCourseSearch]);
 
-  // Handicap calculation formula
-  const calculateHandicap = (grossScore: number, rating: number, slope: number) =>
-    Math.round(((grossScore - rating) * 113) / slope * 10) / 10;
-
-  // Called when the user clicks “Save Round”
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const g = parseFloat(gross);
-    if (!tripId || !player || isNaN(g) || apiCourses.length === 0) {
-      console.warn('Missing required fields for saving round.');
+    if (!tripId || !player) {
+      setFeedback({ kind: 'error', message: 'Choose a trip and a player first.' });
+      return;
+    }
+    const round = parseRoundInput(gross, rating, slope);
+    if (!round.ok) {
+      setFeedback({ kind: 'error', message: round.message });
       return;
     }
 
+    setSaving(true);
+    setFeedback(null);
     try {
-      let matchTee: TeeBox | null = null;
-
-      for (const cs of apiCourses) {
-        const details = await getCourseById(String(cs.id));
-        if (!details) continue;
-        const teeList: TeeBox[] = details.tees[gender] || [];
-        matchTee =
-          teeList.find((t) => t.tee_name.toLowerCase() === teeColor.toLowerCase()) ||
-          null;
-        if (matchTee) break;
-      }
-
-      if (!matchTee) {
-        console.warn('Tee not found for color:', teeColor);
-        return;
-      }
-
-      const idx = calculateHandicap(g, matchTee.course_rating, matchTee.slope_rating);
-      setHandicap(idx);
-
+      const idx = scoreDifferential(round.gross, round.rating, round.slope);
       await updatePlayerHandicap({
         variables: { tripId, name: player, handicap: idx },
       });
-
-      console.log(`✅ Saved handicap for ${player}: ${idx}`);
+      setHandicap(idx);
+      setGross('');
+      setFeedback({ kind: 'success', message: `Saved ${player}'s handicap index at ${idx.toFixed(1)}.` });
     } catch (err) {
       console.error('Error calculating handicap:', err);
+      setFeedback({
+        kind: 'error',
+        message: 'The handicap could not be calculated or saved. Your existing player data was not changed.',
+      });
+    } finally {
+      setSaving(false);
     }
-
-    setGross('');
   };
 
-  // If not logged in, show a styled message
   if (!Auth.loggedIn()) {
     return (
       <div className="handicap-page">
         <div className="auth-card">
           <h1 className="title">Handicap Tracker</h1>
-          <p className="handicap-message">You must be logged in to view this page.</p>
+          <p className="handicap-message">Log in to track handicaps for the players on your trips.</p>
+          <div className="handicap-auth-actions">
+            <Link to="/login" className="submit-btn">Log In</Link>
+            <Link to="/" className="clear-btn">Try the Guest Demo</Link>
+          </div>
         </div>
       </div>
     );
   }
 
-  // While trips are still loading, show a loading message
   if (loading) {
     return (
       <div className="handicap-page">
@@ -190,7 +173,6 @@ const HandicapTracker: React.FC = () => {
     );
   }
 
-  // Extract the currently selected trip, its players, and the raw course name
   const selectedTrip = data?.me.trips.find((t) => t._id === tripId);
   const players = selectedTrip?.players ?? [];
   const tripCourse = selectedTrip?.courses?.[0]?.name ?? '';
@@ -200,7 +182,16 @@ const HandicapTracker: React.FC = () => {
       <div className="setup-card">
         <h1 className="title">Handicap Tracker</h1>
 
-        {/* Trip Selector */}
+        {feedback && (
+          <p
+            className={`handicap-feedback handicap-feedback--${feedback.kind}`}
+            role={feedback.kind === 'error' ? 'alert' : 'status'}
+            aria-live="polite"
+          >
+            {feedback.message}
+          </p>
+        )}
+
         <div className="form-group">
           <label className="form-label">Select Trip</label>
           <select
@@ -211,9 +202,9 @@ const HandicapTracker: React.FC = () => {
               setPlayer('');
               setGross('');
               setHandicap(null);
-              setApiCourses([]);
               setAvailableTees([]);
               setTeeColor('');
+              setFeedback(null);
             }}
           >
             {data?.me.trips.map((t) => (
@@ -224,7 +215,6 @@ const HandicapTracker: React.FC = () => {
           </select>
         </div>
 
-        {/* Player Selector */}
         <div className="form-group">
           <label className="form-label">Select Player</label>
           <select
@@ -240,7 +230,6 @@ const HandicapTracker: React.FC = () => {
           </select>
         </div>
 
-        {/* Course Name + Search API Courses (same row) */}
         <div className="flex-row">
           <div className="form-group">
             <label className="form-label">Trip Course</label>
@@ -248,7 +237,7 @@ const HandicapTracker: React.FC = () => {
           </div>
 
           <div className="form-group search-row">
-            <label className="form-label">Search API Courses</label>
+            <label className="form-label">Look Up Course (optional)</label>
             <div className="search-controls">
               <input
                 className="search-input"
@@ -261,14 +250,14 @@ const HandicapTracker: React.FC = () => {
                 type="button"
                 className="search-btn"
                 onClick={() => handleCourseSearch()}
+                disabled={searching}
               >
-                Search
+                {searching ? 'Searching…' : 'Search'}
               </button>
             </div>
           </div>
         </div>
 
-        {/* Gender + Tee Color (same row) */}
         <div className="flex-row">
           <div className="form-group">
             <label className="form-label">Gender</label>
@@ -276,9 +265,10 @@ const HandicapTracker: React.FC = () => {
               className="form-select"
               value={gender}
               onChange={(e) => {
-                setGender(e.target.value as 'male' | 'female');
+                const nextGender = e.target.value as Gender;
+                setGender(nextGender);
                 if (searchQuery.trim()) {
-                  handleCourseSearch();
+                  handleCourseSearch(undefined, nextGender);
                 }
               }}
             >
@@ -292,8 +282,16 @@ const HandicapTracker: React.FC = () => {
             <select
               className="form-select"
               value={teeColor}
-              onChange={(e) => setTeeColor(e.target.value)}
-              disabled={availableTees.length === 0}
+              onChange={(e) => {
+                const name = e.target.value;
+                setTeeColor(name);
+                const tee = teeData.find((t) => t.tee_name === name);
+                if (tee) {
+                  setRating(String(tee.course_rating));
+                  setSlope(String(tee.slope_rating));
+                }
+              }}
+              disabled={availableTees.length === 0 || searching}
             >
               <option value="">-- Select Tee --</option>
               {availableTees.map((name) => (
@@ -305,8 +303,39 @@ const HandicapTracker: React.FC = () => {
           </div>
         </div>
 
-        {/* Gross Score + Save / Clear Buttons */}
         <form className="round-form" onSubmit={handleSubmit}>
+          <p className="handicap-hint">
+            Rating and slope are printed on the scorecard for your tee. Picking a tee above fills them in.
+          </p>
+          <div className="flex-row">
+            <div className="form-group">
+              <label className="form-label" htmlFor="hc-rating">Course Rating</label>
+              <input
+                id="hc-rating"
+                className="form-input"
+                type="number"
+                inputMode="decimal"
+                step="0.1"
+                placeholder="e.g. 70.4"
+                value={rating}
+                onChange={(e) => setRating(e.target.value)}
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label" htmlFor="hc-slope">Slope</label>
+              <input
+                id="hc-slope"
+                className="form-input"
+                type="number"
+                inputMode="numeric"
+                placeholder="e.g. 125"
+                value={slope}
+                onChange={(e) => setSlope(e.target.value)}
+                required
+              />
+            </div>
+          </div>
           <div className="form-group">
             <label className="form-label">Gross Score</label>
             <input
@@ -319,15 +348,17 @@ const HandicapTracker: React.FC = () => {
           </div>
 
           <div className="button-wrapper">
-            <button type="submit" className="submit-btn">
-              Save Round
+            <button type="submit" className="submit-btn" disabled={saving || searching}>
+              {saving ? 'Saving…' : 'Save Round'}
             </button>
             <button
               type="button"
               className="clear-btn"
+              disabled={saving}
               onClick={() => {
                 setGross('');
                 setHandicap(null);
+                setFeedback(null);
               }}
             >
               Clear
@@ -335,7 +366,6 @@ const HandicapTracker: React.FC = () => {
           </div>
         </form>
 
-        {/* Handicap Output */}
         <div className="handicap-info">
           <h2>Your Handicap Index</h2>
           <p className="handicap-value">

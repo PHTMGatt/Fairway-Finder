@@ -3,15 +3,21 @@
 import { Schema, model, Document, Types } from 'mongoose'
 
 /**
- * Note; Subdocument for a golf course within a trip, now caching rating & slope
+ * Canonical selected-course snapshot embedded in a trip. Provider identity is
+ * optional so legacy name-only trips remain readable while new trips can keep
+ * the exact course the user selected instead of rediscovering it by name.
  */
 export interface CourseSubdoc {
   _id: Types.ObjectId
   name: string
+  source?: string
+  providerId?: string
   address?: string
   location?: { lat: number; lng: number }
-  rating?: number        // Note; cached courseRating
-  slope?: number         // Note; cached slopeRating
+  rating?: number | null
+  golfCourseApiId?: string
+  courseRating?: number | null
+  slope?: number | null
 }
 
 /**
@@ -28,7 +34,7 @@ export interface ScoreSubdoc {
 export interface PlayerSubdoc {
   name: string
   scores: ScoreSubdoc[]
-  handicap?: number      // ✅ Individual player's handicap index
+  handicap?: number
 }
 
 /**
@@ -39,27 +45,34 @@ export interface TripDoc extends Document {
   date: string
   courses: CourseSubdoc[]
   players: PlayerSubdoc[]
-  handicap?: number      // Note; trip-wide handicap index (optional)
+  handicap?: number
+  isGuest?: boolean
+  expiresAt?: Date
   createdAt: Date
   updatedAt: Date
 }
 
-// Note; Course schema with rating & slope fields
 const courseSchema = new Schema<CourseSubdoc>(
   {
     name: { type: String, required: true, trim: true },
+    source: { type: String, trim: true },
+    providerId: { type: String, trim: true },
     address: { type: String, trim: true },
     location: {
       lat: { type: Number },
       lng: { type: Number },
     },
-    rating: { type: Number, default: null },   // Note; courseRating cache
-    slope: { type: Number, default: null },    // Note; slopeRating cache
+    // Note; Provider/display rating (for example Google Places stars).
+    rating: { type: Number, default: null },
+    // Note; Stable GolfCourseAPI identity when that provider has been resolved.
+    golfCourseApiId: { type: String, trim: true },
+    // Note; Tee/course rating used for handicap calculations; distinct from display rating.
+    courseRating: { type: Number, default: null },
+    slope: { type: Number, default: null },
   },
   { _id: true }
 )
 
-// Note; Score schema without its own _id
 const scoreSchema = new Schema<ScoreSubdoc>(
   {
     hole: { type: Number, required: true },
@@ -68,24 +81,24 @@ const scoreSchema = new Schema<ScoreSubdoc>(
   { _id: false }
 )
 
-// ✅ Updated: Player schema now includes `handicap` field
 const playerSchema = new Schema<PlayerSubdoc>(
   {
     name: { type: String, required: true, trim: true },
     scores: { type: [scoreSchema], default: [] },
-    handicap: { type: Number, default: null }, // ✅ Individual player handicap
+    handicap: { type: Number, default: null },
   },
   { _id: false }
 )
 
-// Note; Main Trip schema with courses, players, and trip-level handicap
 const tripSchema = new Schema<TripDoc>(
   {
     name: { type: String, required: true, trim: true },
     date: { type: String, required: true },
     courses: { type: [courseSchema], default: [] },
     players: { type: [playerSchema], default: [] },
-    handicap: { type: Number, default: null },  // Note; trip-wide index (optional)
+    handicap: { type: Number, default: null },
+    isGuest: { type: Boolean },
+    expiresAt: { type: Date },
   },
   {
     timestamps: true,
@@ -94,6 +107,12 @@ const tripSchema = new Schema<TripDoc>(
   }
 )
 
-// Note; Create and export the Trip model
+// Note; TTL index: MongoDB deletes a guest trip once expiresAt passes. Only isGuest trips are
+// considered, so a permanent trip is never deleted even if it has an expiresAt.
+tripSchema.index(
+  { expiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { isGuest: true } }
+)
+
 const Trip = model<TripDoc>('Trip', tripSchema)
 export default Trip

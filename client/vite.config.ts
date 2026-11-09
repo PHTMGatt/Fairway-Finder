@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+// FF_API_TARGET lets the dev client talk to another API (e.g. the live Render server) for UI work.
+const apiTarget = process.env.FF_API_TARGET || 'http://localhost:3001';
+
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -8,12 +11,12 @@ export default defineConfig({
     open: true, // opens browser when you run `vite` locally
     proxy: {
       '/graphql': {
-        target: 'http://localhost:3001', // Express + Apollo
+        target: apiTarget, // Express + Apollo
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://localhost:3001', // Express REST
+        target: apiTarget, // Express REST
         changeOrigin: true,
         secure: false,
       },
