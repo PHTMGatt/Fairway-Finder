@@ -8,7 +8,7 @@
 const API_BASE = '/api/golf';
 
 export interface CourseSummary {
-  id: number;
+  id: number | string;
   club_name: string;
   course_name: string;
   location?: { address?: string };
@@ -21,7 +21,7 @@ export interface TeeBox {
 }
 
 export interface CourseDetails {
-  id: number;
+  id: number | string;
   club_name: string;
   course_name: string;
   location: {
@@ -38,18 +38,29 @@ export interface CourseDetails {
   };
 }
 
-const isCourseDetails = (value: unknown): value is CourseDetails => {
-  if (!value || typeof value !== 'object') return false;
+// GolfCourseAPI ids are short strings (e.g. "86gj0vqf"); older payloads used numbers.
+// Some courses have no tee list for one or both genders, so missing arrays become [].
+const toCourseDetails = (value: unknown): CourseDetails | null => {
+  if (!value || typeof value !== 'object') return null;
   const candidate = value as Partial<CourseDetails>;
-  return (
-    typeof candidate.id === 'number' &&
-    typeof candidate.club_name === 'string' &&
-    typeof candidate.course_name === 'string' &&
-    Boolean(candidate.location && typeof candidate.location === 'object') &&
-    Boolean(candidate.tees && typeof candidate.tees === 'object') &&
-    Array.isArray(candidate.tees?.male) &&
-    Array.isArray(candidate.tees?.female)
-  );
+  const idOk = typeof candidate.id === 'number' || (typeof candidate.id === 'string' && candidate.id !== '');
+  if (
+    !idOk ||
+    typeof candidate.club_name !== 'string' ||
+    typeof candidate.course_name !== 'string' ||
+    !candidate.location ||
+    typeof candidate.location !== 'object'
+  ) {
+    return null;
+  }
+  const tees = (candidate.tees && typeof candidate.tees === 'object' ? candidate.tees : {}) as Partial<CourseDetails['tees']>;
+  return {
+    ...(candidate as CourseDetails),
+    tees: {
+      male: Array.isArray(tees.male) ? tees.male : [],
+      female: Array.isArray(tees.female) ? tees.female : [],
+    },
+  };
 };
 
 /**
@@ -57,10 +68,10 @@ const isCourseDetails = (value: unknown): value is CourseDetails => {
  * Keep accepting the old wrapped shape as a compatibility fallback for stale callers/tests.
  */
 export const normalizeCourseDetailsResponse = (value: unknown): CourseDetails | null => {
-  if (isCourseDetails(value)) return value;
+  const direct = toCourseDetails(value);
+  if (direct) return direct;
   if (!value || typeof value !== 'object') return null;
-  const wrapped = (value as { course?: unknown }).course;
-  return isCourseDetails(wrapped) ? wrapped : null;
+  return toCourseDetails((value as { course?: unknown }).course);
 };
 
 /**

@@ -1,4 +1,4 @@
-import React, { KeyboardEvent, useEffect, useState } from 'react';
+import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import './LocationAutocomplete.css';
 
 interface LocationSuggestion {
@@ -26,6 +26,10 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // Set by Escape; cleared when the user types again. Late fetch results must not reopen the menu.
+  const dismissedRef = useRef(false);
+  const canOpen = () => !dismissedRef.current && document.activeElement === inputRef.current;
 
   useEffect(() => {
     const query = value.trim();
@@ -49,7 +53,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
 
         const compactSuggestions = data.slice(0, 4);
         setSuggestions(compactSuggestions);
-        setOpen(compactSuggestions.length > 0);
+        setOpen(compactSuggestions.length > 0 && canOpen());
         setActiveIndex(-1);
       } catch {
         if (!cancelled) {
@@ -73,6 +77,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Escape') dismissedRef.current = true;
     if (!open || suggestions.length === 0) return;
 
     if (event.key === 'ArrowDown') {
@@ -97,6 +102,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   return (
     <div className={`location-autocomplete${open ? ' is-open' : ''}`}>
       <input
+        ref={inputRef}
         className={inputClassName}
         type="text"
         value={value}
@@ -104,9 +110,12 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         disabled={disabled}
         autoComplete="off"
         aria-label={ariaLabel || placeholder}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => {
+          dismissedRef.current = false;
+          onChange(event.target.value);
+        }}
         onKeyDown={handleKeyDown}
-        onFocus={() => suggestions.length > 0 && setOpen(true)}
+        onFocus={() => suggestions.length > 0 && !dismissedRef.current && setOpen(true)}
         onBlur={() => window.setTimeout(() => setOpen(false), 120)}
       />
 
