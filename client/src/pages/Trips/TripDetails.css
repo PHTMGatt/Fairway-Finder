@@ -427,3 +427,8 @@
     padding: 0.95rem;
   }
 }
+
+/* Game day first: the scorecard sits right under the trip title; course + weather follow. */
+.trip-details__hero { order: 0; }
+.trip-details__scorecard { order: 1; }
+.trip-details__overview { order: 2; }

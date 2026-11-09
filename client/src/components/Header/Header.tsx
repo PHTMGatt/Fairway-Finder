@@ -74,6 +74,7 @@ const Header: React.FC = () => {
   };
 
   const handleResetDemo = async () => {
+    if (!window.confirm('Start over? This deletes your guest rounds and scores and loads the sample round again.')) return;
     setDemoResetError('');
     try {
       await resetGuestDemo({
@@ -161,9 +162,9 @@ const Header: React.FC = () => {
           role="status"
         >
           <div className="header__guest-copy">
-            <strong className="header__demo-badge">Demo Mode</strong>
+            <strong className="header__demo-badge">Guest</strong>
             <span>
-              Isolated sample data · resets automatically at{' '}
+              Private to this phone · deleted{' '}
               {guestBanner.expiresAt.toLocaleString([], {
                 hour: 'numeric',
                 minute: '2-digit',
@@ -179,7 +180,7 @@ const Header: React.FC = () => {
             onClick={handleResetDemo}
             disabled={resettingDemo}
           >
-            {resettingDemo ? 'Resetting…' : 'Reset Demo'}
+            {resettingDemo ? 'Resetting…' : 'Start over'}
           </button>
           {demoResetError && (
             <span className="header__demo-error" role="alert">

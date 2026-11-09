@@ -31,13 +31,13 @@ const Home: React.FC = () => {
   return (
     <main className="home">
       <section className="home__hero" aria-labelledby="home-title">
-        <p className="home__eyebrow">Golf trips, organized.</p>
+        <p className="home__eyebrow">Golf, made simple.</p>
         <h1 id="home-title" className="home__title">
-          Plan the round. Keep the trip together.
+          Pick a course. Keep score. That&apos;s it.
         </h1>
         <p className="home__subtitle">
-          Choose a course, save the trip, then come back to one place for course details,
-          weather, routing, players, and scores.
+          Tap a course near you and your scorecard is ready, with weather, directions and handicaps
+          handled for you. No account needed.
         </p>
 
         <div className="home__buttons">
@@ -54,8 +54,8 @@ const Home: React.FC = () => {
 
         {!isLoggedIn && (
           <div className="home__guest">
-            <span>Want to look around without creating an account?</span>
-            <GuestDemoButton className="home__btn home__btn--guest" />
+            <span>Just looking? Open a sample round:</span>
+            <GuestDemoButton className="home__btn home__btn--guest" label="See a sample round" />
           </div>
         )}
       </section>

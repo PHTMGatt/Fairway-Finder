@@ -379,7 +379,11 @@ const TripDetails: React.FC = () => {
           <p className="trip-details__eyebrow">Game day</p>
           <h2>Players & scorecard</h2>
         </div>
-        <ScoreCard tripId={tripId} />
+        <ScoreCard
+          tripId={tripId}
+          courseRating={teeRating?.courseRating ?? null}
+          slope={teeRating?.slopeRating ?? null}
+        />
       </section>
     </main>
   );

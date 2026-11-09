@@ -28,3 +28,31 @@ describe('score entry guardrails', () => {
     expect(scorecardErrorMessage({})).toBe('Could not save scorecard changes. Please try again.');
   });
 });
+
+import { holesPlayed, nextOpenHole, roundDifferential, stepScore } from './scorecardUtils';
+
+describe('hole-by-hole helpers', () => {
+  const full = (n: number) => Object.fromEntries(Array.from({ length: 18 }, (_, i) => [`H${i + 1}`, n]));
+
+  it('first + on an empty hole jumps to 4, then steps by one, clamped 0..30', () => {
+    expect(stepScore(0, 1)).toBe(4);
+    expect(stepScore(0, -1)).toBe(0);
+    expect(stepScore(4, 1)).toBe(5);
+    expect(stepScore(1, -1)).toBe(0);
+    expect(stepScore(30, 1)).toBe(30);
+  });
+
+  it('counts played holes and finds the next open hole across players', () => {
+    expect(holesPlayed(null)).toBe(0);
+    expect(holesPlayed({ H1: 4, H2: 0, H3: 5 })).toBe(2);
+    expect(nextOpenHole([{ H1: 4, H2: 5 }, { H1: 3 }])).toBe(2);
+    expect(nextOpenHole([full(4)])).toBe(18);
+    expect(nextOpenHole([])).toBe(18);
+  });
+
+  it('computes the handicap differential only for a complete round with rating + slope', () => {
+    expect(roundDifferential(full(5), 72.1, 128)).toBe(15.8); // (90-72.1)*113/128 = 15.80
+    expect(roundDifferential({ ...full(5), H18: 0 }, 72.1, 128)).toBeNull();
+    expect(roundDifferential(full(5), null, 128)).toBeNull();
+  });
+});

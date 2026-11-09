@@ -1,15 +1,27 @@
 // client/src/components/ScoreCard/ScoreCard.tsx
-import React, { FormEvent, useEffect, useState } from 'react';
+// Phone-first scorecard: one hole at a time with big − / + steppers (default),
+// plus a full 9-hole card for desktop/review. Handicap fills in automatically
+// once a player has all 18 holes and the course rating/slope are known.
+import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_TRIP } from '../../utils/queries';
-import { ADD_PLAYER, REMOVE_PLAYER, UPDATE_SCORE } from '../../utils/mutations';
-import { scorecardErrorMessage, scoreFromDraft } from './scorecardUtils';
+import { ADD_PLAYER, REMOVE_PLAYER, UPDATE_PLAYER_HANDICAP, UPDATE_SCORE } from '../../utils/mutations';
+import {
+  HOLES,
+  holesPlayed,
+  nextOpenHole,
+  roundDifferential,
+  scorecardErrorMessage,
+  scoreFromDraft,
+  stepScore,
+} from './scorecardUtils';
 import './ScoreCard.css';
 
 interface PlayerSubdoc {
   name: string;
   score: Record<string, number> | null;
   total: number;
+  handicap?: number | null;
 }
 
 interface TripData {
@@ -21,6 +33,9 @@ interface TripData {
 
 interface ScoreCardProps {
   tripId: string;
+  /** Tee rating + slope for the trip course, when known: enables the automatic handicap. */
+  courseRating?: number | null;
+  slope?: number | null;
 }
 
 interface ScoreInputProps {
@@ -29,11 +44,7 @@ interface ScoreInputProps {
   ariaLabel?: string;
 }
 
-export const ScoreInput: React.FC<ScoreInputProps> = ({
-  value,
-  onCommit,
-  ariaLabel,
-}) => {
+export const ScoreInput: React.FC<ScoreInputProps> = ({ value, onCommit, ariaLabel }) => {
   const [draft, setDraft] = useState(String(value));
   const [saving, setSaving] = useState(false);
 
@@ -84,7 +95,7 @@ export const ScoreInput: React.FC<ScoreInputProps> = ({
   );
 };
 
-const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
+const ScoreCard: React.FC<ScoreCardProps> = ({ tripId, courseRating, slope }) => {
   const { loading, error, data } = useQuery<TripData>(QUERY_TRIP, {
     variables: { id: tripId },
     fetchPolicy: 'cache-and-network',
@@ -93,18 +104,34 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   const [addPlayer, { loading: addingPlayer }] = useMutation(ADD_PLAYER);
   const [removePlayer] = useMutation(REMOVE_PLAYER);
   const [updateScore] = useMutation(UPDATE_SCORE);
+  const [updatePlayerHandicap] = useMutation(UPDATE_PLAYER_HANDICAP);
 
   const [newPlayerName, setNewPlayerName] = useState('');
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'front9' | 'back9' | 'threehole'>('front9');
-  const [threeHoleIndex, setThreeHoleIndex] = useState(0);
+  const [mode, setMode] = useState<'hole' | 'card'>('hole');
+  const [half, setHalf] = useState<'front' | 'back'>('front');
+  const [hole, setHole] = useState<number | null>(null);
+  const savedHandicaps = useRef(new Map<string, number>());
 
-  const getHoleNumbers = (): number[] => {
-    if (viewMode === 'front9') return Array.from({ length: 9 }, (_, i) => i + 1);
-    if (viewMode === 'back9') return Array.from({ length: 9 }, (_, i) => i + 10);
-    return [threeHoleIndex + 1, threeHoleIndex + 2, threeHoleIndex + 3];
-  };
-  const holeNumbers = getHoleNumbers();
+  const players = useMemo(() => data?.trip?.players ?? [], [data?.trip?.players]);
+
+  // Open on the first hole nobody has scored yet, so reopening mid-round lands in the right place.
+  useEffect(() => {
+    if (hole === null && data?.trip) setHole(nextOpenHole(data.trip.players.map((p) => p.score)));
+  }, [data?.trip, hole]);
+
+  // Automatic handicap: once a player has all 18 holes and rating/slope are known,
+  // store the score differential as their handicap index (once per value).
+  useEffect(() => {
+    for (const player of players) {
+      const diff = roundDifferential(player.score, courseRating, slope);
+      if (diff === null || player.handicap === diff || savedHandicaps.current.get(player.name) === diff) continue;
+      savedHandicaps.current.set(player.name, diff);
+      void updatePlayerHandicap({ variables: { tripId, name: player.name, handicap: diff } }).catch(() => {
+        savedHandicaps.current.delete(player.name);
+      });
+    }
+  }, [players, courseRating, slope, tripId, updatePlayerHandicap]);
 
   const handleAddPlayer = async (event?: FormEvent) => {
     event?.preventDefault();
@@ -120,11 +147,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
   };
 
   const handleRemovePlayer = async (name: string) => {
-    const confirmed = window.confirm(
-      `Remove ${name} from this trip? Their saved hole scores will be removed too.`
-    );
-    if (!confirmed) return;
-
+    if (!window.confirm(`Remove ${name}? Their scores on this trip will be deleted too.`)) return;
     setSaveError(null);
     try {
       await removePlayer({ variables: { tripId, name } });
@@ -133,15 +156,28 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     }
   };
 
-  const handleScoreChange = async (
-    playerName: string,
-    hole: number,
-    newScore: number
-  ): Promise<boolean> => {
+  const handleScoreChange = async (playerName: string, holeNum: number, newScore: number): Promise<boolean> => {
     setSaveError(null);
+    const player = players.find((p) => p.name === playerName);
+    const nextScore = { ...(player?.score ?? {}), [`H${holeNum}`]: newScore };
+    const nextTotal = HOLES.reduce((sum, h) => sum + (nextScore[`H${h}`] ?? 0), 0);
     try {
       await updateScore({
-        variables: { tripId, player: playerName, hole, score: newScore },
+        variables: { tripId, player: playerName, hole: holeNum, score: newScore },
+        // Instant feedback on the course: the number changes on tap, the server confirms after.
+        optimisticResponse: {
+          updateScore: {
+            __typename: 'Trip',
+            _id: tripId,
+            players: players.map((p) => ({
+              __typename: 'Player',
+              name: p.name,
+              handicap: p.handicap ?? null,
+              score: p.name === playerName ? nextScore : p.score,
+              total: p.name === playerName ? nextTotal : p.total,
+            })),
+          },
+        },
       });
       return true;
     } catch (mutationError: unknown) {
@@ -150,79 +186,22 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
     }
   };
 
-  const handleSlide = (direction: 'prev' | 'next') => {
-    setThreeHoleIndex((previous) => {
-      const next = direction === 'prev' ? previous - 1 : previous + 1;
-      return Math.max(0, Math.min(next, 15));
-    });
-  };
-
   if (loading && !data?.trip) return <p className="scorecard__status">Loading scorecard…</p>;
-  if (error || !data?.trip) {
-    return <p className="scorecard__error">Error loading scorecard.</p>;
-  }
+  if (error || !data?.trip) return <p className="scorecard__error">Error loading scorecard.</p>;
 
-  const players = data.trip.players;
+  const current = hole ?? 1;
+  const cardHoles = half === 'front' ? HOLES.slice(0, 9) : HOLES.slice(9);
 
   return (
     <div className="scorecard">
-      <div className="scorecard__header">
-        <div>
-          <h3 className="scorecard__title">
-            {viewMode === 'threehole'
-              ? `Holes ${threeHoleIndex + 1}-${threeHoleIndex + 3}`
-              : `Holes ${holeNumbers[0]}-${holeNumbers[holeNumbers.length - 1]}`}
-          </h3>
-          <p className="scorecard__hint">Scores save when you leave a field or press Enter.</p>
-        </div>
-        <div className="scorecard__nav" aria-label="Scorecard view">
-          <button
-            type="button"
-            className="scorecard__btn"
-            aria-pressed={viewMode === 'front9'}
-            onClick={() => setViewMode('front9')}
-          >
-            Front 9
-          </button>
-          <button
-            type="button"
-            className="scorecard__btn"
-            aria-pressed={viewMode === 'back9'}
-            onClick={() => setViewMode('back9')}
-          >
-            Back 9
-          </button>
-          <button
-            type="button"
-            className="scorecard__btn"
-            aria-pressed={viewMode === 'threehole'}
-            onClick={() => setViewMode('threehole')}
-          >
-            3-Hole
-          </button>
-        </div>
+      <div className="scorecard__modes" role="tablist" aria-label="Scorecard view">
+        <button type="button" role="tab" aria-selected={mode === 'hole'} className="scorecard__mode" onClick={() => setMode('hole')}>
+          Hole by hole
+        </button>
+        <button type="button" role="tab" aria-selected={mode === 'card'} className="scorecard__mode" onClick={() => setMode('card')}>
+          Full card
+        </button>
       </div>
-
-      {viewMode === 'threehole' && (
-        <div className="scorecard__nav scorecard__slider">
-          <button
-            type="button"
-            className="scorecard__btn"
-            onClick={() => handleSlide('prev')}
-            disabled={threeHoleIndex <= 0}
-          >
-            ← Prev
-          </button>
-          <button
-            type="button"
-            className="scorecard__btn"
-            onClick={() => handleSlide('next')}
-            disabled={threeHoleIndex >= 15}
-          >
-            Next →
-          </button>
-        </div>
-      )}
 
       {saveError && (
         <p className="scorecard__error" role="alert">
@@ -230,76 +209,200 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
         </p>
       )}
 
-      {players.length ? (
-        <div className="scorecard__table-wrapper">
-          <table className="scorecard__table">
-            <thead>
-              <tr>
-                <th>Player</th>
-                {holeNumbers.map((hole) => (
-                  <th key={hole}>H{hole}</th>
-                ))}
-                <th>Total</th>
-                <th><span className="visually-hidden">Actions</span></th>
-              </tr>
-            </thead>
-            <tbody>
-              {players.map((player) => (
-                <tr key={player.name}>
-                  <th scope="row">{player.name}</th>
-                  {holeNumbers.map((holeNum) => {
-                    const key = `H${holeNum}`;
-                    const value = player.score?.[key] ?? 0;
-                    return (
-                      <td key={holeNum}>
-                        <ScoreInput
-                          value={value}
-                          ariaLabel={`${player.name}, hole ${holeNum}`}
-                          onCommit={(score) =>
-                            handleScoreChange(player.name, holeNum, score)
-                          }
-                        />
-                      </td>
-                    );
-                  })}
-                  <td className="scorecard__total">{player.total ?? 0}</td>
-                  <td>
+      {!players.length && (
+        <p className="scorecard__empty">Add who&apos;s playing below, then tap + and − on each hole.</p>
+      )}
+
+      {players.length > 0 && mode === 'hole' && (
+        <div className="scorecard__hole">
+          <div className="scorecard__hole-head">
+            <button
+              type="button"
+              className="scorecard__arrow"
+              onClick={() => setHole(Math.max(1, current - 1))}
+              disabled={current <= 1}
+              aria-label="Previous hole"
+            >
+              ‹
+            </button>
+            <div className="scorecard__hole-title">
+              <span>Hole</span>
+              <strong>{current}</strong>
+              <span>of 18</span>
+            </div>
+            <button
+              type="button"
+              className="scorecard__arrow"
+              onClick={() => setHole(Math.min(18, current + 1))}
+              disabled={current >= 18}
+              aria-label="Next hole"
+            >
+              ›
+            </button>
+          </div>
+
+          <div className="scorecard__dots" aria-label="Jump to hole">
+            {HOLES.map((h) => {
+              const done = players.every((p) => (p.score?.[`H${h}`] ?? 0) > 0);
+              return (
+                <button
+                  key={h}
+                  type="button"
+                  className={`scorecard__dot${h === current ? ' is-current' : ''}${done ? ' is-done' : ''}`}
+                  onClick={() => setHole(h)}
+                  aria-label={`Hole ${h}${done ? ', scored' : ''}`}
+                  aria-current={h === current ? 'step' : undefined}
+                >
+                  {h}
+                </button>
+              );
+            })}
+          </div>
+
+          <ul className="scorecard__players">
+            {players.map((player) => {
+              const value = player.score?.[`H${current}`] ?? 0;
+              const played = holesPlayed(player.score);
+              return (
+                <li key={player.name} className="scorecard__player">
+                  <div className="scorecard__who">
+                    <strong>{player.name}</strong>
+                    <span>
+                      {player.total ?? 0} total{played ? ` · thru ${played}` : ''}
+                    </span>
+                  </div>
+                  <div className="scorecard__stepper">
                     <button
                       type="button"
-                      className="scorecard__remove"
-                      onClick={() => void handleRemovePlayer(player.name)}
-                      aria-label={`Remove ${player.name}`}
+                      className="scorecard__step"
+                      onClick={() => void handleScoreChange(player.name, current, stepScore(value, -1))}
+                      disabled={value === 0}
+                      aria-label={`${player.name}: one less on hole ${current}`}
                     >
-                      Remove
+                      −
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    <output className={`scorecard__value${value ? '' : ' is-empty'}`} aria-live="polite">
+                      {value || '–'}
+                    </output>
+                    <button
+                      type="button"
+                      className="scorecard__step scorecard__step--plus"
+                      onClick={() => void handleScoreChange(player.name, current, stepScore(value, 1))}
+                      aria-label={`${player.name}: one more on hole ${current}`}
+                    >
+                      +
+                    </button>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+
+          {current < 18 ? (
+            <button type="button" className="scorecard__next" onClick={() => setHole(current + 1)}>
+              Next hole → {current + 1}
+            </button>
+          ) : (
+            <button type="button" className="scorecard__next" onClick={() => setMode('card')}>
+              See the full card
+            </button>
+          )}
+          <p className="scorecard__hint">First tap of + sets 4. Scores save instantly.</p>
         </div>
-      ) : (
-        <p className="scorecard__empty">Add a player to start keeping score.</p>
+      )}
+
+      {players.length > 0 && mode === 'card' && (
+        <>
+          <div className="scorecard__nav" aria-label="Nine">
+            <button type="button" className="scorecard__btn" aria-pressed={half === 'front'} onClick={() => setHalf('front')}>
+              Front 9
+            </button>
+            <button type="button" className="scorecard__btn" aria-pressed={half === 'back'} onClick={() => setHalf('back')}>
+              Back 9
+            </button>
+          </div>
+          <div className="scorecard__table-wrapper">
+            <table className="scorecard__table">
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  {cardHoles.map((h) => (
+                    <th key={h}>{h}</th>
+                  ))}
+                  <th>Total</th>
+                  <th>
+                    <span className="visually-hidden">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {players.map((player) => (
+                  <tr key={player.name}>
+                    <th scope="row">{player.name}</th>
+                    {cardHoles.map((h) => (
+                      <td key={h}>
+                        <ScoreInput
+                          value={player.score?.[`H${h}`] ?? 0}
+                          ariaLabel={`${player.name}, hole ${h}`}
+                          onCommit={(score) => handleScoreChange(player.name, h, score)}
+                        />
+                      </td>
+                    ))}
+                    <td className="scorecard__total">{player.total ?? 0}</td>
+                    <td>
+                      <button
+                        type="button"
+                        className="scorecard__remove"
+                        onClick={() => void handleRemovePlayer(player.name)}
+                        aria-label={`Remove ${player.name}`}
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      {players.length > 0 && (
+        <div className="scorecard__summary">
+          {players.map((player) => {
+            const diff = roundDifferential(player.score, courseRating, slope);
+            return (
+              <div key={player.name} className="scorecard__summary-item">
+                <span>{player.name}</span>
+                <strong>{player.total ?? 0}</strong>
+                <small>
+                  {diff !== null
+                    ? `Handicap ${diff.toFixed(1)}`
+                    : courseRating && slope
+                      ? `Handicap after 18 (${holesPlayed(player.score)}/18)`
+                      : 'Handicap needs course rating'}
+                </small>
+              </div>
+            );
+          })}
+        </div>
       )}
 
       <form className="scorecard__add-player" onSubmit={(event) => void handleAddPlayer(event)}>
         <label className="scorecard__player-field">
-          <span>Player name</span>
+          <span>Add a player</span>
           <input
             type="text"
             className="scorecard__player-input"
-            placeholder="Player name"
+            placeholder="Name (e.g. Mom)"
             value={newPlayerName}
             onChange={(event) => setNewPlayerName(event.target.value)}
             autoComplete="off"
+            maxLength={40}
           />
         </label>
-        <button
-          type="submit"
-          className="scorecard__add-btn"
-          disabled={addingPlayer || !newPlayerName.trim()}
-        >
-          {addingPlayer ? 'Adding…' : 'Add Player'}
+        <button type="submit" className="scorecard__add-btn" disabled={addingPlayer || !newPlayerName.trim()}>
+          {addingPlayer ? 'Adding…' : 'Add'}
         </button>
       </form>
     </div>
