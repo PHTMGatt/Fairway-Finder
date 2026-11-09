@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { FaTrashAlt } from 'react-icons/fa';
 import { DELETE_TRIP } from '../../utils/mutations';
+import { QUERY_MY_TRIPS } from '../../utils/queries';
 import {
   deleteTripWithConfirmation,
   formatTripDate,
@@ -39,18 +40,17 @@ const TripList: React.FC<TripListProps> = ({
   title = 'Saved Trips',
 }) => {
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  // The trip lists read `me { trips }` (and sometimes root `trips`). Evicting the
+  // Trip entity drops it from every list that references it; the old code only
+  // edited root `trips`, so My Trips kept showing a trip that was already deleted.
   const [deleteTrip] = useMutation(DELETE_TRIP, {
-    update(cache, { data: { deleteTrip } }) {
-      cache.modify({
-        fields: {
-          trips(existingTripRefs = [], { readField }) {
-            return existingTripRefs.filter(
-              (tripRef: any) => readField('_id', tripRef) !== deleteTrip._id
-            );
-          },
-        },
-      });
+    update(cache, { data }) {
+      const deleted = data?.deleteTrip;
+      if (!deleted?._id) return;
+      cache.evict({ id: cache.identify({ __typename: 'Trip', _id: deleted._id }) });
+      cache.gc();
     },
+    refetchQueries: [QUERY_MY_TRIPS],
   });
 
   const handleDeleteTrip = async (trip: Trip) => {
