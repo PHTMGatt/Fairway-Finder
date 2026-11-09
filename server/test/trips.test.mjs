@@ -183,3 +183,22 @@ test('course removal enforces trip ownership before touching a course', async ()
   const tripAfter = await Trip.findById(tripId).lean();
   assert.equal(tripAfter.courses.length, 1, 'unauthorized removal did not mutate the trip');
 });
+
+test('trip mutations return players with a full score card (regression: Add Player crashed the scorecard)', async () => {
+  const tripId = await newTrip('Scorecard shape');
+  const PLAYER_FIELDS = 'players { name score total }';
+  const added = await alice(`mutation($t: ID!, $n: String!) { addPlayer(tripId: $t, name: $n) { _id ${PLAYER_FIELDS} } }`, { t: tripId, n: 'Bryen' });
+  assert.equal(added.error, null);
+  const player = added.data.addPlayer.players.find((p) => p.name === 'Bryen');
+  assert.equal(player.score.H1, 0);
+  assert.equal(player.score.H18, 0);
+  assert.equal(player.total, 0);
+
+  const scored = await alice(
+    `mutation($t: ID!, $p: String!, $h: Int!, $s: Int!) { updateScore(tripId: $t, player: $p, hole: $h, score: $s) { _id ${PLAYER_FIELDS} } }`,
+    { t: tripId, p: 'Bryen', h: 1, s: 4 }
+  );
+  const after = scored.data.updateScore.players.find((p) => p.name === 'Bryen');
+  assert.equal(after.score.H1, 4);
+  assert.equal(after.total, 4);
+});
