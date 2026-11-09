@@ -95,6 +95,8 @@ export const enforceRateLimit = (limiter: RateLimiter, ip: string | undefined) =
 export const loginLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
 export const signupLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 5 });
 export const guestLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 3 });
+// Note; Code entry / reset requests (per IP); each code also allows only 5 wrong tries.
+export const codeLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
 
 // Note; Light limit on the /api proxies to paid Google/Golf/weather APIs
 export const apiLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 120 });

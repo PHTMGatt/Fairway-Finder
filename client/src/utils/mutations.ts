@@ -174,3 +174,41 @@ export const UPDATE_PLAYER_HANDICAP = gql`
   }
   ${SCORECARD_TRIP_FIELDS}
 `;
+
+/** ——— EMAIL CODES (sign-up verification + password reset) ——— **/
+
+export const REQUEST_SIGNUP_CODE = gql`
+  mutation RequestSignupCode($input: SignupInput!) {
+    requestSignupCode(input: $input)
+  }
+`;
+
+export const VERIFY_EMAIL = gql`
+  mutation VerifyEmail($email: String!, $code: String!) {
+    verifyEmail(email: $email, code: $code) {
+      token
+      profile {
+        _id
+        name
+      }
+    }
+  }
+`;
+
+export const REQUEST_PASSWORD_RESET = gql`
+  mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email)
+  }
+`;
+
+export const RESET_PASSWORD = gql`
+  mutation ResetPassword($email: String!, $code: String!, $password: String!) {
+    resetPassword(email: $email, code: $code, password: $password) {
+      token
+      profile {
+        _id
+        name
+      }
+    }
+  }
+`;

@@ -111,7 +111,21 @@ export default `
     courseName: String
   }
 
+  "What sign-up options this server offers."
+  type AuthOptions {
+    "True when email codes (verification + password reset) are configured."
+    emailCodes: Boolean!
+  }
+
+  "Email-code sign-up: no invite needed; the account works after the emailed code is entered."
+  input SignupInput {
+    name: String!
+    email: String!
+    password: String!
+  }
+
   type Query {
+    authOptions: AuthOptions!
     """
     Fetch the currently logged-in user's profile and only their trips.
     """
@@ -130,6 +144,15 @@ export default `
 
   type Mutation {
     addProfile(input: ProfileInput!): Auth
+
+    "Start an email-code sign-up. Always returns true (never reveals whether the email is registered)."
+    requestSignupCode(input: SignupInput!): Boolean!
+    "Finish sign-up with the 6-digit code from the email; returns a login token."
+    verifyEmail(email: String!, code: String!): Auth
+    "Email a password-reset code. Always returns true."
+    requestPasswordReset(email: String!): Boolean!
+    "Set a new password with the emailed code; returns a login token."
+    resetPassword(email: String!, code: String!, password: String!): Auth
     login(email: String!, password: String!): Auth
 
     """

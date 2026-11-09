@@ -1,8 +1,10 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
-import { useMutation } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import Auth from '../../utils/auth';
 import { ADD_PROFILE } from '../../utils/mutations';
+import { QUERY_AUTH_OPTIONS } from '../../utils/queries';
+import EmailSignup from './EmailSignup';
 import { useAuth } from './AuthContext';
 import './Signup.css';
 
@@ -21,6 +23,9 @@ const Signup: React.FC = () => {
     inviteCode: searchParams.get('invite')?.trim() ?? '',
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { data: authOptions } = useQuery(QUERY_AUTH_OPTIONS);
+  const emailCodes = Boolean(authOptions?.authOptions?.emailCodes);
+  const [useInvite, setUseInvite] = useState(Boolean(searchParams.get('invite')));
 
   // Note; Apollo mutation for creating a new profile
   const [addProfile, { loading }] = useMutation(ADD_PROFILE);
@@ -76,10 +81,22 @@ const Signup: React.FC = () => {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        <h4 className="auth-header">Sign Up</h4>
+        <h4 className="auth-header">Create account</h4>
         <div className="auth-body">
+          {emailCodes && !useInvite ? (
+            <>
+              <p className="auth-note">Keep your rounds forever. We&apos;ll email you a code to confirm it&apos;s you.</p>
+              <EmailSignup />
+              <p className="auth-note">
+                <button type="button" className="auth-link" onClick={() => setUseInvite(true)}>
+                  Have an invite code?
+                </button>
+              </p>
+            </>
+          ) : (
+          <>
           <p className="auth-note">
-            Fairway Finder accounts are invite-only. Enter the code from your invite.
+            {emailCodes ? 'Sign up with the code from your invite.' : 'Fairway Finder accounts are invite-only. Enter the code from your invite.'}
           </p>
           <form className="auth-form" onSubmit={handleSubmit}>
             <input
@@ -134,6 +151,8 @@ const Signup: React.FC = () => {
           </form>
           {errorMessage && (
             <div className="auth-error" role="alert">{errorMessage}</div>
+          )}
+          </>
           )}
           <p className="auth-note">
             Already have an account? <Link to="/login">Log in</Link>

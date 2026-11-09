@@ -10,6 +10,8 @@ export interface ProfileDoc extends Document {
   handicap?: number;
   isGuest?: boolean;
   expiresAt?: Date;
+  emailVerified?: boolean;
+  unverifiedExpiresAt?: Date;
   isCorrectPassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -52,6 +54,14 @@ const profileSchema = new Schema<ProfileDoc>(
     expiresAt: {
       type: Date,
     },
+    // Note; Email-code sign-ups start false and become true after the code is entered.
+    // Older invite-based accounts have no value and are treated as verified.
+    emailVerified: {
+      type: Boolean,
+    },
+    unverifiedExpiresAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -72,6 +82,13 @@ const profileSchema = new Schema<ProfileDoc>(
 profileSchema.index(
   { expiresAt: 1 },
   { expireAfterSeconds: 0, partialFilterExpression: { isGuest: true } }
+);
+
+// Note; Unverified sign-ups that never enter their code are removed after a day.
+// Partial filter: only emailVerified === false documents are ever considered.
+profileSchema.index(
+  { unverifiedExpiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { emailVerified: false } }
 );
 
 profileSchema.pre<ProfileDoc>('save', async function (next) {

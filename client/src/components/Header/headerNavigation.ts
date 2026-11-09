@@ -31,7 +31,7 @@ const SIGNED_OUT: HeaderNavigationItem[] = [
   { label: 'Home', path: '/', icon: 'home', mobile: true },
   { label: 'Play', path: '/courses', icon: 'courses', mobile: true },
   { label: 'Log In', path: '/login', icon: 'login', mobile: true },
-  { label: 'Invite Sign Up', path: '/signup', icon: 'signup', mobile: true },
+  { label: 'Sign Up', path: '/signup', icon: 'signup', mobile: true },
 ];
 
 export const getHeaderNavigation = (isLoggedIn: boolean): HeaderNavigationItem[] =>
