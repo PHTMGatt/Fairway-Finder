@@ -165,3 +165,10 @@
   .handicap-page .clear-btn { width: 100%; }
   .handicap-page .handicap-value { font-size: 2.2rem; }
 }
+
+.handicap-page .handicap-hint {
+  margin: 0 0 0.9rem;
+  color: var(--ff-muted-2);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
