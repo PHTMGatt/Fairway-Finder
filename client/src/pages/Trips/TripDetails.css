@@ -43,7 +43,7 @@
   margin: 0;
   overflow-wrap: anywhere;
   color: #fff;
-  font-size: clamp(2.15rem, 5vw, 3.8rem);
+  font-size: var(--ff-page-title);
   font-weight: 850;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -415,7 +415,7 @@
   }
 
   .trip-details__title {
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: var(--ff-page-title);
   }
 
   .trip-details__overview {

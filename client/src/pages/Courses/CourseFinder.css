@@ -60,7 +60,7 @@
   max-width: var(--ff-content);
   margin: 0;
   color: #fff;
-  font-size: clamp(2.25rem, 5vw, 4.35rem);
+  font-size: var(--ff-page-title);
   font-weight: 850;
   line-height: 0.98;
   letter-spacing: -0.05em;
@@ -599,7 +599,7 @@
   }
 
   .course-finder__title {
-    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-size: var(--ff-page-title);
   }
 
   .course-finder__subtitle {

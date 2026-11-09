@@ -44,6 +44,7 @@ const router = createBrowserRouter([
       { path: 'weather', element: deferred(<Weather />) },
       { path: 'trip/:tripId', element: deferred(<TripDetails />) },
       { path: 'handicap', element: deferred(<Handicap />) },
+      { path: '*', element: <ErrorPage /> },
     ],
   },
 ]);

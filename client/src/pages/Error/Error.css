@@ -22,7 +22,7 @@
   max-width: 620px;
   margin: 0;
   color: var(--ff-text);
-  font-size: clamp(2rem, 6vw, 3.4rem);
+  font-size: var(--ff-page-title);
   font-weight: 850;
   line-height: 1.02;
   letter-spacing: -0.045em;
@@ -40,15 +40,31 @@
   max-width: 600px;
   margin: 1rem 0 0;
   padding: 0.7rem 0.95rem;
-  border: 1px solid rgba(232, 103, 103, 0.2);
-  border-radius: var(--ff-radius-sm);
-  background: rgba(66, 22, 22, 0.56);
-  color: #eeb3b3;
+  border: 1px solid var(--ff-line);
+  border-radius: var(--ff-radius-pill);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--ff-muted);
   overflow-wrap: anywhere;
   font-size: 0.9rem;
   font-style: normal;
   box-shadow: none;
 }
+
+.error-page__home {
+  display: inline-flex;
+  min-height: var(--ff-tap);
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 0 1.4rem;
+  border-radius: var(--ff-radius-sm);
+  background: linear-gradient(180deg, var(--ff-green), var(--ff-green-deep));
+  color: #04120a;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.error-page__home:hover { filter: brightness(1.08); }
+.error-page__home:focus-visible { outline: 3px solid rgba(53, 215, 125, 0.55); outline-offset: 3px; }
 
 @media (max-width: 520px) and (orientation: portrait) {
   .error-page {

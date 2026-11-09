@@ -57,7 +57,7 @@
 .dashboard__title {
   margin: 0;
   color: #fff;
-  font-size: clamp(2.15rem, 5vw, 3.7rem);
+  font-size: var(--ff-page-title);
   font-weight: 850;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -226,7 +226,7 @@
   }
 
   .dashboard__title {
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: var(--ff-page-title);
   }
 
   .dashboard__intro {

@@ -8,6 +8,7 @@ import {
   CourseSummary,
   TeeBox,
 } from './HandicapAPI';
+import { Link } from 'react-router-dom';
 import Auth from '../../utils/auth';
 import './HandicapTracker.css';
 
@@ -168,7 +169,11 @@ const HandicapTracker: React.FC = () => {
       <div className="handicap-page">
         <div className="auth-card">
           <h1 className="title">Handicap Tracker</h1>
-          <p className="handicap-message">You must be logged in to view this page.</p>
+          <p className="handicap-message">Log in to track handicaps for the players on your trips.</p>
+          <div className="handicap-auth-actions">
+            <Link to="/login" className="submit-btn">Log In</Link>
+            <Link to="/" className="clear-btn">Try the Guest Demo</Link>
+          </div>
         </div>
       </div>
     );

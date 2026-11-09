@@ -21,10 +21,10 @@
   margin-top: 0.4rem;
   padding: 0.3rem;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid rgba(25, 72, 99, 0.16);
+  background: var(--ff-panel-strong);
+  border: 1px solid var(--ff-line);
   border-radius: var(--ff-radius-sm);
-  box-shadow: 0 10px 24px rgba(19, 60, 84, 0.14);
+  box-shadow: var(--ff-shadow);
 }
 
 .location-autocomplete__option {
@@ -34,10 +34,11 @@
   width: 100%;
   padding: 0.62rem 0.7rem;
   border: 0;
-  border-bottom: 1px solid rgba(25, 72, 99, 0.08);
+  border-bottom: 1px solid var(--ff-line);
   border-radius: var(--ff-radius-sm);
   background: transparent;
-  color: #18384b;
+  min-height: var(--ff-tap);
+  color: var(--ff-text);
   text-align: left;
   line-height: 1.25;
   font: inherit;
@@ -51,8 +52,8 @@
 
 .location-autocomplete__option:hover,
 .location-autocomplete__option.active {
-  background: #e7f6ff;
-  color: #0a4f7c;
+  background: rgba(53, 215, 125, 0.12);
+  color: var(--ff-text);
   transform: translateX(2px);
 }
 
@@ -71,4 +72,11 @@
     width: 100%;
     max-width: 360px;
   }
+}
+
+/* Inside a stacked (column) form field: fill the width, never stretch vertically. */
+.map-routing__field .location-autocomplete {
+  flex: 0 0 auto;
+  max-width: none;
+  align-self: stretch;
 }

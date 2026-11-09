@@ -24,6 +24,8 @@
   --ff-tap: 44px;
   --ff-side-w: 248px;
   --ff-tabs-h: 64px;
+  /* Inner-page title size: the app pages are tools, not landing pages. */
+  --ff-page-title: clamp(1.75rem, 3vw, 2.5rem);
   /* Shared hero backdrop: soft fairway glow + mowing stripes (replaces the old cartoon GIF). */
   --ff-hero-bg:
     radial-gradient(ellipse 60% 70% at 88% 18%, rgba(53, 215, 125, 0.22), transparent 70%),

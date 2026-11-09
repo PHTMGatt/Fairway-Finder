@@ -31,7 +31,7 @@
   gap: 0.7rem;
   margin: 0;
   color: #fff;
-  font-size: clamp(2.3rem, 5vw, 4.1rem);
+  font-size: var(--ff-page-title);
   font-weight: 850;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -491,7 +491,7 @@
   }
 
   .plan-trip__title {
-    font-size: clamp(2rem, 5vw, 3rem);
+    font-size: var(--ff-page-title);
   }
 
   .plan-trip__intro {
