@@ -1,6 +1,7 @@
 // server/src/routes/courseRoutes.ts
 
 import { Router, Request, Response } from 'express';
+import { cacheKey, createTtlCache } from '../utils/ttlCache.js';
 import fetch from 'node-fetch';
 
 const router = Router();
@@ -328,11 +329,14 @@ const searchGolfCourseApi = async (
     .slice(0, limit);
 };
 
+// Google Places is billed per request: identical searches within 6 hours are free.
+const courseCache = createTtlCache<Course[]>({ ttlMs: 6 * 60 * 60 * 1000, maxEntries: 500 });
+
 router.get<object, Course[], object, CourseQuery>(
   '/courses',
   async (req: Request<object, Course[], object, CourseQuery>, res: Response) => {
-    const city = req.query.city?.trim() || '';
-    if (!city) {
+    const city = typeof req.query.city === 'string' ? req.query.city.trim() : '';
+    if (!city || city.length > 100) {
       return res
         .status(400)
         .json({ error: 'The "city" query parameter is required.' } as any);
@@ -342,21 +346,29 @@ router.get<object, Course[], object, CourseQuery>(
     const miles = Number(req.query.maxDistance);
     const maxDistanceMiles = Number.isFinite(miles) && miles > 0 ? miles : undefined;
 
+    const key = cacheKey(`${city}|${limit}|${maxDistanceMiles ?? ''}`);
+    const cached = courseCache.get(key);
+    if (cached) return res.json(cached);
+    const send = (results: Course[]) => {
+      if (results.length) courseCache.set(key, results);
+      return res.json(results);
+    };
+
     try {
       const modernResults = await searchPlacesNew(city, limit, maxDistanceMiles);
-      if (modernResults?.length) return res.json(modernResults);
+      if (modernResults?.length) return send(modernResults);
 
       console.warn('Places API (New) unavailable or empty; trying legacy Places.');
       const legacyResults = await searchPlacesLegacy(city, limit, maxDistanceMiles);
-      if (legacyResults.length) return res.json(legacyResults);
+      if (legacyResults.length) return send(legacyResults);
 
       console.warn('Google Places unavailable or empty; trying OpenStreetMap.');
       const osmResults = await searchOpenStreetMap(city, limit, maxDistanceMiles);
-      if (osmResults.length) return res.json(osmResults);
+      if (osmResults.length) return send(osmResults);
 
       console.warn('OpenStreetMap course search empty; trying GolfCourseAPI.');
       const golfResults = await searchGolfCourseApi(city, limit);
-      return res.json(golfResults);
+      return send(golfResults);
     } catch (error) {
       console.error(
         'Course discovery failed:',

@@ -98,3 +98,8 @@ export const guestLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 3
 
 // Note; Light limit on the /api proxies to paid Google/Golf/weather APIs
 export const apiLimiter = createRateLimiter({ windowMs: 60 * 1000, max: 120 });
+
+// Note; Quota-protecting limits for the metered providers (cache hits still count, which is fine:
+// a real golfer makes a handful of lookups per round).
+export const golfLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 40 });
+export const placesLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 40 });

@@ -52,7 +52,8 @@ import mapRoutes from './routes/mapRoutes.js';
 import golfRoutes from './routes/golfRoutes.js';
 import locationRoutes from './routes/locationRoutes.js';
 import { authenticateToken } from './utils/auth.js';
-import { apiLimiter, rateLimitMiddleware, resolveTrustProxy } from './utils/rateLimit.js';
+import { apiLimiter, golfLimiter, placesLimiter, rateLimitMiddleware, resolveTrustProxy } from './utils/rateLimit.js';
+import { securityHeaders } from './utils/securityHeaders.js';
 import { startGuestCleanup } from './utils/guestCleanup.js';
 
 async function startServer() {
@@ -71,8 +72,10 @@ async function startServer() {
     const app = express();
     app.set('trust proxy', resolveTrustProxy(TRUST_PROXY, NODE_ENV));
     const corsOrigin = CLIENT_ORIGIN || (NODE_ENV === 'production' ? false : 'http://localhost:3000');
+    app.disable('x-powered-by');
+    app.use(securityHeaders(NODE_ENV === 'production'));
     app.use(cors({ origin: corsOrigin, credentials: true }));
-    app.use(express.json());
+    app.use(express.json({ limit: '100kb' }));
     app.use(compression());
 
     // Note; Opt-in check that req.ip is the real client IP behind Render's proxy
@@ -88,6 +91,8 @@ async function startServer() {
     }
 
     app.use('/api', rateLimitMiddleware(apiLimiter));
+    app.use('/api/golf', rateLimitMiddleware(golfLimiter));
+    app.use('/api/courses', rateLimitMiddleware(placesLimiter));
     app.use('/api', courseRoutes);
     app.use('/api', weatherRoutes);
     app.use('/api', mapRoutes);
