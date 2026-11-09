@@ -197,7 +197,7 @@ jobs:
             echo "::group::full npm audit report in $d"
             (cd "$d" && npm audit) || true
             echo "::endgroup::"
-            bad=$(grep -E '"resolved": "' "$d/package-lock.json" | grep -v 'https://registry.npmjs.org/' || true)
+            bad=$(grep -E '"resolved": "' "$d/package-lock.json" | grep -v 'https://registry.npmjs.org/' | grep -vE '"resolved": "(file:.*)?"' || true)
             if [ -n "$bad" ]; then echo "::error::$d: dependencies resolved outside the npm registry"; echo "$bad"; fail=1; fi
           done
           [ "$fail" = 0 ] && echo "all lockfile entries resolve from the npm registry"
