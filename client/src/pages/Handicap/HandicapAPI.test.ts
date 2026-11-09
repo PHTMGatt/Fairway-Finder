@@ -24,6 +24,17 @@ describe('GolfCourseAPI detail response contract', () => {
   it('rejects malformed detail payloads', () => {
     expect(normalizeCourseDetailsResponse(null)).toBeNull();
     expect(normalizeCourseDetailsResponse({ id: 123 })).toBeNull();
-    expect(normalizeCourseDetailsResponse({ course: { ...course, tees: null } })).toBeNull();
+  });
+
+  it('accepts real GolfCourseAPI string ids', () => {
+    const live = normalizeCourseDetailsResponse({ course: { ...course, id: '86gj0vqf' } });
+    expect(live?.id).toBe('86gj0vqf');
+  });
+
+  it('treats a course with no tee data as empty tee lists (rating/slope are typed instead)', () => {
+    const noTees = normalizeCourseDetailsResponse({ course: { ...course, tees: null } });
+    expect(noTees?.tees).toEqual({ male: [], female: [] });
+    const partial = normalizeCourseDetailsResponse({ course: { ...course, tees: {} } });
+    expect(partial?.tees).toEqual({ male: [], female: [] });
   });
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, FormEvent } from 'react';
+import React, { useState, useEffect, useCallback, useRef, FormEvent } from 'react';
 import { useQuery, useMutation } from '@apollo/client';
 import { QUERY_MY_TRIPS } from '../../utils/queries';
 import { UPDATE_PLAYER_HANDICAP } from '../../utils/mutations';
@@ -99,20 +99,23 @@ const HandicapTracker: React.FC = () => {
     }
   }, [loading, data]);
 
+  // Latest search function, read by the trip effect below without making the
+  // effect re-run on every keystroke (that used to snap the box back to the trip course).
+  const searchRef = useRef(handleCourseSearch);
+  searchRef.current = handleCourseSearch;
+
   useEffect(() => {
     const trip = data?.me.trips.find((t) => t._id === tripId);
     if (!trip) return;
 
-    if (trip.players.length && !player) {
-      setPlayer(trip.players[0].name);
-    }
+    setPlayer((current) => current || trip.players[0]?.name || '');
 
     const rawName = trip.courses[0]?.name || '';
     const splitAmpersand = rawName.split('&')[0].trim();
     const firstTwoWords = splitAmpersand.split(/\s+/).slice(0, 2).join(' ');
     setSearchQuery(firstTwoWords);
-    handleCourseSearch(firstTwoWords);
-  }, [tripId, data, player, handleCourseSearch]);
+    void searchRef.current(firstTwoWords);
+  }, [tripId, data]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
