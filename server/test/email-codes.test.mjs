@@ -123,3 +123,14 @@ test('a sign-up code cannot be used as a reset code', async () => {
   const r = await call(RESET, { e: email, c: signupCode, p: 'hijacked123' });
   assert.ok(r.error);
 });
+
+test('issuing a code refuses to run without JWT_SECRET_KEY (no hard-coded fallback)', async () => {
+  const { issueCode } = await dist('utils/emailCodes.js');
+  const saved = process.env.JWT_SECRET_KEY;
+  delete process.env.JWT_SECRET_KEY;
+  try {
+    await assert.rejects(issueCode('nosecret@example.com', 'signup'), /JWT_SECRET_KEY is not configured/);
+  } finally {
+    process.env.JWT_SECRET_KEY = saved;
+  }
+});

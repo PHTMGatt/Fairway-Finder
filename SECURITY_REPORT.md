@@ -45,7 +45,7 @@ CI is strict for client and root production dependencies and warns for the dev-o
 | 8 | Audit logging without secrets | UNVERIFIED | Console logging only; not reviewed for redaction. |
 | 9 | Admin authorization | UNVERIFIED | Invite creation is a CLI script (`scripts/createInvite.ts`), not an HTTP route. No admin routes seen. |
 | 10 | Injection | PASS (partial) | Mongoose models and typed GraphQL inputs. Not exhaustively reviewed. |
-| 11 | Env/config security | PASS | `.env` gitignored, enforced by the new config gate; `runtimeEnvironment.ts:6` requires `MONGODB_URI` and `JWT_SECRET_KEY` (test: `runtime-environment.test.mjs`). Note: `utils/emailCodes.ts:12` falls back to a fixed string if `JWT_SECRET_KEY` is unset. That is unreachable while the core-env check holds, but should throw instead (low). |
+| 11 | Env/config security | PASS | `.env` gitignored, enforced by the new config gate; `runtimeEnvironment.ts:6` requires `MONGODB_URI` and `JWT_SECRET_KEY` (test: `runtime-environment.test.mjs`). `utils/emailCodes.ts:12` now throws if `JWT_SECRET_KEY` is unset (was a fixed-string fallback; test: `email-codes.test.mjs`). |
 | 12 | Rate limiting | PASS | Login, signup, guest and code limiters (`schemas/resolvers.ts:12`) and API-wide limiters (`server.ts:93-95`). Test: `rate-limit.test.mjs`. |
 | 13 | CORS | PASS | Origin from `CLIENT_ORIGIN`, `false` in production when unset, never `*` (`server.ts:74,77`). |
 | 14 | Security headers / CSP | PASS (partial) | `securityHeaders(...)` (`server.ts:76`); test `security.test.mjs`. Contents of the CSP were not re-reviewed here. |

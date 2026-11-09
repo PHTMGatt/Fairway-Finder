@@ -9,7 +9,11 @@ export const CODE_TTL_MS = 15 * 60 * 1000;
 export const RESEND_COOLDOWN_MS = 60 * 1000;
 export const MAX_ATTEMPTS = 5;
 
-const secret = () => process.env.JWT_SECRET_KEY || 'fairway-email-codes';
+const secret = () => {
+  const key = process.env.JWT_SECRET_KEY;
+  if (!key) throw new Error('JWT_SECRET_KEY is not configured');
+  return key;
+};
 
 const hashCode = (email: string, purpose: EmailCodePurpose, code: string) =>
   crypto.createHmac('sha256', secret()).update(`${purpose}:${email}:${code}`).digest('hex');
