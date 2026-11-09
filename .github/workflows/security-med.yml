@@ -41,3 +41,4 @@ jobs:
         CLIENT_ORIGIN=http://127.0.0.1:3001
       fuzz-get-paths: "/health"
       fuzz-post-paths: "/graphql"
+# rerun to verify pipeline revision 2
