@@ -8,7 +8,7 @@ import './ScoreCard.css';
 
 interface PlayerSubdoc {
   name: string;
-  score: Record<string, number>;
+  score: Record<string, number> | null;
   total: number;
 }
 
@@ -249,7 +249,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
                   <th scope="row">{player.name}</th>
                   {holeNumbers.map((holeNum) => {
                     const key = `H${holeNum}`;
-                    const value = player.score[key] ?? 0;
+                    const value = player.score?.[key] ?? 0;
                     return (
                       <td key={holeNum}>
                         <ScoreInput
@@ -262,7 +262,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId }) => {
                       </td>
                     );
                   })}
-                  <td className="scorecard__total">{player.total}</td>
+                  <td className="scorecard__total">{player.total ?? 0}</td>
                   <td>
                     <button
                       type="button"

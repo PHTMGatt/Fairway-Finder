@@ -112,20 +112,23 @@ const normalizeTripCourse = (input: TripCourseInput) => {
   };
 };
 
+/** 18-hole score map ({ H1: 4, ... }) and total from a stored player's `scores` array. */
+export const playerScoreCard = (p: any): { score: Record<string, number>; total: number } => {
+  const stored: any[] = Array.isArray(p?.scores) ? p.scores : [];
+  const score: Record<string, number> = {};
+  let total = 0;
+  for (let hole = 1; hole <= 18; hole += 1) {
+    const value = stored.find((s: any) => s.hole === hole)?.score ?? 0;
+    score[`H${hole}`] = value;
+    total += value;
+  }
+  return { score, total };
+};
+
 const transformTrip = (trip: any) => {
   const transformedPlayers = trip.players.map((p: any) => {
-    const ordered = Array.from({ length: 18 }, (_, idx) => {
-      const holeNum = idx + 1;
-      const found = p.scores.find((s: any) => s.hole === holeNum);
-      return { hole: holeNum, score: found?.score ?? 0 };
-    });
-    let total = 0;
-    const scoreObj: Record<string, number> = {};
-    ordered.forEach(({ hole, score }) => {
-      scoreObj[`H${hole}`] = score;
-      total += score;
-    });
-    return { name: p.name, score: scoreObj, total, handicap: p.handicap ?? null };
+    const { score, total } = playerScoreCard(p);
+    return { name: p.name, score, total, handicap: p.handicap ?? null };
   });
   return {
     _id: trip._id,
@@ -138,6 +141,12 @@ const transformTrip = (trip: any) => {
 };
 
 const resolvers: IResolvers<any, Context> = {
+  // Mutations return raw Trip documents (players carry `scores`, not `score`).
+  // Without these, Apollo cached `score: null` and the scorecard crashed after Add Player.
+  Player: {
+    score: (p) => (p.score && typeof p.score === 'object' ? p.score : playerScoreCard(p).score),
+    total: (p) => (typeof p.total === 'number' ? p.total : playerScoreCard(p).total),
+  },
   Profile: {
     isGuest: (profile) => profile.isGuest === true,
     expiresAt: (profile) => (profile.expiresAt ? new Date(profile.expiresAt).toISOString() : null),
