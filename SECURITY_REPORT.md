@@ -8,7 +8,7 @@
 | Before this change | After |
 |---|---|
 | [main.yml](.github/workflows/main.yml) ran on every push and PR: lint, build, server tests, client tests. | Unchanged, not duplicated. |
-| No secret scan, no dependency audit, no config checks. | New [security.yml](.github/workflows/security.yml): gitleaks (pinned, checksum-verified, allowlist in [.gitleaks.toml](.gitleaks.toml), proof step with run-time fake tokens), `npm audit --audit-level=high` for `.`, `client`, `server`, and [config validation](.github/scripts/check-config.mjs). |
+| No secret scan, no dependency audit, no config checks. | New [security-pipeline.yml](.github/workflows/security-pipeline.yml): gitleaks (pinned, checksum-verified, allowlist in [.gitleaks.toml](.gitleaks.toml), proof step with run-time fake tokens), `npm audit --audit-level=high` for `.`, `client`, `server`, and [config validation](.github/scripts/check-config.mjs). |
 | No deploy step in any workflow; no `render.yaml`. | Same. Pushing to `claude-forge` cannot deploy from CI. Render auto-deploy is a dashboard setting, not inspected. |
 
 Local results on this branch: lint 0 errors, server build ok, server tests 85/85, client tests 65/65.
@@ -66,3 +66,15 @@ CI is strict for client and root production dependencies and warns for the dev-o
 ## Outcome
 
 Not a clean GO for production dependencies: server production advisories (apollo, nodemailer, tar) need tested major upgrades. No code-level critical issue was found in the areas reviewed. Highest-value next steps: upgrade `@apollo/server`, `nodemailer` and `bcrypt` on one branch with the existing 85 server tests, then make the server audit step strict.
+
+## Pipeline levels (one reusable workflow)
+
+[security-pipeline.yml](.github/workflows/security-pipeline.yml) takes a `level` input; three thin callers choose it.
+
+| Level | Caller | Runs on | Adds |
+|---|---|---|---|
+| LOW | `security-low.yml` | every PR and every claude-forge push | gitleaks (tree + scanner proof), `npm audit` high/critical, config checks, build and tests where the repo's own CI does not already run them |
+| MED | `security-med.yml` | nightly and manual | full-history gitleaks, dependency review, red-team tests where the repo has them |
+| HIGH | `security-high.yml` | manual / pre-launch | ZAP baseline (and API fuzzing where there is an API) against a local instance with fake data, never production; then a GO / NO-GO verdict. No exemptions at this level: any high or critical advisory, failed check or open FAIL in this report is NO-GO |
+
+Until these files are on the default branch, the med and high callers also run when `claude-forge` changes them, because schedule and manual triggers need the default branch.
