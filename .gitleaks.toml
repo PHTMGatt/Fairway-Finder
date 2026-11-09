@@ -1,0 +1,13 @@
+# gitleaks config for Fairway Finder: the default rules, minus the deliberately fake fixture.
+# The CI security job separately scans the fixture with the plain default rules and fails
+# unless gitleaks flags it, so this allowlist can't hide a broken scanner.
+title = "Fairway Finder gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Deliberately fake secrets in the scanner fixture"
+paths = [
+  '''(^|/)\.github/security/fixtures/''',
+]

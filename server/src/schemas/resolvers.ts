@@ -193,7 +193,7 @@ const resolvers: IResolvers<any, Context> = {
         throw toDuplicateKeyError(err);
       }
       await markInviteUsedBy(invite._id as any, profile._id as any);
-      const token = signToken(profile.name, profile.email, profile._id as string);
+      const token = signToken(profile.name, profile.email, profile._id as unknown as string);
       return { token, profile };
     },
     login: async (_p, { email, password }, context) => {
@@ -209,7 +209,7 @@ const resolvers: IResolvers<any, Context> = {
       if (profile.emailVerified === false) {
         throw new AuthenticationError('Check your email for the 6-digit code to finish signing up.');
       }
-      const token = signToken(profile.name, profile.email, profile._id as string);
+      const token = signToken(profile.name, profile.email, profile._id as unknown as string);
       return { token, profile };
     },
 
@@ -268,7 +268,7 @@ const resolvers: IResolvers<any, Context> = {
         { new: true }
       );
       if (!profile) throw new UserInputError('That sign-up expired. Please sign up again.');
-      const token = signToken(profile.name, profile.email, profile._id as string);
+      const token = signToken(profile.name, profile.email, profile._id as unknown as string);
       return { token, profile };
     },
 
@@ -297,7 +297,7 @@ const resolvers: IResolvers<any, Context> = {
       if (!profile || profile.isGuest) throw new UserInputError(codeErrorMessage('expired'));
       profile.password = password;
       await profile.save();
-      const token = signToken(profile.name, profile.email, profile._id as string);
+      const token = signToken(profile.name, profile.email, profile._id as unknown as string);
       return { token, profile };
     },
     startGuestSession: async (_p, _a, context) => {
@@ -309,7 +309,7 @@ const resolvers: IResolvers<any, Context> = {
         await Profile.deleteOne({ _id: profile._id, isGuest: true });
         throw error;
       }
-      const token = signToken(profile.name, profile.email, profile._id as string, { notAfter: profile.expiresAt as Date, isGuest: true });
+      const token = signToken(profile.name, profile.email, profile._id as unknown as string, { notAfter: profile.expiresAt as Date, isGuest: true });
       return { token, profile };
     },
     resetGuestDemo: async (_p, _a, context) => {
