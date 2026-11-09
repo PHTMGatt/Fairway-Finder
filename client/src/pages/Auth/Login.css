@@ -241,3 +241,16 @@
     align-self: center;
   }
 }
+
+.auth-page .auth-note--row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.auth-page a.auth-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}

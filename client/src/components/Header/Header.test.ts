@@ -42,7 +42,7 @@ describe('header navigation', () => {
       'Home',
       'Play',
       'Log In',
-      'Invite Sign Up',
+      'Sign Up',
     ]);
   });
 

@@ -4,12 +4,13 @@ import Profile from './Profile.js';
 import Trip from './Trip.js';
 import Course from './Course.js';
 import Invite from './Invite.js';
+import EmailCode from './EmailCode.js';
 
 /**
  * Note; Central export of all Mongoose models.
  * Explicit .js extensions keep the compiled ESM imports resolvable in Node.
  */
-export { Profile, Trip, Course, Invite };
+export { Profile, Trip, Course, Invite, EmailCode };
 
 /**
  * Create the safety-critical indexes declared by the schemas without dropping
@@ -22,5 +23,6 @@ export const initializeModelIndexes = async (): Promise<void> => {
     Profile.createIndexes(),
     Trip.createIndexes(),
     Invite.createIndexes(),
+    EmailCode.createIndexes(),
   ]);
 };

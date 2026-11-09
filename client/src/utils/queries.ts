@@ -144,3 +144,11 @@ export const QUERY_SCORECARD = gql`
     }
   }
 `;
+
+export const QUERY_AUTH_OPTIONS = gql`
+  query AuthOptions {
+    authOptions {
+      emailCodes
+    }
+  }
+`;

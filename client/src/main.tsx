@@ -10,6 +10,7 @@ import Home from './pages/Home/Home';
 import Signup from './pages/Auth/Signup';
 import Login from './pages/Auth/Login';
 import ErrorPage from './pages/Error/Error';
+import ForgotPassword from './pages/Auth/ForgotPassword';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Dashboard = lazy(() => import('./pages/DashBoard/DashBoard'));
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
       { path: 'signup', element: <Signup /> },
+      { path: 'forgot-password', element: <ForgotPassword /> },
       { path: 'me', element: deferred(<Dashboard />) },
       { path: 'saved-trips', element: deferred(<SavedTrips />) },
       { path: 'plan-trip', element: deferred(<PlanTrip />) },

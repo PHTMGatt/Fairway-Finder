@@ -171,3 +171,24 @@
     grid-column: 1 / -1;
   }
 }
+
+/* Email-code helpers */
+.auth-input--code {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.4em;
+  text-align: center;
+}
+
+.auth-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ff-green);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.auth-link:disabled { opacity: 0.6; cursor: wait; }

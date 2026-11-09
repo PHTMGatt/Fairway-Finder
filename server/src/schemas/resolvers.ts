@@ -7,7 +7,9 @@ import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
 import { signToken } from '../utils/auth.js';
-import { enforceRateLimit, guestLimiter, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
+import { codeEmail, emailCodesEnabled, sendMail } from '../utils/mailer.js';
+import { checkCode, codeErrorMessage, issueCode } from '../utils/emailCodes.js';
+import { codeLimiter, enforceRateLimit, guestLimiter, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
 import { LIMITS, checkRange, checkText } from '../utils/validate.js';
 import {
   GUEST_MAX_TRIPS,
@@ -152,6 +154,7 @@ const resolvers: IResolvers<any, Context> = {
     expiresAt: (profile) => (profile.expiresAt ? new Date(profile.expiresAt).toISOString() : null),
   },
   Query: {
+    authOptions: () => ({ emailCodes: emailCodesEnabled() }),
     me: async (_p, _a, context) => {
       const profile = await getCurrentProfile(context);
       return profile.populate('trips');
@@ -203,6 +206,97 @@ const resolvers: IResolvers<any, Context> = {
       }
       const valid = await profile.isCorrectPassword(password);
       if (!valid) throw new AuthenticationError(INVALID_LOGIN_MESSAGE);
+      if (profile.emailVerified === false) {
+        throw new AuthenticationError('Check your email for the 6-digit code to finish signing up.');
+      }
+      const token = signToken(profile.name, profile.email, profile._id as string);
+      return { token, profile };
+    },
+
+    requestSignupCode: async (_p, { input }, context) => {
+      enforceRateLimit(signupLimiter, context.ip);
+      if (!emailCodesEnabled()) throw new UserInputError('Email sign-up is not available yet. Use an invite code.');
+      const { name, email, password } = input;
+      if (password.length < PASSWORD_MIN_LENGTH || Buffer.byteLength(password, 'utf8') > PASSWORD_MAX_BYTES) {
+        throw new UserInputError(`Password must be ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_BYTES} characters`, { invalidArgs: ['password'] });
+      }
+      checkText(name, 'name', 'Username', LIMITS.username);
+      checkText(email, 'email', 'Email', 254);
+      if (isReservedGuestName(name)) throw new UserInputError('Usernames starting with "guest-" are reserved', { invalidArgs: ['name'] });
+      if (isReservedGuestEmail(email)) throw new UserInputError('That email address is not allowed', { invalidArgs: ['email'] });
+      const normalizedEmail = email.trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) throw new UserInputError('Enter a real email address', { invalidArgs: ['email'] });
+
+      const existing = await Profile.findOne({ email: normalizedEmail });
+      // Note; A verified/legacy account already owns this email: answer the same way, send nothing.
+      if (existing && existing.emailVerified !== false) return true;
+
+      const nameOwner = await Profile.findOne({ name: name.trim() });
+      if (nameOwner && String(nameOwner._id) !== String(existing?._id)) {
+        throw new UserInputError('That username is taken', { invalidArgs: ['name'] });
+      }
+
+      const issued = await issueCode(normalizedEmail, 'signup');
+      if ('cooldownSeconds' in issued) {
+        throw new UserInputError(`Wait ${issued.cooldownSeconds} seconds before asking for another code.`);
+      }
+      const expires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      if (existing) {
+        existing.name = name.trim();
+        existing.password = password;
+        existing.unverifiedExpiresAt = expires;
+        await existing.save();
+      } else {
+        try {
+          await Profile.create({ name: name.trim(), email: normalizedEmail, password, emailVerified: false, unverifiedExpiresAt: expires });
+        } catch (err) {
+          throw toDuplicateKeyError(err);
+        }
+      }
+      await sendMail(codeEmail(normalizedEmail, 'signup', issued.code));
+      return true;
+    },
+
+    verifyEmail: async (_p, { email, code }, context) => {
+      enforceRateLimit(codeLimiter, context.ip);
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const result = await checkCode(normalizedEmail, 'signup', String(code));
+      if (result !== 'ok') throw new UserInputError(codeErrorMessage(result), { invalidArgs: ['code'] });
+      const profile = await Profile.findOneAndUpdate(
+        { email: normalizedEmail, emailVerified: false },
+        { $set: { emailVerified: true }, $unset: { unverifiedExpiresAt: 1 } },
+        { new: true }
+      );
+      if (!profile) throw new UserInputError('That sign-up expired. Please sign up again.');
+      const token = signToken(profile.name, profile.email, profile._id as string);
+      return { token, profile };
+    },
+
+    requestPasswordReset: async (_p, { email }, context) => {
+      enforceRateLimit(codeLimiter, context.ip);
+      if (!emailCodesEnabled()) throw new UserInputError('Password reset by email is not available yet.');
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const profile = await Profile.findOne({ email: normalizedEmail });
+      // Note; Same answer whether or not the account exists (no enumeration).
+      if (!profile || profile.isGuest || profile.emailVerified === false) return true;
+      const issued = await issueCode(normalizedEmail, 'reset');
+      if ('cooldownSeconds' in issued) return true;
+      await sendMail(codeEmail(normalizedEmail, 'reset', issued.code));
+      return true;
+    },
+
+    resetPassword: async (_p, { email, code, password }, context) => {
+      enforceRateLimit(codeLimiter, context.ip);
+      if (password.length < PASSWORD_MIN_LENGTH || Buffer.byteLength(password, 'utf8') > PASSWORD_MAX_BYTES) {
+        throw new UserInputError(`Password must be ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_BYTES} characters`, { invalidArgs: ['password'] });
+      }
+      const normalizedEmail = String(email).trim().toLowerCase();
+      const result = await checkCode(normalizedEmail, 'reset', String(code));
+      if (result !== 'ok') throw new UserInputError(codeErrorMessage(result), { invalidArgs: ['code'] });
+      const profile = await Profile.findOne({ email: normalizedEmail });
+      if (!profile || profile.isGuest) throw new UserInputError(codeErrorMessage('expired'));
+      profile.password = password;
+      await profile.save();
       const token = signToken(profile.name, profile.email, profile._id as string);
       return { token, profile };
     },

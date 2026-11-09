@@ -1,9 +1,8 @@
 import React, { useState, ChangeEvent, FormEvent } from 'react';
-import { Navigate, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import Auth from '../../utils/auth';
 import { LOGIN_USER } from '../../utils/mutations';
-import GuestDemoButton from '../../components/GuestDemoButton';
 import { useAuth } from './AuthContext';
 import { getLoginReasonMessage } from './loginReason';
 import './Login.css';
@@ -84,16 +83,22 @@ const Login: React.FC = () => {
               {loading ? 'Logging in…' : 'Log In'}
             </button>
           </form>
-          {errorMessage && <div className="auth-error">{errorMessage}</div>}
+          {errorMessage && <div className="auth-error" role="alert">{errorMessage}</div>}
+          <p className="auth-note auth-note--row">
+            <Link to="/forgot-password">Forgot password?</Link>
+            <Link to="/signup">Create account</Link>
+          </p>
           <div className="auth-divider" aria-hidden="true">
-            <span>or test the full app</span>
+            <span>or skip the account</span>
           </div>
           <div className="auth-demo-callout">
             <div>
-              <strong>Guest Demo</strong>
-              <span>Start with a private sample trip, players, and scores—no real account needed.</span>
+              <strong>Play as a guest</strong>
+              <span>Private to this phone for 24 hours. No email or password.</span>
             </div>
-            <GuestDemoButton className="auth-btn auth-btn--guest" />
+            <Link to="/courses" className="auth-btn auth-btn--guest">
+              Start a round
+            </Link>
           </div>
         </div>
       </div>
