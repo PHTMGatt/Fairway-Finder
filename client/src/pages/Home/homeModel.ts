@@ -3,13 +3,14 @@ export interface HomeAction {
   path: string;
 }
 
+// One obvious first step: pick a course and play. No account needed.
 const SIGNED_IN_PRIMARY_ACTIONS: HomeAction[] = [
-  { label: 'Plan a Trip', path: '/plan-trip' },
-  { label: 'My Trips', path: '/saved-trips' },
+  { label: 'Start a Round', path: '/courses' },
+  { label: 'My Rounds', path: '/saved-trips' },
 ];
 
 const SIGNED_OUT_PRIMARY_ACTIONS: HomeAction[] = [
-  { label: 'Browse Courses', path: '/courses' },
+  { label: 'Start a Round', path: '/courses' },
   { label: 'Log In', path: '/login' },
 ];
 

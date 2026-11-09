@@ -19,16 +19,16 @@ describe('guest banner state', () => {
 });
 
 describe('header navigation', () => {
-  it('puts every signed-in page in the sidebar, with the two trip actions first after Dashboard', () => {
+  it('puts every signed-in page in the sidebar, game-day pages first', () => {
     const nav = getHeaderNavigation(true);
     expect(nav.map((item) => item.path)).toEqual([
       '/me',
-      '/plan-trip',
-      '/saved-trips',
       '/courses',
+      '/saved-trips',
       '/weather',
-      '/routing',
       '/handicap',
+      '/plan-trip',
+      '/routing',
     ]);
   });
 
@@ -37,9 +37,10 @@ describe('header navigation', () => {
     expect(getHeaderNavigation(false).filter((item) => item.mobile).length).toBeLessThanOrEqual(5);
   });
 
-  it('shows only home and account entry points for signed-out users', () => {
+  it('lets signed-out users play without an account, or log in', () => {
     expect(getHeaderNavigation(false).map((item) => item.label)).toEqual([
       'Home',
+      'Play',
       'Log In',
       'Invite Sign Up',
     ]);

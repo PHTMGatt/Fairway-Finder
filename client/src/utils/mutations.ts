@@ -169,12 +169,8 @@ export const UPDATE_HANDICAP = gql`
 export const UPDATE_PLAYER_HANDICAP = gql`
   mutation UpdatePlayerHandicap($tripId: ID!, $name: String!, $handicap: Float!) {
     updatePlayerHandicap(tripId: $tripId, name: $name, handicap: $handicap) {
-      _id
-      name
-      players {
-        name
-        handicap
-      }
+      ...ScorecardTripFields
     }
   }
+  ${SCORECARD_TRIP_FIELDS}
 `;

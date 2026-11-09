@@ -18,17 +18,18 @@ export interface HeaderNavigationItem {
 }
 
 const SIGNED_IN: HeaderNavigationItem[] = [
-  { label: 'Dashboard', path: '/me', icon: 'home', mobile: true },
-  { label: 'Plan Trip', path: '/plan-trip', icon: 'plan', mobile: true },
-  { label: 'My Trips', path: '/saved-trips', icon: 'trips', mobile: true },
-  { label: 'Courses', path: '/courses', icon: 'courses', mobile: true },
-  { label: 'Weather', path: '/weather', icon: 'weather' },
-  { label: 'Routes', path: '/routing', icon: 'routes' },
+  { label: 'Home', path: '/me', icon: 'home', mobile: true },
+  { label: 'Play', path: '/courses', icon: 'courses', mobile: true },
+  { label: 'My Rounds', path: '/saved-trips', icon: 'trips', mobile: true },
+  { label: 'Weather', path: '/weather', icon: 'weather', mobile: true },
   { label: 'Handicap', path: '/handicap', icon: 'handicap', mobile: true },
+  { label: 'Plan Ahead', path: '/plan-trip', icon: 'plan' },
+  { label: 'Directions', path: '/routing', icon: 'routes' },
 ];
 
 const SIGNED_OUT: HeaderNavigationItem[] = [
   { label: 'Home', path: '/', icon: 'home', mobile: true },
+  { label: 'Play', path: '/courses', icon: 'courses', mobile: true },
   { label: 'Log In', path: '/login', icon: 'login', mobile: true },
   { label: 'Invite Sign Up', path: '/signup', icon: 'signup', mobile: true },
 ];

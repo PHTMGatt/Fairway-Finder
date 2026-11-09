@@ -8,10 +8,10 @@ import {
   FaMapMarkerAlt,
   FaStar,
 } from 'react-icons/fa';
-import GuestDemoButton from '../../components/GuestDemoButton';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
 import { useAuth } from '../Auth/AuthContext';
 import { CourseSearchResult } from '../Trips/planTripCourse';
+import { useStartRound } from './useStartRound';
 import {
   CourseRatingFilter,
   CourseSortMode,
@@ -67,6 +67,8 @@ const CourseFinder: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const { startRound, startingId, error: startError } = useStartRound();
 
   const planWithCourse = (course: CourseSearchResult) => {
     navigate('/plan-trip', {
@@ -201,6 +203,12 @@ const CourseFinder: React.FC = () => {
             </div>
           </div>
 
+          {startError && (
+            <p className="course-finder__start-error" role="alert">
+              {startError}
+            </p>
+          )}
+
           {visibleCourses.length === 0 ? (
             <div className="course-finder__filtered-empty">
               <div>
@@ -225,7 +233,6 @@ const CourseFinder: React.FC = () => {
                   : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
                       query
                     )}`;
-                const planState = { city: city.trim(), course };
 
                 return (
                   <li key={course.place_id} className="course-card">
@@ -259,23 +266,23 @@ const CourseFinder: React.FC = () => {
                           <FaExternalLinkAlt aria-hidden="true" />
                           Open Map
                         </a>
-                        {isLoggedIn ? (
+                        <button
+                          type="button"
+                          className="course-card__plan"
+                          onClick={() => void startRound(course)}
+                          disabled={startingId !== null}
+                        >
+                          <FaFlagCheckered aria-hidden="true" />
+                          {startingId === (course.place_id || course.name) ? 'Starting…' : 'Play here today'}
+                        </button>
+                        {isLoggedIn && (
                           <button
                             type="button"
-                            className="course-card__plan"
+                            className="course-card__link"
                             onClick={() => planWithCourse(course)}
                           >
-                            <FaFlagCheckered aria-hidden="true" />
-                            Plan This Course
+                            Plan for later
                           </button>
-                        ) : (
-                          <GuestDemoButton
-                            className="course-card__plan"
-                            label="Plan as Guest"
-                            showNote={false}
-                            destination="/plan-trip"
-                            navigationState={planState}
-                          />
                         )}
                       </div>
                     </div>
