@@ -1,0 +1,319 @@
+# Reusable security pipeline with three levels. Called by thin per-repo workflows
+# (security-low.yml, security-med.yml, security-high.yml).
+#   low  : every PR / claude-forge push. Secrets scan, npm audit, config check, build and tests.
+#   med  : nightly / manual. low + full-history secret scan + dependency review + red-team tests.
+#   high : manual / pre-launch. med + ZAP baseline + safe API fuzzing against a LOCAL instance
+#          started in CI with fake data (never production) + a GO / NO-GO verdict.
+# Read-only: no secrets, no deploys. The only network targets are 127.0.0.1 and the registries.
+name: security-pipeline
+
+on:
+  workflow_call:
+    inputs:
+      level:
+        description: low, med or high
+        type: string
+        required: true
+      node-version:
+        type: string
+        default: '22'
+      audit-dirs:
+        description: Space-separated package folders (each needs a package-lock.json)
+        type: string
+        default: '.'
+      audit-omit-dev-dirs:
+        description: Folders whose dev-only advisories only warn at low and med (documented in the report)
+        type: string
+        default: ''
+      audit-report-only-dirs:
+        description: Folders whose audit only warns at low and med (documented in the report)
+        type: string
+        default: ''
+      install-command:
+        description: Run before extra-check-command, build-command and red-team (empty = skip)
+        type: string
+        default: ''
+      extra-check-command:
+        type: string
+        default: ''
+      build-command:
+        type: string
+        default: ''
+      redteam-command:
+        type: string
+        default: ''
+      prepare-command:
+        description: high only, before starting the target (install and build)
+        type: string
+        default: ''
+      start-command:
+        description: high only, starts the local target in the background
+        type: string
+        default: ''
+      start-env:
+        description: high only, KEY=VALUE per line, fake values only
+        type: string
+        default: ''
+      target-url:
+        type: string
+        default: http://127.0.0.1:4173
+      mongo:
+        description: high only, start a throwaway mongo:7 container for the target
+        type: boolean
+        default: false
+      fuzz-get-paths:
+        description: Space-separated GET paths; {} marks where payloads go
+        type: string
+        default: ''
+      report-file:
+        description: The 27-point report checked by the high-level verdict
+        type: string
+        default: SECURITY_REPORT.md
+      fuzz-post-paths:
+        description: Space-separated POST paths for malformed-body probes
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+env:
+  GITLEAKS_VERSION: 8.21.2
+
+jobs:
+  low:
+    name: low (secrets, audit, config, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install gitleaks (pinned, checksum-verified)
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "$base/$tarball"
+          curl -fsSLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " ${tarball}\$" "gitleaks_${GITLEAKS_VERSION}_checksums.txt" | sha256sum -c -
+          tar -xzf "$tarball" gitleaks
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Secret scan (working tree)
+        run: gitleaks dir . --config .gitleaks.toml --redact --no-banner --verbose
+
+      - name: Secret scan catches the fixture
+        run: |
+          # Fake tokens are assembled from halves so no token-shaped text is committed
+          # (GitHub push protection would reject it). They are never valid.
+          mkdir -p "$RUNNER_TEMP/fixture"
+          a1="ghp_R7mQ2xLk9VtB4nWp"; a2="8sZc3HdJ6fYg1uEa0oKi"
+          b1="AKIAQ4ZJ7RW2"; b2="XK5M3TNB"
+          c1="xoxb-482915736201-"; c2="930174628354-Lq8vNz2RkT5wYb7HmXc4PdJs"
+          printf 'github_token = %s%s\naws_access_key_id = %s%s\nslack_bot_token = %s%s\n' "$a1" "$a2" "$b1" "$b2" "$c1" "$c2" > "$RUNNER_TEMP/fixture/fake-credentials.txt"
+          printf '[extend]\nuseDefault = true\n' > "$RUNNER_TEMP/defaults.toml"
+          gitleaks dir "$RUNNER_TEMP/fixture" --config "$RUNNER_TEMP/defaults.toml" --redact --no-banner \
+            --exit-code 0 --report-format json --report-path "$RUNNER_TEMP/fixture.json"
+          count=$(jq length "$RUNNER_TEMP/fixture.json")
+          jq -r '.[] | "flagged: \(.RuleID) in \(.File):\(.StartLine)"' "$RUNNER_TEMP/fixture.json"
+          if [ "$count" -lt 3 ]; then echo "::error::gitleaks flagged $count of 3 fake secrets in the fixture"; exit 1; fi
+          echo "gitleaks flagged all $count fake secrets in the fixture"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Dependency audit (high and critical)
+        env:
+          DIRS: ${{ inputs.audit-dirs }}
+          OMIT_DEV: ${{ inputs.audit-omit-dev-dirs }}
+          REPORT_ONLY: ${{ inputs.audit-report-only-dirs }}
+          LEVEL: ${{ inputs.level }}
+        run: |
+          fail=0
+          for d in $DIRS; do
+            echo "::group::npm audit in $d"
+            if [ "$LEVEL" != "high" ] && [[ " $REPORT_ONLY " == *" $d "* ]]; then
+              (cd "$d" && npm audit --audit-level=high) || echo "::warning::$d has high or critical advisories (documented in SECURITY_REPORT.md); strict at level high"
+            elif [ "$LEVEL" != "high" ] && [[ " $OMIT_DEV " == *" $d "* ]]; then
+              (cd "$d" && npm audit --audit-level=high --omit=dev) || fail=1
+              (cd "$d" && npm audit --audit-level=high) || echo "::warning::$d has dev-dependency advisories (documented in SECURITY_REPORT.md); strict at level high"
+            else
+              (cd "$d" && npm audit --audit-level=high) || fail=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $fail
+
+      - name: Config validation
+        run: node .github/scripts/check-config.mjs ${{ inputs.audit-dirs }}
+
+      - name: Install
+        if: inputs.install-command != ''
+        run: ${{ inputs.install-command }}
+
+      - name: Repo config check
+        if: inputs.extra-check-command != ''
+        run: ${{ inputs.extra-check-command }}
+
+      - name: Build and test
+        if: inputs.build-command != ''
+        run: ${{ inputs.build-command }}
+
+  med:
+    name: med (history, dependency review, red-team)
+    if: inputs.level == 'med' || inputs.level == 'high'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks (pinned, checksum-verified)
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}"
+          tarball="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          cd "$RUNNER_TEMP"
+          curl -fsSLO "$base/$tarball"
+          curl -fsSLO "$base/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " ${tarball}\$" "gitleaks_${GITLEAKS_VERSION}_checksums.txt" | sha256sum -c -
+          tar -xzf "$tarball" gitleaks
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Secret scan (all commits, redacted)
+        run: gitleaks git . --config .gitleaks.toml --redact --no-banner --verbose
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Dependency review (full audit report and lockfile sources)
+        env:
+          DIRS: ${{ inputs.audit-dirs }}
+        run: |
+          fail=0
+          for d in $DIRS; do
+            echo "::group::full npm audit report in $d"
+            (cd "$d" && npm audit) || true
+            echo "::endgroup::"
+            bad=$(grep -E '"resolved": "' "$d/package-lock.json" | grep -v 'https://registry.npmjs.org/' | grep -vE '"resolved": "(file:.*)?"' || true)
+            if [ -n "$bad" ]; then echo "::error::$d: dependencies resolved outside the npm registry"; echo "$bad"; fail=1; fi
+          done
+          [ "$fail" = 0 ] && echo "all lockfile entries resolve from the npm registry"
+          exit $fail
+
+      - name: Install
+        if: inputs.redteam-command != ''
+        run: ${{ inputs.install-command != '' && inputs.install-command || 'npm ci --no-fund' }}
+
+      - name: Auth/API red-team regression tests
+        if: inputs.redteam-command != ''
+        run: ${{ inputs.redteam-command }}
+
+  high:
+    name: high (ZAP baseline, API fuzz)
+    if: inputs.level == 'high'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Throwaway MongoDB (fake data)
+        if: inputs.mongo
+        run: |
+          docker run -d --name zap-mongo -p 127.0.0.1:27017:27017 mongo:7
+          for i in $(seq 1 30); do docker exec zap-mongo mongosh --quiet --eval 'db.runCommand({ping:1}).ok' && break; sleep 2; done
+
+      - name: Prepare target
+        if: inputs.prepare-command != ''
+        run: ${{ inputs.prepare-command }}
+
+      - name: Start target (local only, fake data)
+        env:
+          START_CMD: ${{ inputs.start-command }}
+          START_ENV: ${{ inputs.start-env }}
+          TARGET_URL: ${{ inputs.target-url }}
+        run: |
+          case "$TARGET_URL" in
+            http://127.0.0.1:*|http://localhost:*) ;;
+            *) echo "::error::refusing non-local target $TARGET_URL"; exit 1 ;;
+          esac
+          while IFS= read -r line; do [ -n "$line" ] && echo "$line" >> "$GITHUB_ENV"; done <<< "$START_ENV"
+          set -a
+          while IFS= read -r line; do [ -n "$line" ] && export "$line"; done <<< "$START_ENV"
+          set +a
+          nohup bash -c "$START_CMD" > "$RUNNER_TEMP/target.log" 2>&1 &
+          for i in $(seq 1 60); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$TARGET_URL" || true)
+            [ "$code" != "000" ] && [ -n "$code" ] && break
+            sleep 2
+          done
+          echo "target answered HTTP $code"
+          if [ "$code" = "000" ] || [ -z "$code" ]; then tail -40 "$RUNNER_TEMP/target.log"; exit 1; fi
+
+      - name: Safe API fuzzing (loopback only)
+        if: inputs.fuzz-get-paths != '' || inputs.fuzz-post-paths != ''
+        env:
+          TARGET_URL: ${{ inputs.target-url }}
+          FUZZ_GET_PATHS: ${{ inputs.fuzz-get-paths }}
+          FUZZ_POST_PATHS: ${{ inputs.fuzz-post-paths }}
+        run: node .github/scripts/api-fuzz.mjs
+
+      - name: ZAP baseline (passive scan of the local target)
+        env:
+          TARGET_URL: ${{ inputs.target-url }}
+        run: |
+          mkdir -p zap && chmod 777 zap
+          docker run --rm --network host -u root -v "$PWD/zap:/zap/wrk:rw" ghcr.io/zaproxy/zaproxy:2.16.1 \
+            zap-baseline.py -t "$TARGET_URL" -J zap.json -r zap.html -I -m 3
+          highs=$(jq '[.site[].alerts[] | select((.riskcode|tonumber) >= 3)] | length' zap/zap.json)
+          jq -r '.site[].alerts[] | "ZAP risk \(.riskcode) \(.name) (\(.instances|length) instance(s))"' zap/zap.json | sort -u
+          echo "zap_highs=$highs" >> "$GITHUB_ENV"
+          if [ "$highs" != "0" ]; then echo "::error::ZAP found $highs high-risk alert(s)"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-report
+          path: zap/
+          if-no-files-found: ignore
+
+      - name: Target log (last lines)
+        if: always()
+        run: tail -30 "$RUNNER_TEMP/target.log" 2>/dev/null || true
+
+  verdict:
+    name: GO / NO-GO
+    if: always() && inputs.level == 'high'
+    needs: [low, med, high]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decide
+        env:
+          LOW: ${{ needs.low.result }}
+          MED: ${{ needs.med.result }}
+          HIGH: ${{ needs.high.result }}
+          REPORT: ${{ inputs.report-file }}
+        run: |
+          nogo=0
+          {
+            echo "## Security verdict"
+            echo "| Level | Result |"; echo "|---|---|"
+            echo "| low | $LOW |"; echo "| med | $MED |"; echo "| high | $HIGH |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for r in "$LOW" "$MED" "$HIGH"; do [ "$r" = "success" ] || nogo=1; done
+          if [ ! -f "$REPORT" ]; then
+            echo "::error::$REPORT (27-point report) is missing"; nogo=1
+          else
+            fails=$(grep -nE '^\|[^|]*\|[^|]*\|[[:space:]]*\**FAIL' "$REPORT" || true)
+            unver=$(grep -cE '^\|[^|]*\|[^|]*\|[[:space:]]*\**UNVERIFIED' "$REPORT" || true)
+            echo "27-point report: $unver UNVERIFIED item(s) (not blocking, listed for the owner)" >> "$GITHUB_STEP_SUMMARY"
+            if [ -n "$fails" ]; then echo "::error::report has unresolved FAIL items"; echo "$fails"; echo "$fails" >> "$GITHUB_STEP_SUMMARY"; nogo=1; fi
+          fi
+          if [ "$nogo" = 1 ]; then echo "**NO-GO**" >> "$GITHUB_STEP_SUMMARY"; echo "::error::NO-GO: unresolved high or critical findings, a failed check, or an open FAIL in the report"; exit 1; fi
+          echo "**GO**" >> "$GITHUB_STEP_SUMMARY"

@@ -6,7 +6,7 @@ import cors from 'cors';
 import compression from 'compression';
 import dotenv from 'dotenv';
 import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
+import { expressMiddleware } from '@as-integrations/express4';
 import { getMissingCoreEnvironment, getProviderCapabilities } from './utils/runtimeEnvironment.js';
 
 dotenv.config({
