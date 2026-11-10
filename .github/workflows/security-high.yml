@@ -26,7 +26,6 @@ jobs:
       node-version: "22"
       audit-dirs: ". client server"
       audit-omit-dev-dirs: ". client"
-      audit-report-only-dirs: "server"
       mongo: true
       prepare-command: "npm install --no-fund && (cd client && npm install --no-fund) && (cd server && npm install --no-fund) && npm run build"
       start-command: "node server/dist/server.js"

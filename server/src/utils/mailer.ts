@@ -5,6 +5,7 @@
 // Tests swap in a capture function with setTestMailer().
 
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 export interface CodeEmail {
   to: string;
@@ -15,7 +16,7 @@ export interface CodeEmail {
 type SendFn = (message: CodeEmail) => Promise<void>;
 
 let testSender: SendFn | null = null;
-let transport: nodemailer.Transporter | null = null;
+let transport: Transporter | null = null;
 
 const gmailUser = () => process.env.GMAIL_USER?.trim() || '';
 const gmailPassword = () => (process.env.GMAIL_APP_PASSWORD || '').replace(/\s+/g, '');

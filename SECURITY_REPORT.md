@@ -31,6 +31,13 @@ Local results on this branch: lint 0 errors, server build ok, server tests 85/85
 
 CI is strict for client and root production dependencies and warns for the dev-only findings. The server audit step is report-only until the majors land, so it warns instead of failing. **Make it strict once those are upgraded.**
 
+## Update 2026-11-10: dependency majors landed
+
+- Server: `@apollo/server` 4 to 5 (express middleware now from `@as-integrations/express4`), `nodemailer` 6 to 10 (ships its own types), `bcrypt` 5 to 6 (removes the vulnerable `tar` chain). `npm audit --omit=dev` is 0 vulnerabilities. Test: `server/test/dependency-security.test.mjs`. Server tests 90/90.
+- Client: `vite` 5 to 7, `vitest` 3 to 4, plugin-react 5; root `npm audit fix`. No high or critical advisories remain in any package; only moderate dev-tool findings (typescript-eslint/minimatch, react-router) are open. Client tests 65/65, build ok, lint 0 errors.
+- The server audit step is now strict (the report-only setting was removed from the three callers).
+- Item 21 is PASS for high/critical. Still open for Bryen: confirm Render build uses a Node version that installs `bcrypt` 6 prebuilt binaries (it needs Node 18+), and eyeball email code delivery once after the next deploy.
+
 ## Checklist
 
 | # | Item | Status | Evidence |
@@ -55,7 +62,7 @@ CI is strict for client and root production dependencies and warns for the dev-o
 | 18 | File uploads | N/A | No upload route found. |
 | 19 | Price verification | N/A | No commerce. |
 | 20 | Debug off in production | PASS | `x-powered-by` disabled; the client-IP debug route is opt-in via `DEBUG_CLIENT_IP` (`server.ts:83`). Apollo disables introspection in production by default. |
-| 21 | Vulnerable dependencies | **FAIL (partial), improved** | See the open findings above. Production high/critical remain in the server (apollo, nodemailer, tar). |
+| 21 | Vulnerable dependencies | PASS (high/critical), moderate dev-tool findings open | See the 2026-11-10 update above. |
 | 22 | Unused packages | PASS (partial) | Two unused root dependencies found and removed. Not a full audit. |
 | 23 | Exposed files / source maps | UNVERIFIED | Static serving was not traced. |
 | 24 | Git history secret scan | UNVERIFIED | Working tree only. |
