@@ -11,6 +11,11 @@ MONGODB_URI=your_mongodb_atlas_connection_string
 JWT_SECRET_KEY=your_long_random_jwt_secret
 PLACES_API_KEY=your_google_server_api_key
 GOLF_API_KEY=your_golfcourseapi_key
+
+# Optional
+CLIENT_ORIGIN=https://your-deployed-client-origin   # CORS origin (required in production)
+GMAIL_USER=sender_address                           # email codes for sign-up / password reset
+GMAIL_APP_PASSWORD=gmail_app_password               # Gmail app password, not the account password
 ```
 
 ### Google server key
