@@ -2,6 +2,9 @@
   "name": "main",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server/dist/server.js",
     "start:dev": "concurrently \"cd server && npm run dev\" \"wait-on tcp:3001 && cd client && npm run dev\"",
