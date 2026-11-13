@@ -31,17 +31,5 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "wait-on": "^7.2.0"
-  },
-  "dependencies": {
-    "@googlemaps/react-wrapper": "^1.2.0",
-    "@react-google-maps/api": "^2.20.6",
-    "@vis.gl/react-google-maps": "^1.5.2",
-    "apollo-server-errors": "^3.3.1",
-    "bootstrap": "^5.3.6",
-    "cors": "^2.8.5",
-    "main": "file:",
-    "normalize.css": "^8.0.1",
-    "react-bootstrap": "^2.10.10",
-    "react-icons": "^5.5.0"
   }
 }
