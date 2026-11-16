@@ -1,4 +1,4 @@
-# 🏌️‍♂️ Fairway Finder
+# Fairway Finder
 
 [![CI](https://github.com/PHTMGatt/Fairway-Finder/actions/workflows/main.yml/badge.svg)](https://github.com/PHTMGatt/Fairway-Finder/actions/workflows/main.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -8,7 +8,7 @@ A full-stack golf trip planner for small groups. Find courses, plan driving rout
 **Live:** [fairway-finder.onrender.com](https://fairway-finder.onrender.com) · Accounts are invite-only, but **Try as Guest** on the login page opens a 24-hour demo with no sign-up.
 
 <p align="center">
-  <img src="docs/screenshots/fairway-desktop.png" alt="Fairway Finder on desktop" width="640" />
+  <img src="docs/screenshot.png" alt="Fairway Finder on desktop" width="640" />
   <img src="docs/screenshots/fairway-mobile.png" alt="Fairway Finder on mobile" width="200" />
 </p>
 
