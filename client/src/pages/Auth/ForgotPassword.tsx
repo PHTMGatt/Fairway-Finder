@@ -63,7 +63,7 @@ const ForgotPassword: React.FC = () => {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        <h4 className="auth-header">Reset password</h4>
+        <h1 className="auth-header">Reset password</h1>
         <div className="auth-body">
           {step === 'email' ? (
             <form className="auth-form" onSubmit={sendCode}>

@@ -79,7 +79,7 @@ Automated checks run on every push: lint, build, tests, and a layered security p
 ## Credits
 
 - **Primary developer:** [Bryen Gatt](https://github.com/PHTMGatt)
-- **Contributors:** [Jarred Hampton](https://github.com/Jarred13D) · [Jared Owens](https://github.com/jaredowens) · [Hunter West](https://github.com/Frankthedestro) · [Nicholas Dear](https://github.com/n6dd)
+- **Contributors:** Jarred Hampton · [Jared Owens](https://github.com/jaredowens) · [Hunter West](https://github.com/Frankthedestro) · [Nicholas Dear](https://github.com/n6dd)
 
 ## License
 
