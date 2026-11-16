@@ -9,14 +9,14 @@ import {
 } from './HandicapAPI';
 import { Link } from 'react-router-dom';
 import Auth from '../../utils/auth';
-import { parseRoundInput, scoreDifferential } from './handicapMath';
+import { parseRoundInput, savedPlayerHandicap, scoreDifferential } from './handicapMath';
 import './HandicapTracker.css';
 
 interface Trip {
   _id: string;
   name: string;
   courses: { name: string }[];
-  players: { name: string }[];
+  players: { name: string; handicap?: number | null }[];
 }
 
 type Gender = 'male' | 'female';
@@ -179,6 +179,8 @@ const HandicapTracker: React.FC = () => {
   const selectedTrip = data?.me.trips.find((t) => t._id === tripId);
   const players = selectedTrip?.players ?? [];
   const tripCourse = selectedTrip?.courses?.[0]?.name ?? '';
+  // Fresh result from this session wins; otherwise show what is already saved for the player.
+  const shownHandicap = handicap ?? savedPlayerHandicap(players, player);
 
   return (
     <div className="handicap-page">
@@ -223,7 +225,10 @@ const HandicapTracker: React.FC = () => {
           <select
             className="form-select"
             value={player}
-            onChange={(e) => setPlayer(e.target.value)}
+            onChange={(e) => {
+              setPlayer(e.target.value);
+              setHandicap(null);
+            }}
           >
             {players.map((p) => (
               <option key={p.name} value={p.name}>
@@ -340,9 +345,11 @@ const HandicapTracker: React.FC = () => {
             </div>
           </div>
           <div className="form-group">
-            <label className="form-label">Gross Score</label>
+            <label className="form-label" htmlFor="hc-gross">Gross Score</label>
             <input
+              id="hc-gross"
               className="form-input"
+              inputMode="numeric"
               type="number"
               value={gross}
               onChange={(e) => setGross(e.target.value)}
@@ -372,7 +379,7 @@ const HandicapTracker: React.FC = () => {
         <div className="handicap-info">
           <h2>Your Handicap Index</h2>
           <p className="handicap-value">
-            {handicap !== null ? handicap.toFixed(1) : 'N/A'}
+            {shownHandicap !== null ? shownHandicap.toFixed(1) : 'N/A'}
           </p>
         </div>
       </div>
