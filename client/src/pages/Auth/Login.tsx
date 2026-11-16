@@ -55,7 +55,7 @@ const Login: React.FC = () => {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        <h4 className="auth-header">Log In</h4>
+        <h1 className="auth-header">Log In</h1>
         <div className="auth-body">
           {reasonMessage && (
             <div className="auth-info" role="status">

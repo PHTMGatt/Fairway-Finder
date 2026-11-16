@@ -81,7 +81,7 @@ const Signup: React.FC = () => {
   return (
     <main className="auth-page">
       <div className="auth-card">
-        <h4 className="auth-header">Create account</h4>
+        <h1 className="auth-header">Create account</h1>
         <div className="auth-body">
           {emailCodes && !useInvite ? (
             <>
