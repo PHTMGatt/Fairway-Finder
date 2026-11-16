@@ -39,3 +39,12 @@ export const parseRoundInput = (gross: string, rating: string, slope: string): R
 /** Score differential rounded to one decimal place. */
 export const scoreDifferential = (gross: number, rating: number, slope: number): number =>
   Math.round((((gross - rating) * 113) / slope) * 10) / 10;
+
+/** The handicap already stored for a player on a trip, or null when none is saved. */
+export const savedPlayerHandicap = (
+  players: ReadonlyArray<{ name: string; handicap?: number | null }> | undefined,
+  name: string
+): number | null => {
+  const value = players?.find((p) => p.name === name)?.handicap;
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+};

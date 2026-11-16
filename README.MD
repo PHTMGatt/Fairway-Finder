@@ -1,102 +1,86 @@
 # 🏌️‍♂️ Fairway Finder
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)   [![GitHub stars](https://img.shields.io/github/stars/PHTMGatt/Fairway-Finder?style=social)](https://github.com/PHTMGatt/Fairway-Finder/stargazers)
 
-A modern, full-stack golf trip planner. Search and save courses, plan driving routes, check tee-off weather, and calculate handicaps—all with instant, secure authentication and a polished, responsive interface.
+[![CI](https://github.com/PHTMGatt/Fairway-Finder/actions/workflows/main.yml/badge.svg)](https://github.com/PHTMGatt/Fairway-Finder/actions/workflows/main.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
----
+A full-stack golf trip planner for small groups. Find courses, plan driving routes, check the forecast for your tee date, track your handicap, and keep scorecards for every round — in one phone-friendly app.
 
-## 📸 Screenshot
+**Live:** [fairway-finder.onrender.com](https://fairway-finder.onrender.com) · Accounts are invite-only, but **Try as Guest** on the login page opens a 24-hour demo with no sign-up.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/PHTMGatt/12-React-Portfolio/main/src/assets/photos/Fairway%20Finder.png" alt="Fairway Finder application" width="900" />
+  <img src="docs/screenshots/fairway-desktop.png" alt="Fairway Finder on desktop" width="640" />
+  <img src="docs/screenshots/fairway-mobile.png" alt="Fairway Finder on mobile" width="200" />
 </p>
 
 ---
 
-## 🎯 Elevator Pitch
+## Features
 
-Fairway Finder is a single-page MERN application that streamlines golf trip planning by combining course lookup, route mapping, weather forecasting, and handicap calculation into one intuitive platform. With real-time API integrations and a seamless user experience, everything you need is at your fingertips.
+- **Course finder** — search for courses, see tee boxes with course rating and slope, and save a course to a trip.
+- **Trips and rounds** — plan a trip, add players, keep a scorecard per round, and review saved trips.
+- **Directions** — driving routes with nearby stops along the way (Google Maps).
+- **Weather** — forecast for the saved trip date, with °F / °C toggle (Open-Meteo, no API key needed).
+- **Handicap tracker** — calculates a handicap index from live course rating and slope data and saves it to your profile.
+- **Auth** — JWT sessions; email-code sign-up verification and password reset; invite-only registration; time-limited guest demo (24 h, capped trips, rate-limited, cleaned up automatically).
+- **Phone-first UI** — responsive layout with a bottom navigation bar on small screens.
 
----
+## Tech stack
 
-## 💡 Concept & Motivation
+| Layer | Tools |
+|---|---|
+| Client | React 18, TypeScript, Vite, React Router, Apollo Client, React-Bootstrap, `@vis.gl/react-google-maps` |
+| Server | Node.js, Express, Apollo Server (GraphQL), Mongoose, JSON Web Tokens, Nodemailer |
+| Data | MongoDB (Atlas in production), TTL indexes for guest cleanup |
+| External APIs | Google Places / Routes / Geocoding and Maps JavaScript, GolfCourseAPI, Open-Meteo |
+| Quality | ESLint, Node test runner (server), Vitest (client), GitHub Actions (lint, build, tests, security pipeline) |
+| Hosting | Render |
 
-Planning a golf trip often means juggling multiple tools—course details, directions, weather, and handicaps. Fairway Finder removes that complexity. By integrating Google Maps, OpenWeather, and the Golf Course API, it provides a single, cohesive solution for organizing every aspect of your golf outing.
+Provider keys other than the browser Maps key stay on the server; the client talks to them through `/api/*` proxy routes that are rate limited.
 
----
+## Getting started
 
-## 🛠️ Core Features
+**Prerequisites:** Node.js 22, a MongoDB connection string, and the API keys listed in [README_FairwayFinder_API_Setup.md](README_FairwayFinder_API_Setup.md).
 
-- **Instant Authentication (JWT)**  
-  Secure sign-up, login, and logout without page reloads. React Context manages auth state so header buttons update immediately.
+```bash
+git clone https://github.com/PHTMGatt/Fairway-Finder.git
+cd Fairway-Finder
+npm install            # installs root, client and server dependencies
+```
 
-- **Course Finder (Golf Course API)**  
-  Search by course name, view tee box ratings and slopes filtered by gender, and save selections directly to your trip itinerary.
+Create `server/.env` and `client/.env` as described in the [API setup guide](README_FairwayFinder_API_Setup.md), then:
 
-- **Route Planning (Google Maps API)**  
-  Plan driving routes with turn-by-turn directions and visualize nearby amenities (golf courses, gas stations, rest areas) along the way.
+```bash
+npm run build:dev      # build server and client, then run both in dev mode
+```
 
-- **Weather Integration (OpenWeather API)**  
-  Fetch 7-day forecasts and toggle between Fahrenheit and Celsius to view conditions for your chosen trip date.
+The client runs on <http://localhost:3000> and the server on port 3001.
 
-- **Handicap Tracker (USGA Formula)**  
-  Calculate your handicap index instantly using real-time slope and rating data, then save that information to your profile.
+### Scripts
 
-- **Discord Webhook Bot Integration**  
-  Automatically post updates (e.g., commit messages or trip notifications) to a Discord channel via webhooks—legacy and webhook bot implementations supported.
+| Command | What it does |
+|---|---|
+| `npm run start:dev` | Run server and client with live reload |
+| `npm run build` | Compile the server and build the client |
+| `npm run lint` | ESLint over client and server source |
+| `npm test` | Server tests (builds first) |
+| `cd client && npx vitest run` | Client tests |
+| `npm run invite` | Create a sign-up invite code (`--dry-run` supported; see `server/src/scripts/createInvite.ts`) |
 
-- **Polished, Responsive UI**  
-  Scoped CSS prevents style conflicts. Glass-inspired form cards, smooth focus and hover effects, and a consistent color palette deliver a professional, mobile-friendly interface.
+## Security
 
----
+Automated checks run on every push: lint, build, tests, and a layered security pipeline (low / medium / high) defined in [`.github/workflows`](.github/workflows). Findings and fixes are tracked in [SECURITY_REPORT.md](SECURITY_REPORT.md).
 
-## 🔧 Technology Stack
+## Roadmap
 
-- **Frontend:**  
-  React (TypeScript) · React Router v6 · Apollo Client (GraphQL) · CSS (Scoped selectors) · Google Maps JS API (@vis.gl/react-google-maps) · OpenWeather API
+- Sharing a trip with the group via a link
+- Tee-time booking integration
+- Installable PWA with offline support
 
-- **Backend:**  
-  Node.js · Express.js · Apollo Server (GraphQL) · MongoDB (Mongoose) · JSON Web Tokens (JWT)
+## Credits
 
-- **Discord Integration:**  
-  Custom Discord Webhook Bot (legacy and webhook versions) for automated notifications and commit message postings.
-
-- **Deployment & Tooling:**  
-  Render (frontend & backend) · MongoDB Atlas · GitHub Actions (CI) · Environment variables to secure API keys
-
----
-
-## 🚀 Live Demo & Repository
-
-- **Live Site:** [https://fairway-finder.onrender.com](https://fairway-finder.onrender.com)  
-- **MVP Site:** [https://fairway-finder-mvp.onrender.com](https://fairway-finder-mvp.onrender.com)  
-- **GitHub:** [https://github.com/PHTMGatt/Fairway-Finder](https://github.com/PHTMGatt/Fairway-Finder)
-
----
-
-## 🔮 Future Directions
-
-- **Social Sharing:** Allow users to share golf itineraries via social media or unique trip links.  
-- **Tee-Time Booking:** Integrate a real-time tee-time reservation API.  
-- **Progressive Web App (PWA):** Add offline support and “Add to Home Screen” functionality for mobile users.
-
----
-
-## 🧠 Credits
-
-- **Primary Developer:** [Bryen Gatt](https://github.com/PHTMGatt)  
-- **Contributors:**  
-  • [Jarred Hampton](https://github.com/Jarred13D)  
-  • [Jared Owens](https://github.com/jaredowens)  
-  • [Hunter West](https://github.com/Frankthedestro)  
-  • [Nicholas Dear](https://github.com/n6dd)
-
----
+- **Primary developer:** [Bryen Gatt](https://github.com/PHTMGatt)
+- **Contributors:** [Jarred Hampton](https://github.com/Jarred13D) · [Jared Owens](https://github.com/jaredowens) · [Hunter West](https://github.com/Frankthedestro) · [Nicholas Dear](https://github.com/n6dd)
 
 ## License
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
-This project is licensed under the [MIT License](LICENSE).
-
-© 2025 Fairway Finder. All rights reserved.
+Released under the [MIT License](LICENSE).

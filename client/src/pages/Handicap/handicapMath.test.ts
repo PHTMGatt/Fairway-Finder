@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseRoundInput, scoreDifferential } from './handicapMath';
+import { parseRoundInput, savedPlayerHandicap, scoreDifferential } from './handicapMath';
 
 describe('handicap math', () => {
   it('computes the WHS score differential from rating and slope', () => {
@@ -19,5 +19,24 @@ describe('handicap math', () => {
     expect(parseRoundInput('90', '70', '300').ok).toBe(false);
     const bad = parseRoundInput('90', '12', '120');
     expect(bad.ok === false && bad.message).toMatch(/scorecard/);
+  });
+});
+
+describe('saved player handicap', () => {
+  const players = [
+    { name: 'Bryen', handicap: 12.4 },
+    { name: 'Sam', handicap: null },
+    { name: 'Zero', handicap: 0 },
+  ];
+
+  it('returns the stored value, including a legitimate 0', () => {
+    expect(savedPlayerHandicap(players, 'Bryen')).toBe(12.4);
+    expect(savedPlayerHandicap(players, 'Zero')).toBe(0);
+  });
+
+  it('returns null when nothing is saved or the player is unknown', () => {
+    expect(savedPlayerHandicap(players, 'Sam')).toBeNull();
+    expect(savedPlayerHandicap(players, 'Nobody')).toBeNull();
+    expect(savedPlayerHandicap(undefined, 'Bryen')).toBeNull();
   });
 });

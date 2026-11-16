@@ -4,6 +4,7 @@
 
 .nav__brand {
   display: inline-flex;
+  min-height: var(--ff-tap);
   min-width: 0;
   align-items: center;
   gap: 0.7rem;
