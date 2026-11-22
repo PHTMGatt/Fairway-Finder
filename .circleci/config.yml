@@ -93,7 +93,7 @@ jobs:
             npm --prefix client ci --no-fund --no-audit
             npm --prefix server ci --no-fund --no-audit
             npm --prefix server test
-            npm --prefix client exec -- vitest run
+            npm --prefix client run test -- --run
             npm run build
   med:
     executor: node
