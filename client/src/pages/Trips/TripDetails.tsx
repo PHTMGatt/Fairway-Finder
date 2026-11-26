@@ -12,7 +12,7 @@ import { Link, useParams } from 'react-router-dom';
 import { QUERY_TRIP } from '../../utils/queries';
 import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import { FaCalendarAlt, FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
-import { Alert } from 'react-bootstrap';
+import Notice from '../../components/ui/Notice';
 import ScoreCard from '../../components/ScoreCard/ScoreCard';
 import {
   PersistedTripCourse,
@@ -342,14 +342,13 @@ const TripDetails: React.FC = () => {
                 {hasSavedLocation ? 'Check another location' : 'Enter a weather location'}
               </summary>
               {showAlert && (
-                <Alert
-                  variant="danger"
+                <Notice
+                  tone="danger"
                   onClose={() => setShowAlert(false)}
-                  dismissible
                   className="trip-details__alert"
                 >
                   Please enter a weather location.
-                </Alert>
+                </Notice>
               )}
               <form className="trip-details__weather-form" onSubmit={handleCitySubmit}>
                 <input

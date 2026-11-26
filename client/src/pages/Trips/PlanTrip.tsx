@@ -5,7 +5,7 @@ import { useAuth } from '../../pages/Auth/AuthContext';
 import { useMutation } from '@apollo/client';
 import { ADD_TRIP } from '../../utils/mutations';
 import { QUERY_TRIPS } from '../../utils/queries';
-import { Alert } from 'react-bootstrap';
+import Notice from '../../components/ui/Notice';
 import { FaFlagCheckered, FaMapMarkerAlt, FaStar } from 'react-icons/fa';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
 import {
@@ -159,14 +159,13 @@ const PlanTrip: React.FC = () => {
           </form>
 
           {courseError && (
-            <Alert
-              variant="danger"
+            <Notice
+              tone="danger"
               onClose={() => setCourseError('')}
-              dismissible
               className="plan-trip__alert"
             >
               {courseError}
-            </Alert>
+            </Notice>
           )}
 
           {courseOptions.length > 0 && (
@@ -264,14 +263,13 @@ const PlanTrip: React.FC = () => {
           </form>
 
           {submitError && (
-            <Alert
-              variant="danger"
+            <Notice
+              tone="danger"
               onClose={() => setSubmitError('')}
-              dismissible
               className="plan-trip__alert"
             >
               {submitError}
-            </Alert>
+            </Notice>
           )}
         </section>
       </div>

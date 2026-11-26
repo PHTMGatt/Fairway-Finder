@@ -313,13 +313,6 @@
 
 .trip-details__alert {
   margin: 0.7rem 0 0;
-  border-color: rgba(232, 103, 103, 0.32);
-  background: rgba(66, 22, 22, 0.9);
-  color: #ffd4d4;
-}
-
-.trip-details__alert .btn-close {
-  filter: invert(1);
 }
 
 .trip-details__inline-error,

@@ -411,13 +411,6 @@
 
 .plan-trip__alert {
   margin: 0.85rem 0 0;
-  border-color: rgba(228, 102, 102, 0.32);
-  background: rgba(66, 22, 22, 0.9);
-  color: #ffd4d4;
-}
-
-.plan-trip__alert .btn-close {
-  filter: invert(1);
 }
 
 @media (max-width: 980px) {
