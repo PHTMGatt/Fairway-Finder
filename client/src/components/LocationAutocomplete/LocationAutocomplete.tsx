@@ -114,7 +114,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
         placeholder={placeholder}
         disabled={disabled}
         autoComplete="off"
-        aria-label={ariaLabel || placeholder}
+        // With an id, a <label> names the input; the placeholder must not override it.
+        aria-label={ariaLabel ?? (id ? undefined : placeholder)}
         onChange={(event) => {
           dismissedRef.current = false;
           onChange(event.target.value);

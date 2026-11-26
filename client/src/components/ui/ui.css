@@ -320,6 +320,11 @@ select.ff-input {
   outline-offset: -2px;
 }
 
+.ff-row[aria-pressed='true'] {
+  background: var(--ff-success-bg);
+  box-shadow: inset 3px 0 0 var(--ff-green);
+}
+
 .ff-row__leading {
   display: inline-flex;
   flex: none;

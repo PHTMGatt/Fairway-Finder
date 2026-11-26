@@ -234,6 +234,8 @@ interface ListRowProps {
   to?: string;
   onClick?: () => void;
   chevron?: boolean;
+  /** For selectable rows (with onClick): highlights the row and sets aria-pressed. */
+  pressed?: boolean;
   className?: string;
 }
 
@@ -245,6 +247,7 @@ export const ListRow: React.FC<ListRowProps> = ({
   to,
   onClick,
   chevron,
+  pressed,
   className,
 }) => {
   const interactive = Boolean(to || onClick);
@@ -277,7 +280,7 @@ export const ListRow: React.FC<ListRowProps> = ({
     );
   if (onClick)
     return (
-      <button type="button" className={cls} onClick={onClick}>
+      <button type="button" className={cls} onClick={onClick} aria-pressed={pressed}>
         {inner}
       </button>
     );
