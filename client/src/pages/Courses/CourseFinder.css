@@ -76,27 +76,6 @@
   line-height: 1.65;
 }
 
-.course-finder__hero-flow {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(92px, 1fr));
-  gap: 0.5rem;
-  flex: 0 1 300px;
-}
-
-.course-finder__hero-flow span {
-  min-height: 44px;
-  display: grid;
-  place-items: center;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid rgba(161, 229, 184, 0.2);
-  border-radius: var(--ff-radius-sm);
-  background: rgba(4, 17, 10, 0.68);
-  color: #dbe9df;
-  font-size: 0.84rem;
-  font-weight: 800;
-  backdrop-filter: blur(8px);
-}
-
 .course-finder__search-panel,
 .course-finder__results-section {
   padding: clamp(1.2rem, 2.7vw, 2rem);
@@ -497,10 +476,6 @@
   .course-finder__hero {
     min-height: 280px;
   }
-
-  .course-finder__hero-flow {
-    flex-basis: 230px;
-  }
 }
 
 @media (max-width: 760px) {
@@ -513,12 +488,6 @@
     min-height: 0;
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .course-finder__hero-flow {
-    width: 100%;
-    flex: none;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .course-finder__search-heading,
@@ -550,10 +519,6 @@
 
   .course-finder__hero {
     padding: 1.35rem;
-  }
-
-  .course-finder__hero-flow {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .course-finder__search {
@@ -605,12 +570,6 @@
   .course-finder__subtitle {
     margin-top: 0.7rem;
     line-height: 1.45;
-  }
-
-  .course-finder__hero-flow {
-    width: auto;
-    flex: 0 1 280px;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .course-finder__search-panel,

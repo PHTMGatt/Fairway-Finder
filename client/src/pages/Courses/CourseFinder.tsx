@@ -94,12 +94,6 @@ const CourseFinder: React.FC = () => {
             Search a city, compare nearby options, check the location, and carry the exact course straight into trip planning.
           </p>
         </div>
-        <div className="course-finder__hero-flow" aria-label="Course discovery workflow">
-          <span>Search</span>
-          <span>Compare</span>
-          <span>Route</span>
-          <span>Plan</span>
-        </div>
       </header>
 
       <section className="course-finder__search-panel" aria-labelledby="course-search-title">
@@ -108,7 +102,7 @@ const CourseFinder: React.FC = () => {
             <p className="course-finder__eyebrow">Start local</p>
             <h2 id="course-search-title">Search courses by city</h2>
           </div>
-          <p>Fairway Finder keeps real provider data intact—no invented ratings or course details.</p>
+          <p>Real course listings with ratings, addresses and directions.</p>
         </div>
 
         <form className="course-finder__search" onSubmit={handleSearch}>
