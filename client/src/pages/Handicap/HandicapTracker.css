@@ -89,6 +89,16 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* Custom arrow (was Bootstrap's .form-select). */
+.handicap-page .form-group select {
+  appearance: none;
+  padding-right: 2.25rem;
+  background-image: var(--ff-select-arrow);
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 12px 8px;
+}
+
 .handicap-page .form-group select:focus,
 .handicap-page .form-group input:focus,
 .handicap-page .search-input:focus,

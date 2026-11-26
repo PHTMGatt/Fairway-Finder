@@ -1,6 +1,5 @@
 // client/src/App.tsx
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import React, { useEffect, useMemo } from 'react';
 import './App.css';
 import {

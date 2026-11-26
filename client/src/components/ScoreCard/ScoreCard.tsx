@@ -331,7 +331,7 @@ const ScoreCard: React.FC<ScoreCardProps> = ({ tripId, courseRating, slope }) =>
                   ))}
                   <th>Total</th>
                   <th>
-                    <span className="visually-hidden">Actions</span>
+                    <span className="ff-visually-hidden">Actions</span>
                   </th>
                 </tr>
               </thead>

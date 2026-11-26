@@ -4,6 +4,8 @@ import { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import './styles/tokens.css';
+import './styles/base.css';
+import './components/ui/ui.css';
 import { AuthProvider } from './pages/Auth/AuthContext';
 
 import App from './App';
