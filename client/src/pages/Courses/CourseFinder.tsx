@@ -9,6 +9,7 @@ import {
   FaStar,
 } from 'react-icons/fa';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import Notice from '../../components/ui/Notice';
 import { Button, Field, PageHeader, Panel } from '../../components/ui/primitives';
 import { useAuth } from '../Auth/AuthContext';
 import { CourseSearchResult } from '../Trips/planTripCourse';
@@ -87,10 +88,7 @@ const CourseFinder: React.FC = () => {
 
   return (
     <main className="course-finder">
-      <PageHeader
-        title="Find the course that fits the trip."
-        subtitle="Real course listings with ratings, addresses and directions."
-      />
+      <PageHeader title="Find a course" />
 
       <Panel aria-label="Search courses by city">
         <form className="course-finder__search" onSubmit={handleSearch}>
@@ -103,7 +101,6 @@ const CourseFinder: React.FC = () => {
                 placeholder="City, state"
                 inputClassName="ff-input"
                 disabled={loading}
-                ariaLabel="Course search city"
               />
             )}
           </Field>
@@ -120,24 +117,9 @@ const CourseFinder: React.FC = () => {
         )}
       </Panel>
 
-      {loading && (
-        <Panel as="div" className="course-finder__status" role="status">
-          <span className="course-finder__status-dot" aria-hidden="true" />
-          <div>
-            <strong>Searching nearby fairways…</strong>
-            <span>Checking available course providers for your city.</span>
-          </div>
-        </Panel>
-      )}
+      {loading && <Notice>Searching nearby fairways…</Notice>}
 
-      {error && (
-        <Panel as="div" className="course-finder__status course-finder__status--error" role="alert">
-          <div>
-            <strong>Course search needs another try.</strong>
-            <span>{error}</span>
-          </div>
-        </Panel>
-      )}
+      {error && <Notice tone="danger">{error}</Notice>}
 
       {!loading && !error && hasSearched && courses.length === 0 && (
         <Panel className="course-finder__empty" aria-live="polite">
@@ -152,12 +134,9 @@ const CourseFinder: React.FC = () => {
       {!loading && !error && courses.length > 0 && (
         <section className="course-finder__results-section" aria-labelledby="course-results-title">
           <div className="course-finder__toolbar">
-            <div>
-              <h2 id="course-results-title">
-                {visibleCourses.length} {visibleCourses.length === 1 ? 'course' : 'courses'} ready to compare
-              </h2>
-              <p>{courses.length} returned by the search before your local filters.</p>
-            </div>
+            <h2 id="course-results-title">
+              {visibleCourses.length} {visibleCourses.length === 1 ? 'course' : 'courses'}
+            </h2>
 
             <div className="course-finder__controls" aria-label="Course result controls">
               <Field label="Rating">
@@ -183,17 +162,13 @@ const CourseFinder: React.FC = () => {
             </div>
           </div>
 
-          {startError && (
-            <p className="course-finder__start-error" role="alert">
-              {startError}
-            </p>
-          )}
+          {startError && <Notice tone="danger">{startError}</Notice>}
 
           {visibleCourses.length === 0 ? (
             <div className="course-finder__filtered-empty">
               <div>
                 <strong>No courses match those filters.</strong>
-                <span>Reset the result controls to see every course returned by the search.</span>
+                <span>Clear the filters to see all courses.</span>
               </div>
               <Button variant="secondary" onClick={resetResultControls}>Reset filters</Button>
             </div>
