@@ -9,6 +9,7 @@ import {
   FaStar,
 } from 'react-icons/fa';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import { Button, Field, PageHeader, Panel } from '../../components/ui/primitives';
 import { useAuth } from '../Auth/AuthContext';
 import { CourseSearchResult } from '../Trips/planTripCourse';
 import { useStartRound } from './useStartRound';
@@ -86,41 +87,29 @@ const CourseFinder: React.FC = () => {
 
   return (
     <main className="course-finder">
-      <header className="course-finder__hero">
-        <div className="course-finder__hero-copy">
-          <p className="course-finder__eyebrow">Course discovery</p>
-          <h1 className="course-finder__title">Find the course that fits the trip.</h1>
-          <p className="course-finder__subtitle">
-            Search a city, compare nearby options, check the location, and carry the exact course straight into trip planning.
-          </p>
-        </div>
-      </header>
+      <PageHeader
+        title="Find the course that fits the trip."
+        subtitle="Real course listings with ratings, addresses and directions."
+      />
 
-      <section className="course-finder__search-panel" aria-labelledby="course-search-title">
-        <div className="course-finder__search-heading">
-          <div>
-            <p className="course-finder__eyebrow">Start local</p>
-            <h2 id="course-search-title">Search courses by city</h2>
-          </div>
-          <p>Real course listings with ratings, addresses and directions.</p>
-        </div>
-
+      <Panel aria-label="Search courses by city">
         <form className="course-finder__search" onSubmit={handleSearch}>
-          <LocationAutocomplete
-            value={city}
-            onChange={setCity}
-            placeholder="City, state"
-            inputClassName="course-finder__input"
-            disabled={loading}
-            ariaLabel="Course search city"
-          />
-          <button
-            className="course-finder__btn"
-            type="submit"
-            disabled={loading}
-          >
+          <Field label="Course search city" hideLabel>
+            {({ id }) => (
+              <LocationAutocomplete
+                id={id}
+                value={city}
+                onChange={setCity}
+                placeholder="City, state"
+                inputClassName="ff-input"
+                disabled={loading}
+                ariaLabel="Course search city"
+              />
+            )}
+          </Field>
+          <Button type="submit" disabled={loading}>
             {loading ? 'Searching…' : 'Find Courses'}
-          </button>
+          </Button>
         </form>
 
         {!isLoggedIn && (
@@ -129,42 +118,41 @@ const CourseFinder: React.FC = () => {
             <Link to="/login">log in</Link> to keep the trip with your account.
           </p>
         )}
-      </section>
+      </Panel>
 
       {loading && (
-        <div className="course-finder__status" role="status">
+        <Panel as="div" className="course-finder__status" role="status">
           <span className="course-finder__status-dot" aria-hidden="true" />
           <div>
             <strong>Searching nearby fairways…</strong>
             <span>Checking available course providers for your city.</span>
           </div>
-        </div>
+        </Panel>
       )}
 
       {error && (
-        <div className="course-finder__status course-finder__status--error" role="alert">
+        <Panel as="div" className="course-finder__status course-finder__status--error" role="alert">
           <div>
             <strong>Course search needs another try.</strong>
             <span>{error}</span>
           </div>
-        </div>
+        </Panel>
       )}
 
       {!loading && !error && hasSearched && courses.length === 0 && (
-        <section className="course-finder__empty" aria-live="polite">
+        <Panel className="course-finder__empty" aria-live="polite">
           <span className="course-finder__empty-icon" aria-hidden="true">⛳</span>
           <div>
             <h2>No courses found in that search.</h2>
             <p>Try the nearest larger city or a nearby golf destination.</p>
           </div>
-        </section>
+        </Panel>
       )}
 
       {!loading && !error && courses.length > 0 && (
         <section className="course-finder__results-section" aria-labelledby="course-results-title">
           <div className="course-finder__toolbar">
             <div>
-              <p className="course-finder__eyebrow">Nearby options</p>
               <h2 id="course-results-title">
                 {visibleCourses.length} {visibleCourses.length === 1 ? 'course' : 'courses'} ready to compare
               </h2>
@@ -172,8 +160,7 @@ const CourseFinder: React.FC = () => {
             </div>
 
             <div className="course-finder__controls" aria-label="Course result controls">
-              <label>
-                <span>Rating</span>
+              <Field label="Rating">
                 <select
                   value={ratingFilter}
                   onChange={(event) => setRatingFilter(event.target.value as CourseRatingFilter)}
@@ -182,9 +169,8 @@ const CourseFinder: React.FC = () => {
                   <option value="4-plus">4.0+ stars</option>
                   <option value="4.5-plus">4.5+ stars</option>
                 </select>
-              </label>
-              <label>
-                <span>Sort</span>
+              </Field>
+              <Field label="Sort">
                 <select
                   value={sortMode}
                   onChange={(event) => setSortMode(event.target.value as CourseSortMode)}
@@ -193,7 +179,7 @@ const CourseFinder: React.FC = () => {
                   <option value="rating">Rating high–low</option>
                   <option value="name">Name A–Z</option>
                 </select>
-              </label>
+              </Field>
             </div>
           </div>
 
@@ -209,7 +195,7 @@ const CourseFinder: React.FC = () => {
                 <strong>No courses match those filters.</strong>
                 <span>Reset the result controls to see every course returned by the search.</span>
               </div>
-              <button type="button" onClick={resetResultControls}>Reset filters</button>
+              <Button variant="secondary" onClick={resetResultControls}>Reset filters</Button>
             </div>
           ) : (
             <ul className="course-finder__results">
@@ -251,32 +237,26 @@ const CourseFinder: React.FC = () => {
                       </div>
 
                       <div className="course-card__actions">
-                        <a
+                        <Button
+                          variant="secondary"
                           href={mapsUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="course-card__link"
+                          icon={<FaExternalLinkAlt />}
                         >
-                          <FaExternalLinkAlt aria-hidden="true" />
                           Open Map
-                        </a>
-                        <button
-                          type="button"
-                          className="course-card__plan"
+                        </Button>
+                        <Button
                           onClick={() => void startRound(course)}
                           disabled={startingId !== null}
+                          icon={<FaFlagCheckered />}
                         >
-                          <FaFlagCheckered aria-hidden="true" />
                           {startingId === (course.place_id || course.name) ? 'Starting…' : 'Play here today'}
-                        </button>
+                        </Button>
                         {isLoggedIn && (
-                          <button
-                            type="button"
-                            className="course-card__link"
-                            onClick={() => planWithCourse(course)}
-                          >
+                          <Button variant="secondary" onClick={() => planWithCourse(course)}>
                             Plan for later
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>

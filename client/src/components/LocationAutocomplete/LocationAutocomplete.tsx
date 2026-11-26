@@ -7,6 +7,7 @@ interface LocationSuggestion {
 }
 
 interface LocationAutocompleteProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -16,6 +17,7 @@ interface LocationAutocompleteProps {
 }
 
 const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
+  id,
   value,
   onChange,
   placeholder,
@@ -103,6 +105,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     <div className={`location-autocomplete${open ? ' is-open' : ''}`}>
       <input
         ref={inputRef}
+        id={id}
         className={inputClassName}
         type="text"
         value={value}
