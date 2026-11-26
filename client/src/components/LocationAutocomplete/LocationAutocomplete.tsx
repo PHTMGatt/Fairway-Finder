@@ -29,7 +29,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Set by Escape; cleared when the user types again. Late fetch results must not reopen the menu.
+  // Set by Escape or by picking a suggestion; cleared when the user types again. Late fetch results must not reopen the menu.
   const dismissedRef = useRef(false);
   const canOpen = () => !dismissedRef.current && document.activeElement === inputRef.current;
 
@@ -72,6 +72,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   }, [value, disabled]);
 
   const selectSuggestion = (suggestion: LocationSuggestion) => {
+    // The new value triggers another suggestion fetch; it must not reopen the menu.
+    dismissedRef.current = true;
     onChange(suggestion.value);
     setSuggestions([]);
     setOpen(false);

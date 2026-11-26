@@ -91,6 +91,15 @@ select {
   text-transform: none;
 }
 
+/* Without this, date inputs are 2px taller than their neighbours in Chromium. */
+::-webkit-datetime-edit-fields-wrapper,
+::-webkit-datetime-edit-text,
+::-webkit-datetime-edit-month-field,
+::-webkit-datetime-edit-day-field,
+::-webkit-datetime-edit-year-field {
+  padding: 0;
+}
+
 button:not(:disabled),
 [type='button']:not(:disabled),
 [type='submit']:not(:disabled) {

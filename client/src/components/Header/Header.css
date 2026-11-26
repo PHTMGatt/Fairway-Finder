@@ -173,6 +173,7 @@
     height: calc(var(--ff-tabs-h) + env(safe-area-inset-bottom, 0px));
     padding: 0 max(0.4rem, env(safe-area-inset-right)) env(safe-area-inset-bottom, 0px) max(0.4rem, env(safe-area-inset-left));
     border-top: 1px solid var(--ff-line);
+    border-bottom: 1px solid transparent; /* keeps tab items at the height they had before */
     background: rgba(7, 17, 13, 0.97);
     backdrop-filter: blur(16px);
   }
