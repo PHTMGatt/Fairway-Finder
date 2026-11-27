@@ -1,6 +1,6 @@
 // client/src/pages/Weather/Weather.tsx
 
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import {
   WiDaySunny,
   WiCloudy,
@@ -55,7 +55,8 @@ const Weather: React.FC = () => {
 
   const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => setCity(e.target.value);
 
-  const handleSearch = async () => {
+  const handleSearch = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     const name = city.trim();
     if (!name) {
       setError('Please enter a city name.');
@@ -143,7 +144,7 @@ const Weather: React.FC = () => {
             Search the city near your course or lodging. Trip-specific weather is also available inside each saved trip.
           </p>
 
-          <div className="weather-card__input-group">
+          <form className="weather-card__input-group" onSubmit={handleSearch}>
             <input
               type="text"
               className="weather-card__input"
@@ -153,14 +154,13 @@ const Weather: React.FC = () => {
               aria-label="Weather city"
             />
             <button
-              type="button"
+              type="submit"
               className="weather-card__btn"
-              onClick={handleSearch}
               disabled={loading}
             >
               {loading ? 'Checking…' : 'Check Weather'}
             </button>
-          </div>
+          </form>
 
           {error && (
             <div className="weather-card__status weather-card__status--error" role="alert">
