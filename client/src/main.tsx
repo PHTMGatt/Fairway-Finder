@@ -3,6 +3,9 @@
 import { lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import './styles/tokens.css';
+import './styles/base.css';
+import './components/ui/ui.css';
 import { AuthProvider } from './pages/Auth/AuthContext';
 
 import App from './App';
@@ -11,7 +14,6 @@ import Signup from './pages/Auth/Signup';
 import Login from './pages/Auth/Login';
 import ErrorPage from './pages/Error/Error';
 import ForgotPassword from './pages/Auth/ForgotPassword';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Dashboard = lazy(() => import('./pages/DashBoard/DashBoard'));
 const CourseFinder = lazy(() => import('./pages/Courses/CourseFinder'));

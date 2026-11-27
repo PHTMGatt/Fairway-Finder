@@ -12,11 +12,9 @@
   "dependencies": {
     "@apollo/client": "^3.7.14",
     "@vis.gl/react-google-maps": "1.5.2",
-    "bootstrap": "^5.3.6",
     "graphql": "^16.6.0",
     "jwt-decode": "^4.0.0",
     "react": "^18.2.0",
-    "react-bootstrap": "^2.10.10",
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.18.5"

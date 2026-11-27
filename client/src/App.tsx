@@ -1,7 +1,6 @@
 // client/src/App.tsx
 
-import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import './App.css';
 import {
   ApolloClient,
@@ -13,13 +12,14 @@ import {
 } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import Header from './components/Header/Header';
 import Footer from './components/Footer/Footer';
 import Auth from './utils/auth';
 import { hasGoogleMapsKey } from './utils/mapCapability';
 import { useAuth } from './pages/Auth/AuthContext';
+import { pageTitle } from './utils/pageTitle';
 
 const MAP_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY?.trim() || '';
 
@@ -42,6 +42,11 @@ const authLink = setContext((_, { headers }) => {
 const App: React.FC = () => {
   const navigate = useNavigate();
   const { logoutUser } = useAuth();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    document.title = pageTitle(pathname);
+  }, [pathname]);
 
   const apolloClient = useMemo(() => {
     let client: ApolloClient<NormalizedCacheObject>;

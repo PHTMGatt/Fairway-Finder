@@ -28,7 +28,7 @@ A full-stack golf trip planner for small groups. Find courses, plan driving rout
 
 | Layer | Tools |
 |---|---|
-| Client | React 18, TypeScript, Vite, React Router, Apollo Client, React-Bootstrap, `@vis.gl/react-google-maps` |
+| Client | React 18, TypeScript, Vite, React Router, Apollo Client, `@vis.gl/react-google-maps` |
 | Server | Node.js, Express, Apollo Server (GraphQL), Mongoose, JSON Web Tokens, Nodemailer |
 | Data | MongoDB (Atlas in production), TTL indexes for guest cleanup |
 | External APIs | Google Places / Routes / Geocoding and Maps JavaScript, GolfCourseAPI, Open-Meteo |

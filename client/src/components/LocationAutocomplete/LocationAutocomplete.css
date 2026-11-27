@@ -74,6 +74,26 @@
   }
 }
 
+/* Landscape phone: side-by-side options, so all four stay above the bottom tab bar. */
+@media (max-height: 540px) and (orientation: landscape) {
+  .location-autocomplete__menu {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 0.3rem;
+    margin-top: 0.15rem;
+    padding: 0.1rem;
+  }
+
+  .location-autocomplete__option {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.85rem;
+  }
+
+  .location-autocomplete__pin {
+    display: none;
+  }
+}
+
 /* Inside a stacked (column) form field: fill the width, never stretch vertically. */
 .map-routing__field .location-autocomplete {
   flex: 0 0 auto;

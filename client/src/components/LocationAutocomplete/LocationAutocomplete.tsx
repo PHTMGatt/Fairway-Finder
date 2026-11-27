@@ -7,6 +7,7 @@ interface LocationSuggestion {
 }
 
 interface LocationAutocompleteProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
@@ -16,6 +17,7 @@ interface LocationAutocompleteProps {
 }
 
 const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
+  id,
   value,
   onChange,
   placeholder,
@@ -27,7 +29,7 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // Set by Escape; cleared when the user types again. Late fetch results must not reopen the menu.
+  // Set by Escape or by picking a suggestion; cleared when the user types again. Late fetch results must not reopen the menu.
   const dismissedRef = useRef(false);
   const canOpen = () => !dismissedRef.current && document.activeElement === inputRef.current;
 
@@ -70,6 +72,8 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
   }, [value, disabled]);
 
   const selectSuggestion = (suggestion: LocationSuggestion) => {
+    // The new value triggers another suggestion fetch; it must not reopen the menu.
+    dismissedRef.current = true;
     onChange(suggestion.value);
     setSuggestions([]);
     setOpen(false);
@@ -103,13 +107,15 @@ const LocationAutocomplete: React.FC<LocationAutocompleteProps> = ({
     <div className={`location-autocomplete${open ? ' is-open' : ''}`}>
       <input
         ref={inputRef}
+        id={id}
         className={inputClassName}
         type="text"
         value={value}
         placeholder={placeholder}
         disabled={disabled}
         autoComplete="off"
-        aria-label={ariaLabel || placeholder}
+        // With an id, a <label> names the input; the placeholder must not override it.
+        aria-label={ariaLabel ?? (id ? undefined : placeholder)}
         onChange={(event) => {
           dismissedRef.current = false;
           onChange(event.target.value);

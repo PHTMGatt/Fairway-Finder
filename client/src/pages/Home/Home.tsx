@@ -118,7 +118,7 @@ const Home: React.FC = () => {
         <div className="home__section-heading">
           <p className="home__eyebrow">Quick tools</p>
           <h2 id="tools-title">Need one thing right now?</h2>
-          <p>These are still available without turning the home screen into three separate apps.</p>
+          <p>Find a course, get directions or check the forecast.</p>
         </div>
         <nav className="home__tool-grid" aria-label="Fairway Finder tools">
           {tools.map((tool) => (
