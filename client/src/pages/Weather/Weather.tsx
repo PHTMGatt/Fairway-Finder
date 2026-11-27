@@ -13,18 +13,9 @@ import {
   WiStrongWind,
 } from 'react-icons/wi';
 import ToggleSwitch from '../../components/ToggleSwitch/ToggleSwitch';
+import { useWeather } from '../../utils/useWeather';
+import { toConditions } from './weatherConditions';
 import './Weather.css';
-
-interface WeatherInfo {
-  tempF: number;
-  humidity: number;
-  precipitation: number;
-  windSpeed: number;
-  iconCode: string;
-  main: string;
-  description: string;
-  name: string;
-}
 
 const iconMap: Record<string, JSX.Element> = {
   Clear: <WiDaySunny className="weather-icon" />,
@@ -49,48 +40,21 @@ const fahrenheitToCelsius = (f: number) => Math.round(((f - 32) * 5) / 9);
 const Weather: React.FC = () => {
   const [city, setCity] = useState<string>('');
   const [isFahrenheit, setIsFahrenheit] = useState<boolean>(true);
-  const [weather, setWeather] = useState<WeatherInfo | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
+  const { data, loading, error: loadError, load, reset } = useWeather();
+
+  const weather = data ? toConditions(data) : null;
+  const error = loadError || (data && !weather ? 'Incomplete weather data' : '');
 
   const handleCityChange = (e: ChangeEvent<HTMLInputElement>) => setCity(e.target.value);
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const name = city.trim();
     if (!name) {
-      setError('Please enter a city name.');
-      setWeather(null);
+      reset('Please enter a city name.');
       return;
     }
-
-    setLoading(true);
-    setError('');
-    setWeather(null);
-
-    try {
-      const res = await fetch(`/api/weather?city=${encodeURIComponent(name)}`);
-      if (!res.ok) throw new Error('Failed to fetch weather');
-      const data = await res.json();
-
-      if (!data.weather?.[0] || data.main?.temp == null) {
-        throw new Error('Incomplete weather data');
-      }
-
-      setWeather({
-        tempF: data.main.temp,
-        humidity: data.main.humidity,
-        precipitation: data.rain?.['1h'] ?? data.snow?.['1h'] ?? 0,
-        windSpeed: data.wind.speed,
-        iconCode: data.weather[0].icon,
-        main: data.weather[0].main,
-        description: data.weather[0].description,
-        name: data.name,
-      });
-    } catch (err: unknown) {
-      setError(err instanceof Error && err.message ? err.message : 'Failed to load weather.');
-    } finally {
-      setLoading(false);
-    }
+    reset();
+    void load({ city: name });
   };
 
   const renderIcon = () => {

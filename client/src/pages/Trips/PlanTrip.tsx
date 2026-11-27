@@ -9,6 +9,7 @@ import Notice from '../../components/ui/Notice';
 import { Button, Field, ListRow, PageHeader, Panel } from '../../components/ui/primitives';
 import { FaStar } from 'react-icons/fa';
 import LocationAutocomplete from '../../components/LocationAutocomplete/LocationAutocomplete';
+import { useCourseSearch } from '../Courses/useCourseSearch';
 import {
   CourseSearchResult,
   readPlanTripPrefill,
@@ -30,9 +31,17 @@ const PlanTrip: React.FC = () => {
   const [prefill] = useState(() => readPlanTripPrefill(location.state));
 
   const [searchCity, setSearchCity] = useState<string>(prefill.city);
-  const [courseOptions, setCourseOptions] = useState<CourseSearchResult[]>([]);
-  const [courseLoading, setCourseLoading] = useState<boolean>(false);
-  const [courseError, setCourseError] = useState<string>('');
+  const {
+    courses: courseOptions,
+    loading: courseLoading,
+    error: searchError,
+    searchedCity,
+    search,
+    dismissMessage,
+  } = useCourseSearch();
+  const courseError =
+    searchError ||
+    (searchedCity && !courseOptions.length ? `No courses found near “${searchedCity}.”` : '');
   const [selectedCourse, setSelectedCourse] = useState<CourseSearchResult | null>(
     prefill.course
   );
@@ -49,34 +58,10 @@ const PlanTrip: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  const handleCourseSearch = async (e: FormEvent) => {
+  const handleCourseSearch = (e: FormEvent) => {
     e.preventDefault();
-    setCourseOptions([]);
-    setCourseError('');
     setSelectedCourse(null);
-
-    const city = searchCity.trim();
-    if (!city) {
-      setCourseError('Please enter a city name.');
-      return;
-    }
-
-    setCourseLoading(true);
-    try {
-      const res = await fetch(`/api/courses?city=${encodeURIComponent(city)}`);
-      if (!res.ok) throw new Error('Failed to fetch courses');
-      const courses: CourseSearchResult[] = await res.json();
-
-      if (!courses.length) {
-        setCourseError(`No courses found near “${city}.”`);
-      } else {
-        setCourseOptions(courses);
-      }
-    } catch {
-      setCourseError('Could not load courses. Try again in a moment.');
-    } finally {
-      setCourseLoading(false);
-    }
+    void search(searchCity);
   };
 
   const handleTripSave = async (e: FormEvent) => {
@@ -133,7 +118,7 @@ const PlanTrip: React.FC = () => {
         </form>
 
         {courseError && (
-          <Notice tone="danger" onClose={() => setCourseError('')} className="plan-trip__alert">
+          <Notice tone="danger" onClose={dismissMessage} className="plan-trip__alert">
             {courseError}
           </Notice>
         )}

@@ -4,7 +4,8 @@ import { WiRain, WiRaindrops, WiStrongWind } from 'react-icons/wi';
 import Notice from '../../components/ui/Notice';
 import { Button, Chip, Field, Panel } from '../../components/ui/primitives';
 import { PersistedTripCourse } from './tripDetailsCourse';
-import { TripWeatherData, useTripWeather } from './useTripWeather';
+import { WeatherData } from '../../utils/weatherApi';
+import { useTripWeather } from './useTripWeather';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -17,7 +18,7 @@ const displayDate = (value: string) => {
   });
 };
 
-const Conditions: React.FC<{ weather: TripWeatherData; tripDate?: string | null }> = ({
+const Conditions: React.FC<{ weather: WeatherData; tripDate?: string | null }> = ({
   weather,
   tripDate,
 }) => {

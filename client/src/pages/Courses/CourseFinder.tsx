@@ -13,6 +13,7 @@ import Notice from '../../components/ui/Notice';
 import { Button, Field, PageHeader, Panel } from '../../components/ui/primitives';
 import { useAuth } from '../Auth/AuthContext';
 import { CourseSearchResult } from '../Trips/planTripCourse';
+import { useCourseSearch } from './useCourseSearch';
 import { useStartRound } from './useStartRound';
 import {
   CourseRatingFilter,
@@ -31,43 +32,16 @@ const CourseFinder: React.FC = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
   const [city, setCity] = useState<string>('');
-  const [courses, setCourses] = useState<CourseSearchResult[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const [hasSearched, setHasSearched] = useState<boolean>(false);
+  const { courses, loading, error, searchedCity, search } = useCourseSearch();
+  const hasSearched = searchedCity !== '';
   const [ratingFilter, setRatingFilter] = useState<CourseRatingFilter>('all');
   const [sortMode, setSortMode] = useState<CourseSortMode>('recommended');
 
   const visibleCourses = filterAndSortCourses(courses, ratingFilter, sortMode);
 
-  const handleSearch = async (e: FormEvent) => {
+  const handleSearch = (e: FormEvent) => {
     e.preventDefault();
-    const trimmed = city.trim();
-    if (!trimmed) {
-      setError('Please enter a city name.');
-      setCourses([]);
-      setHasSearched(false);
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setCourses([]);
-    setHasSearched(false);
-
-    try {
-      const params = new URLSearchParams({ city: trimmed });
-      const res = await fetch(`/api/courses?${params.toString()}`);
-      if (!res.ok) throw new Error('Failed to fetch courses');
-      const data: CourseSearchResult[] = await res.json();
-
-      setCourses(data);
-      setHasSearched(true);
-    } catch {
-      setError('Could not load courses. Try again in a moment.');
-    } finally {
-      setLoading(false);
-    }
+    void search(city);
   };
 
   const { startRound, startingId, error: startError } = useStartRound();
