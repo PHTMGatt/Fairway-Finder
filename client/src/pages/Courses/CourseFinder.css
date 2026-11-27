@@ -213,8 +213,9 @@
     flex-direction: column;
   }
 
+  /* Size by content so the longest sort option is never cut off; wraps when too narrow. */
   .course-finder__controls .ff-field {
-    flex: 1 1 140px;
+    flex: 1 1 auto;
     min-width: 0;
   }
 }
