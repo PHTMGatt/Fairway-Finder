@@ -6,7 +6,8 @@ import { randomBytes } from 'crypto';
 import Profile from '../models/Profile.js';
 import Trip from '../models/Trip.js';
 import { claimInvite, isInviteUsable, markInviteUsedBy, releaseInvite } from '../models/Invite.js';
-import { signToken } from '../utils/auth.js';
+import { AuthenticationError, signToken } from '../utils/auth.js';
+import { UserInputError } from '../utils/errors.js';
 import { codeEmail, emailCodesEnabled, sendMail } from '../utils/mailer.js';
 import { checkCode, codeErrorMessage, issueCode } from '../utils/emailCodes.js';
 import { codeLimiter, enforceRateLimit, guestLimiter, loginLimiter, signupLimiter } from '../utils/rateLimit.js';
@@ -19,7 +20,6 @@ import {
   isReservedGuestName,
 } from '../utils/guest.js';
 import { resetGuestDemoData, seedGuestDemoTrip } from '../utils/guestDemoSeed.js';
-import { AuthenticationError, UserInputError } from 'apollo-server-errors';
 
 interface ProfileType {
   _id: unknown;

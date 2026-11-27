@@ -1,6 +1,6 @@
 // server/src/utils/validate.ts
 
-import { UserInputError } from 'apollo-server-errors';
+import { UserInputError } from './errors.js';
 
 /**
  * Note; Limits on what a user can write. Checked in resolvers (not the Mongoose schema)
